@@ -9,5 +9,4 @@ python:
 branches:
     only:
         - master
-install: ""
 script: "python -m unittest -b tests"
