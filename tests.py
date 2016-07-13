@@ -28,7 +28,7 @@ import shutil
 import sys
 import tempfile
 import unittest
-from .avalanche import Grammar, WeightedChoice, ParseError, IntegrityError
+from avalanche import Grammar, WeightedChoice, ParseError, IntegrityError
 
 
 class TestCase(unittest.TestCase):
