@@ -380,6 +380,14 @@ class GrammarTests(TestCase):
         self.assertGreater(outs["AB"], outs["BA"])
         self.assertGreater(outs["A"], outs["B"])
 
+    def test_unicode_in_hex(self):
+        with self.assertRaises(ParseError):
+            Grammar("root x'000ü'")
+
+    def test_unicode(self):
+        w = Grammar("root 'ü'")
+        self.assertEqual(w.generate(), "ü")
+
 
 class GrammarImportTests(TestCase):
 

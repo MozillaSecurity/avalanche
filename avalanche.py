@@ -705,8 +705,8 @@ class BinSymbol(Symbol):
         name = "%s.[bin (line %d #%d)]" % (pstate.prefix, pstate.line_no, pstate.implicit())
         Symbol.__init__(self, name, pstate)
         try:
-            self.value = binascii.unhexlify(value)
-        except TypeError as err:
+            self.value = binascii.unhexlify(value.encode("ascii"))
+        except (UnicodeEncodeError, TypeError) as err:
             raise ParseError("Invalid hex string: %s" % err, pstate)
         self.can_terminate = True
 
