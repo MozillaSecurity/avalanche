@@ -2,8 +2,7 @@
 # coding=utf-8
 # pylint: disable=invalid-name,missing-docstring
 #
-# Description: Grammr2 tests
-# Author: Jesse Schwartzentruber
+# Description: Avalanche tests
 #
 # Portions Copyright 2014 BlackBerry Limited
 #

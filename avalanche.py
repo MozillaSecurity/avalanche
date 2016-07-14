@@ -3,7 +3,6 @@
 # pylint: disable=missing-docstring,too-many-lines
 #
 # Description: Grammar based generation/fuzzer
-# Author: Jesse Schwartzentruber
 #
 # Portions Copyright 2014 BlackBerry Limited
 #

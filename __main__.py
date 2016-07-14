@@ -1,11 +1,6 @@
 ################################################################################
 # coding=utf-8
-# pylint: disable=missing-docstring,too-many-lines
-#
-# Description: Grammar based generation/fuzzer
-# Author: Jesse Schwartzentruber
-#
-# Portions Copyright 2014 BlackBerry Limited
+# pylint: disable=missing-docstring
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -20,6 +15,7 @@
 #    limitations under the License.
 ################################################################################
 
+from __future__ import unicode_literals
 from .avalanche import main
 
 main()
