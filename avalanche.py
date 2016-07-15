@@ -392,7 +392,7 @@ class Grammar(object):
         finally:
             if need_to_close:
                 grammar.close()
-        self.reprefix(imports)
+        self.normalize(imports)
         self.sanity_check()
 
     def parse(self, grammar, imports, prefix=""):
@@ -485,7 +485,7 @@ class Grammar(object):
         pstate.sanity_check()
         return grammar_hash
 
-    def reprefix(self, imports):
+    def normalize(self, imports):
         def get_prefixed(symname):
             try:
                 prefix, name = symname.split(".", 1)
@@ -514,6 +514,14 @@ class Grammar(object):
                 del self.symtab[oldname]
             sym.map(get_prefixed)
         self.tracked = {get_prefixed(t) for t in self.tracked}
+
+        # normalize symbol tree (remove implicit concats, etc.)
+        for name in list(self.symtab):
+            try:
+                sym = self.symtab[name]
+            except KeyError:
+                continue # can happen if symbol is optimized out
+            sym.normalize(self)
 
     def sanity_check(self):
         log.debug("sanity checking symtab: %s", self.symtab)
@@ -618,6 +626,9 @@ class Symbol(object):
         self.can_terminate = None
 
     def map(self, fcn):
+        pass
+
+    def normalize(self, grmr):
         pass
 
     def sanity_check(self, grmr):
@@ -777,6 +788,20 @@ class ConcatSymbol(Symbol, list):
         name = "%s.%s" % (pstate.prefix, name) if not no_prefix else name
         Symbol.__init__(self, name, pstate)
         list.__init__(self)
+
+    def normalize(self, grmr):
+        # if I only have one implicit child, there's no reason for me to exist
+        if len(self) == 1 and "[" in self[0]: # all implicit symbols are named like "[blah #0]"
+            # give child my name
+            child_name = self[0]
+            child = grmr.symtab[child_name]
+            log.debug("concat has only one implicit child, renaming %s to %s (line %d)",
+                      child_name, self.name, self.line_no)
+            child.name = self.name
+            child.line_no = self.line_no # could be different if line was broken?
+            grmr.symtab[self.name] = child
+            del grmr.symtab[child_name]
+            # boom, I don't exist
 
     def children(self):
         return set(self)
@@ -1008,6 +1033,9 @@ class RepeatSymbol(ConcatSymbol):
         name = "%s.%s" % (pstate.prefix, name) if not no_prefix else name
         ConcatSymbol.__init__(self, name, pstate, no_prefix=True)
         self.min_, self.max_ = min_, max_
+
+    def normalize(self, grmr):
+        pass
 
     def generate(self, gstate):
         if gstate.grmr.is_limit_exceeded(gstate.length):
