@@ -156,7 +156,8 @@ class WeightedChoice(object):
             self.append(*value)
 
     def append(self, value, weight):
-        self.total += weight
+        if weight != '+':
+            self.total += weight
         self.values.append(value)
         self.weights.append(weight)
 
@@ -343,13 +344,14 @@ class Grammar(object):
                            ^(?P<nothing>\s*)$ |
                            ^(?P<name>[\w:-]+)
                                 (?P<type>((?P<weight>\s+[\d.]+\s+)
+                                          |\s*\+\s*
                                           |\s*\{\s*(?P<a>\d+)\s*(,\s*(?P<b>\d+)\s*)?\}\s+
                                           |\s* <\s*(?P<c>\d+)\s*(,\s*(?P<d>\d+)\s*)? >\s+
                                           |\s+import\(\s*)
                                  |
                                  \s+)
                                 (?P<def>.+)$ |
-                           ^\s+((?P<contweight>[\d.]+))\s*(?P<cont>.+)$
+                           ^\s+(\+|(?P<contweight>[\d.]+))\s*(?P<cont>.+)$
                            """, re.VERBOSE)
 
     def __init__(self, grammar="", limit=DEFAULT_LIMIT, **kwargs):
@@ -428,9 +430,9 @@ class Grammar(object):
             if match.group("name"):
                 sym_name, sym_type, sym_def = match.group("name", "type", "def")
                 sym_type = sym_type.lstrip()
-                if match.group("weight"):
+                if sym_type.startswith("+") or match.group("weight"):
                     # choice
-                    weight = float(match.group("weight"))
+                    weight = float(match.group("weight")) if match.group("weight") else "+"
                     sym = ChoiceSymbol(sym_name, pstate)
                     sym.append(Symbol.parse(sym_def, pstate), weight)
                 elif sym_type.startswith("{"):
@@ -479,7 +481,7 @@ class Grammar(object):
                 # continuation of choice
                 if sym is None or not isinstance(sym, ChoiceSymbol):
                     raise ParseError("Unexpected continuation of choice symbol", pstate)
-                weight = float(match.group("contweight"))
+                weight = float(match.group("contweight")) if match.group("contweight") else "+"
                 sym.append(Symbol.parse(match.group("cont"), pstate), weight)
 
         pstate.sanity_check()
@@ -749,6 +751,17 @@ class ChoiceSymbol(Symbol, WeightedChoice):
     def append(self, value, weight):
         WeightedChoice.append(self, value, weight)
         self._choices_terminate.append(None)
+
+    def normalize(self, grmr):
+        for i, (value, weight) in enumerate(zip(self.values, self.weights)):
+            if weight == '+':
+                if len(value) == 1 and isinstance(grmr.symtab[value[0]], ChoiceSymbol):
+                    if any(weight == '+' for weight in grmr.symtab[value[0]].weights):
+                        grmr.symtab[value[0]].normalize(grmr) # resolve the child '+' first, could recurse forever :(
+                    self.weights[i] = grmr.symtab[value[0]].total
+                else:
+                    self.weights[i] = 1
+                self.total += self.weights[i]
 
     def generate(self, gstate):
         try:
