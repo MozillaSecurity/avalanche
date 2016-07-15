@@ -40,5 +40,5 @@ result = g.generate()
 About the name
 --------------
 
-Avalance is French for "Avalanche".
+Avalanche is French for "Avalanche".
 
