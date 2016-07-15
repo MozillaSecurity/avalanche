@@ -364,11 +364,14 @@ class GrammarTests(TestCase):
 
     def test_repeat(self):
         g = Grammar('root {1,10} "A"')
-        for _ in range(100):
+        lengths = set()
+        for _ in range(1000):
             w = g.generate()
             self.assertEqual(len(set(w)), 1)
             self.assertEqual(w[0], "A")
             self.assertIn(len(w), range(1, 11))
+            lengths.add(len(w))
+        self.assertEqual(len(lengths), 10)
 
     def test_repeat_sample0(self):
         with self.assertRaises(IntegrityError):
@@ -402,6 +405,82 @@ class GrammarTests(TestCase):
     def test_unicode(self):
         w = Grammar("root 'ü'")
         self.assertEqual(w.generate(), "ü")
+
+    def test_impl_concat(self):
+        w = Grammar("root ['a' 'b'] 'c'")
+        self.assertEqual(w.generate(), "abc")
+        w = Grammar("root 'a' ['b'] 'c'")
+        self.assertEqual(w.generate(), "abc")
+        w = Grammar("root 'a' ['b' 'c']")
+        self.assertEqual(w.generate(), "abc")
+
+    def test_impl_repeat(self):
+        g = Grammar('root "A"{1,10}')
+        lengths = set()
+        for _ in range(1000):
+            w = g.generate()
+            self.assertEqual(len(set(w)), 1)
+            self.assertEqual(w[0], "A")
+            self.assertIn(len(w), range(1, 11))
+            lengths.add(len(w))
+        self.assertEqual(len(lengths), 10)
+        g = Grammar('root ["A" "B" ","]{ 0 , 10 } "AB"')
+        lengths = set()
+        for _ in range(1000):
+            w = g.generate().split(",")
+            self.assertEqual(len(set(w)), 1)
+            self.assertEqual(w[0], "AB")
+            self.assertIn(len(w), range(1, 12))
+            lengths.add(len(w))
+        self.assertEqual(len(lengths), 11)
+
+    def test_impl_repeat_sample0(self):
+        with self.assertRaises(IntegrityError):
+            Grammar('root "A" <1,10>')
+        with self.assertRaises(IntegrityError):
+            Grammar('root [a a] <1,10>\n'
+                    'a 1 "A"')
+
+    def test_impl_repeat_sample1(self):
+        g = Grammar('root a<1,10>\n'
+                    'a 1 "A"')
+        for _ in range(100):
+            w = g.generate()
+            self.assertEqual(w, "A")
+
+    def test_impl_repeat_sample2(self):
+        g = Grammar('root a<1,10>\n'
+                    'a 9 "A"\n'
+                    ' 1 "B"')
+        outs = {"A": 0, "B": 0, "BA": 0, "AB": 0}
+        for _ in range(1000):
+            outs[g.generate()] += 1
+        self.assertGreater(outs["AB"] + outs["BA"], outs["A"] + outs["B"])
+        self.assertGreater(outs["AB"], outs["BA"])
+        self.assertGreater(outs["A"], outs["B"])
+
+    def test_maybe(self):
+        g = Grammar('root "A"?')
+        lengths = set()
+        for _ in range(100):
+            w = g.generate()
+            self.assertIn(w, {"", "A"})
+            lengths.add(len(w))
+        self.assertEqual(len(lengths), 2)
+        g = Grammar('root ["A" "B"]?')
+        lengths = set()
+        for _ in range(100):
+            w = g.generate()
+            self.assertIn(w, {"", "AB"})
+            lengths.add(len(w))
+        self.assertEqual(len(lengths), 2)
+        g = Grammar('root? "A"')
+        lengths = set()
+        for _ in range(100):
+            w = g.generate()
+            self.assertIn(w, {"", "A"})
+            lengths.add(len(w))
+        self.assertEqual(len(lengths), 2)
 
 
 class GrammarImportTests(TestCase):

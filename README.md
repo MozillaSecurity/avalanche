@@ -22,6 +22,7 @@ FuncCall        rndint(a,b) (rndint, rndflt are built-in,
                              others can be passed as keyword args to the Grammar constructor)
 SymName<a,b>    ChoiceDef (combine repeat and choice, but each defn will only be used at most once)
 Blah            import('another.gmr')    (can use imported symnames like Blah.SymName)
+SymName         Def1 [ 'A' 'B' ]? (grouping, 'A' & 'B' will be generated 0 or 1 times)
 ```
 
 

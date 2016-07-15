@@ -345,6 +345,7 @@ class Grammar(object):
                            ^(?P<name>[\w:-]+)
                                 (?P<type>((?P<weight>\s+[\d.]+\s+)
                                           |\s*\+\s*
+                                          |\s*\?\s*
                                           |\s*\{\s*(?P<a>\d+)\s*(,\s*(?P<b>\d+)\s*)?\}\s+
                                           |\s* <\s*(?P<c>\d+)\s*(,\s*(?P<d>\d+)\s*)? >\s+
                                           |\s+import\(\s*)
@@ -435,11 +436,14 @@ class Grammar(object):
                     weight = float(match.group("weight")) if match.group("weight") else "+"
                     sym = ChoiceSymbol(sym_name, pstate)
                     sym.append(Symbol.parse(sym_def, pstate), weight)
-                elif sym_type.startswith("{"):
+                elif sym_type and sym_type[0] in "{?":
                     # repeat
-                    min_, max_ = match.group("a", "b")
-                    min_ = int(min_)
-                    max_ = int(max_) if max_ else min_
+                    if sym_type[0] == "?":
+                        min_, max_ = 0, 1
+                    else:
+                        min_, max_ = match.group("a", "b")
+                        min_ = int(min_)
+                        max_ = int(max_) if max_ else min_
                     sym = RepeatSymbol(sym_name, min_, max_, pstate)
                     sym.extend(Symbol.parse(sym_def, pstate))
                 elif sym_type.startswith("<"):
@@ -602,9 +606,13 @@ class Symbol(object):
                            ^(?P<quote>["']) |
                            ^(?P<hexstr>x["']) |
                            ^(?P<regex>/) |
+                           ^(?P<implconcat>\[) |
+                           ^(?P<inconcat>\]) |
                            ^(?P<infunc>[,)]) |
                            ^(?P<comment>\#).* |
                            ^(?P<func>\w+)\( |
+                           ^(?P<maybe>\?) |
+                           ^(?P<repeat>[{<]\s*(?P<a>\d+)\s*(,\s*(?P<b>\d+)\s*)?[}>]) |
                            ^@(?P<refprefix>[\w-]+\.)?(?P<ref>[\w:-]+) |
                            ^(?P<symprefix>[\w-]+\.)?(?P<sym>[\w:-]+) |
                            ^(?P<ws>\s+)""", re.VERBOSE)
@@ -649,7 +657,7 @@ class Symbol(object):
         return False
 
     @staticmethod
-    def _parse(defn, pstate, in_func):
+    def _parse(defn, pstate, in_func, in_concat):
         result = []
         while defn:
             match = Symbol._RE_DEFN.match(defn)
@@ -686,16 +694,50 @@ class Symbol(object):
                 if not in_func:
                     raise ParseError("Unexpected token in definition: %s" % defn, pstate)
                 break
+            elif match.group("implconcat"):
+                parts, defn = Symbol._parse(defn[match.end(0):], pstate, False, True)
+                if not defn.startswith("]"):
+                    raise ParseError("Expecting ] at: %s" % defn, pstate)
+                name = "[concat (line %d #%d)]" % (pstate.line_no, pstate.implicit())
+                sym = ConcatSymbol(name, pstate)
+                sym.extend(parts)
+                defn = defn[1:]
+            elif match.group("inconcat"):
+                if not in_concat:
+                    raise ParseError("Unexpected token in definition: %s" % defn, pstate)
+                break
+            elif match.group("maybe") or match.group("repeat"):
+                if not result:
+                    raise ParseError("Unexpeted token in definition: %s" % defn, pstate)
+                if match.group("maybe"):
+                    repeat = RepeatSymbol
+                    min_, max_ = 0, 1
+                else:
+                    if {"{": "}", "<": ">"}[match.group(0)[0]] != match.group(0)[-1]:
+                        raise ParseError("Repeat symbol mismatch at: %s" % defn, pstate)
+                    repeat = {"{": RepeatSymbol, "<": RepeatSampleSymbol}[match.group(0)[0]]
+                    min_ = int(match.group("a"))
+                    max_ = int(match.group("b")) if match.group("b") else min_
+                parts = result.pop()
+                name = "[repeat (line %d #%d)]" % (pstate.line_no, pstate.implicit())
+                sym = repeat(name, min_, max_, pstate)
+                if "[concat" in pstate.grmr.symtab[parts].name:
+                    # use the children directly and remove the intermediate concat
+                    sym.extend(pstate.grmr.symtab[parts])
+                    del pstate.grmr.symtab[parts]
+                else:
+                    sym.append(parts)
+                defn = defn[match.end(0):]
             result.append(sym.name)
         return result, defn
 
     @staticmethod
     def parse_func_arg(defn, pstate):
-        return Symbol._parse(defn, pstate, True)
+        return Symbol._parse(defn, pstate, True, False)
 
     @staticmethod
     def parse(defn, pstate):
-        res, remain = Symbol._parse(defn, pstate, False)
+        res, remain = Symbol._parse(defn, pstate, False, False)
         if remain:
             raise ParseError("Unexpected token in definition: %s" % remain, pstate)
         return res
