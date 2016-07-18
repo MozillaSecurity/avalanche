@@ -27,7 +27,7 @@ import shutil
 import sys
 import tempfile
 import unittest
-from avalanche import Grammar, WeightedChoice, ParseError, IntegrityError
+from avalanche import Grammar, ChoiceSymbol, ParseError, IntegrityError
 
 
 class TestCase(unittest.TestCase):
@@ -78,27 +78,27 @@ class GrammarTests(TestCase):
 
     def test_wchoice(self):
         iters = 10000
-        w = WeightedChoice([(1, 1), (2, 1), (3, 1)])
+        w = ChoiceSymbol([(1, 1), (2, 1), (3, 1)], _test=True)
         r = {1:0, 2:0, 3:0}
         for _ in range(iters):
             r[w.choice()] += 1
         for v in r.values():
             self.assertAlmostEqual(v/iters, 1/3, delta=.02)
-        w = WeightedChoice([(1, 1), (2, 2), (3, 1)])
+        w = ChoiceSymbol([(1, 1), (2, 2), (3, 1)], _test=True)
         r = {1:0, 2:0, 3:0}
         for _ in range(iters):
             r[w.choice()] += 1
         self.assertAlmostEqual(float(r[1])/iters, 0.25, delta=.02)
         self.assertAlmostEqual(float(r[2])/iters, 0.5, delta=.02)
         self.assertAlmostEqual(float(r[3])/iters, 0.25, delta=.02)
-        w = WeightedChoice([(1, 3), (2, 1), (3, 1)])
+        w = ChoiceSymbol([(1, 3), (2, 1), (3, 1)], _test=True)
         r = {1:0, 2:0, 3:0}
         for _ in range(iters):
             r[w.choice()] += 1
         self.assertAlmostEqual(float(r[1])/iters, 0.6, delta=.02)
         self.assertAlmostEqual(float(r[2])/iters, 0.2, delta=.02)
         self.assertAlmostEqual(float(r[3])/iters, 0.2, delta=.02)
-        w = WeightedChoice([(1, 1), (2, 1), (3, 4)])
+        w = ChoiceSymbol([(1, 1), (2, 1), (3, 4)], _test=True)
         r = {1:0, 2:0, 3:0}
         for _ in range(iters):
             r[w.choice()] += 1
@@ -108,7 +108,7 @@ class GrammarTests(TestCase):
 
     def test_funcs(self):
         iters = 10
-        gram = "root    {1,10}  func\n" \
+        gram = "root            func{1,10}\n" \
                "func    1       'z' zero(nuvar) '\\n'\n" \
                "        1       'a' alpha(alvar , '*,' rep) '\\n'\n" \
                "        1       nuvar '\\n'\n" \
@@ -138,11 +138,11 @@ class GrammarTests(TestCase):
 
     def test_plus(self):
         iters = 10000
-        w = Grammar("var     + 'a'\n"
-                    "        + 'b'\n"
-                    "        + 'c'\n"
+        w = Grammar("var     1 'a'\n"
+                    "        1 'b'\n"
+                    "        1 'c'\n"
                     "root    + var\n"
-                    "        + 'd'")
+                    "        1 'd'")
         r = {'a':0, 'b':0, 'c':0, 'd':0}
         i = 0
         while i < iters:
@@ -322,7 +322,7 @@ class GrammarTests(TestCase):
 
     def test_limit(self):
         w = Grammar("root       foo bar\n"
-                    "bar {1}    @foo bar\n"
+                    "bar        (@foo bar) {1}\n"
                     "foo        'i0'", limit=10)
         self.assertEqual(len(w.generate()), 10)
 
@@ -337,7 +337,7 @@ class GrammarTests(TestCase):
         self.assertLessEqual(float(w.generate()), 10)
 
     def test_nested_choice_weight(self):
-        w = Grammar("root {1000} a\n"
+        w = Grammar("root a {1000}\n"
                     "b 9 'b'\n"
                     "a 1 'a'\n"
                     "  1 b")
@@ -363,7 +363,7 @@ class GrammarTests(TestCase):
                     'b a')
 
     def test_repeat(self):
-        g = Grammar('root {1,10} "A"')
+        g = Grammar('root "A"{1,10}')
         lengths = set()
         for _ in range(1000):
             w = g.generate()
@@ -372,28 +372,40 @@ class GrammarTests(TestCase):
             self.assertIn(len(w), range(1, 11))
             lengths.add(len(w))
         self.assertEqual(len(lengths), 10)
+        g = Grammar('root ("A" "B" ","){ 0 , 10 } "AB"')
+        lengths = set()
+        for _ in range(1000):
+            w = g.generate().split(",")
+            self.assertEqual(len(set(w)), 1)
+            self.assertEqual(w[0], "AB")
+            self.assertIn(len(w), range(1, 12))
+            lengths.add(len(w))
+        self.assertEqual(len(lengths), 11)
 
-    def test_repeat_sample0(self):
+    def test_repeat_sample(self):
         with self.assertRaises(IntegrityError):
-            Grammar('root <1,10> "A"')
+            Grammar('root "A" <1,10>')
         with self.assertRaises(IntegrityError):
-            Grammar('root <1,10> a a\n'
+            Grammar('root (a a) <1,10>\n'
                     'a 1 "A"')
-
-    def test_repeat_sample1(self):
-        g = Grammar('root <1,10> a\n'
+        w = Grammar('root a<1,10>\n'
                     'a 1 "A"')
         for _ in range(100):
-            w = g.generate()
-            self.assertEqual(w, "A")
-
-    def test_repeat_sample2(self):
-        g = Grammar('root <1,10> a\n'
+            self.assertEqual(w.generate(), "A")
+        w = Grammar('root ("a" a)<1,10>\n'
+                    'a 1 "A"')
+        for _ in range(100):
+            self.assertEqual(w.generate(), "aA")
+        with self.assertRaises(IntegrityError):
+            Grammar('root a<1,10>\n'
+                    'a   "a" b\n'
+                    'b 1 "A"')
+        w = Grammar('root a <1,10>\n'
                     'a 9 "A"\n'
                     ' 1 "B"')
         outs = {"A": 0, "B": 0, "BA": 0, "AB": 0}
         for _ in range(1000):
-            outs[g.generate()] += 1
+            outs[w.generate()] += 1
         self.assertGreater(outs["AB"] + outs["BA"], outs["A"] + outs["B"])
         self.assertGreater(outs["AB"], outs["BA"])
         self.assertGreater(outs["A"], outs["B"])
@@ -407,57 +419,12 @@ class GrammarTests(TestCase):
         self.assertEqual(w.generate(), "ü")
 
     def test_impl_concat(self):
-        w = Grammar("root ['a' 'b'] 'c'")
+        w = Grammar("root ('a' 'b') 'c'")
         self.assertEqual(w.generate(), "abc")
-        w = Grammar("root 'a' ['b'] 'c'")
+        w = Grammar("root 'a' ('b') 'c'")
         self.assertEqual(w.generate(), "abc")
-        w = Grammar("root 'a' ['b' 'c']")
+        w = Grammar("root 'a' ('b' 'c')")
         self.assertEqual(w.generate(), "abc")
-
-    def test_impl_repeat(self):
-        g = Grammar('root "A"{1,10}')
-        lengths = set()
-        for _ in range(1000):
-            w = g.generate()
-            self.assertEqual(len(set(w)), 1)
-            self.assertEqual(w[0], "A")
-            self.assertIn(len(w), range(1, 11))
-            lengths.add(len(w))
-        self.assertEqual(len(lengths), 10)
-        g = Grammar('root ["A" "B" ","]{ 0 , 10 } "AB"')
-        lengths = set()
-        for _ in range(1000):
-            w = g.generate().split(",")
-            self.assertEqual(len(set(w)), 1)
-            self.assertEqual(w[0], "AB")
-            self.assertIn(len(w), range(1, 12))
-            lengths.add(len(w))
-        self.assertEqual(len(lengths), 11)
-
-    def test_impl_repeat_sample0(self):
-        with self.assertRaises(IntegrityError):
-            Grammar('root "A" <1,10>')
-        with self.assertRaises(IntegrityError):
-            Grammar('root [a a] <1,10>\n'
-                    'a 1 "A"')
-
-    def test_impl_repeat_sample1(self):
-        g = Grammar('root a<1,10>\n'
-                    'a 1 "A"')
-        for _ in range(100):
-            w = g.generate()
-            self.assertEqual(w, "A")
-
-    def test_impl_repeat_sample2(self):
-        g = Grammar('root a<1,10>\n'
-                    'a 9 "A"\n'
-                    ' 1 "B"')
-        outs = {"A": 0, "B": 0, "BA": 0, "AB": 0}
-        for _ in range(1000):
-            outs[g.generate()] += 1
-        self.assertGreater(outs["AB"] + outs["BA"], outs["A"] + outs["B"])
-        self.assertGreater(outs["AB"], outs["BA"])
-        self.assertGreater(outs["A"], outs["B"])
 
     def test_maybe(self):
         g = Grammar('root "A"?')
@@ -467,18 +434,11 @@ class GrammarTests(TestCase):
             self.assertIn(w, {"", "A"})
             lengths.add(len(w))
         self.assertEqual(len(lengths), 2)
-        g = Grammar('root ["A" "B"]?')
+        g = Grammar('root ("A" "B")?')
         lengths = set()
         for _ in range(100):
             w = g.generate()
             self.assertIn(w, {"", "AB"})
-            lengths.add(len(w))
-        self.assertEqual(len(lengths), 2)
-        g = Grammar('root? "A"')
-        lengths = set()
-        for _ in range(100):
-            w = g.generate()
-            self.assertIn(w, {"", "A"})
             lengths.add(len(w))
         self.assertEqual(len(lengths), 2)
 
