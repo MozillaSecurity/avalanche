@@ -482,6 +482,10 @@ class GrammarTests(TestCase):
             lengths.add(len(w))
         self.assertEqual(len(lengths), 2)
 
+    def test_regex(self):
+        with self.assertRaises(ParseError):
+            Grammar('root /[+-*]/')
+
 
 class GrammarImportTests(TestCase):
 

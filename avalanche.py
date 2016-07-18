@@ -784,8 +784,8 @@ class BinSymbol(Symbol):
 
 class ChoiceSymbol(Symbol, WeightedChoice):
 
-    def __init__(self, name, pstate, no_prefix=False):
-        name = "%s.%s" % (pstate.prefix, name) if not no_prefix else name
+    def __init__(self, name, pstate):
+        name = "%s.%s" % (pstate.prefix, name)
         Symbol.__init__(self, name, pstate)
         WeightedChoice.__init__(self)
         self._choices_terminate = []
@@ -965,120 +965,104 @@ class RegexSymbol(ConcatSymbol):
                       "abcdefghijklmnopqrstuvwxyz" \
                       "0123456789" \
                       ",./<>?;':\"[]\\{}|=_+`~!@#$%^&*() -"
-    _RE_REPEAT = re.compile(r"^\{\s*(?P<a>\d+)\s*(,\s*(?P<b>\d+)\s*)?\}")
+    _RE_PARSE = re.compile(r"""
+                            ^(?P<repeat>\{\s*(?P<a>\d+)\s*(,\s*(?P<b>\d+)\s*)?\}|\*|\+|\?) |
+                            ^(?P<set>\[\^?) |
+                            ^(?P<esc>\\.) |
+                            ^(?P<dot>\.) |
+                            ^(?P<done>/)""", re.VERBOSE)
+    _RE_SET = re.compile(r"^(\]|-|\\?.)")
 
     def __init__(self, pstate):
         name = "%s.[regex (line %d #%d)]" % (pstate.prefix, pstate.line_no, pstate.implicit())
         ConcatSymbol.__init__(self, name, pstate, no_prefix=True)
         self.can_terminate = True
 
-    def new_choice(self, n_implicit, pstate):
-        name = "%s.%d]" % (self.name[:-1], n_implicit)
-        return ChoiceSymbol(name, pstate, no_prefix=True)
+    def _impl_name(self, n_implicit):
+        name = "%s.%d]" % (self.name[:-1], n_implicit[0])
+        n_implicit[0] += 1
+        return name
 
-    def add_repeat(self, sym, min_, max_, n_implicit, pstate):
-        name = "%s.%d]" % (self.name[:-1], n_implicit)
-        rep = RepeatSymbol(name, min_, max_, pstate, no_prefix=True)
-        rep.append(sym.name)
-        self.append(name)
+    def new_text(self, value, n_implicit, pstate):
+        self.append(TextSymbol(self._impl_name(n_implicit), value, pstate, no_prefix=True).name)
+
+    def new_textchoice(self, alpha, n_implicit, pstate):
+        self.append(_TextChoiceSymbol(self._impl_name(n_implicit), alpha, pstate, no_prefix=True).name)
+
+    def add_repeat(self, min_, max_, n_implicit, pstate):
+        rep = RepeatSymbol(self._impl_name(n_implicit), min_, max_, pstate, no_prefix=True)
+        rep.append(self.pop())
+        self.append(rep.name)
 
     @staticmethod
     def parse(defn, pstate):
         result = RegexSymbol(pstate)
-        n_implicit = 0
-        char = 1
-        sym = None
+        n_implicit = [0]
         if defn[0] != "/":
             raise ParseError("Regex definitions must begin with /", pstate)
-        while char < len(defn):
-            if defn[char] == "/":
-                if sym is not None:
-                    result.append(sym.name)
-                return result, defn[char + 1:]
-            elif defn[char] == "[":
-                # range
-                if sym is not None:
-                    result.append(sym.name)
-                sym = result.new_choice(n_implicit, pstate)
-                n_implicit += 1
-                inverse = defn[char + 1] == "^"
-                char += 2 if inverse else 1
+        defn = defn[1:]
+        while defn:
+            match = RegexSymbol._RE_PARSE.match(defn)
+            if match is None or match.group("esc"):
+                result.new_text(defn[0] if match is None else defn[1], n_implicit, pstate)
+                defn = defn[1:] if match is None else defn[2:]
+            elif match.group("set"):
+                inverse = len(match.group("set")) == 2
+                defn = defn[match.end(0):]
                 alpha = []
-                while char < len(defn):
-                    if defn[char] == "\\":
-                        alpha.append(defn[char + 1])
-                        char += 2
-                    elif defn[char] == "]":
-                        char += 1
+                in_range = False
+                while defn:
+                    match = RegexSymbol._RE_SET.match(defn)
+                    if match.group(0) == "]":
+                        if in_range:
+                            alpha.append('-')
+                        defn = defn[match.end(0):]
                         break
+                    elif match.group(0) == "-":
+                        if in_range or not alpha:
+                            raise ParseError("Parse error in regex at: %s" % defn, pstate)
+                        in_range = True
                     else:
-                        alpha.append(defn[char])
-                        char += 1
-                    if len(alpha) >= 3 and alpha[-2] == "-":
-                        # expand range
-                        start, end, alpha = alpha[-3], alpha[-1], alpha[:-3]
-                        alpha.extend(chr(letter) for letter in range(ord(start), ord(end)+1))
-                        if alpha[-1] == "-": # move this so we don't end up expanding a false range
-                                             # (not a bullet-proof solution?)
-                            alpha = alpha[-1] + alpha[:-1]
+                        alpha.append(match.group(0)[-1])
+                        if in_range:
+                            start = ord(alpha[-2])
+                            end = ord(alpha[-1]) + 1
+                            if start >= end:
+                                raise ParseError("Empty range in regex at: %s" % defn, pstate)
+                            alpha.extend(chr(letter) for letter in range(ord(alpha[-2]), ord(alpha[-1]) + 1))
+                            in_range = False
+                    defn = defn[match.end(0):]
                 else:
-                    break
+                    raise ParseError("Unterminated set in regex", pstate)
                 alpha = set(alpha)
                 if inverse:
                     alpha = set(RegexSymbol._REGEX_ALPHABET) - alpha
-                for letter in alpha:
-                    sym.append([TextSymbol(letter, pstate).name], 1)
-            elif defn[char] == ".":
-                # any one thing
-                if sym is not None:
-                    result.append(sym.name)
-                char += 1
+                result.new_textchoice("".join(alpha), n_implicit, pstate)
+            elif match.group("done"):
+                return result, defn[match.end(0):]
+            elif match.group("dot"):
                 try:
-                    sym = pstate.grmr.symtab["[regex alpha]"]
+                    pstate.grmr.symtab["[regex alpha]"]
                 except KeyError:
-                    sym = ChoiceSymbol("[regex alpha]", pstate, no_prefix=True)
+                    sym = _TextChoiceSymbol("[regex alpha]", RegexSymbol._REGEX_ALPHABET, pstate, no_prefix=True)
                     sym.line_no = 0
-                    for letter in RegexSymbol._REGEX_ALPHABET:
-                        sym.append([TextSymbol(letter, pstate, no_prefix=True).name], 1)
-                        sym.values[-1][0].line_no = 0
-            elif defn[char] == "\\":
-                # escape
-                if sym is not None:
-                    result.append(sym.name)
-                sym = TextSymbol(defn[char + 1], pstate)
-                char += 2
-            elif defn[char] == "+":
-                if sym is None:
-                    raise ParseError("Error parsing regex, unexpected + at: %s" % defn[char:], pstate)
-                char += 1
-                result.add_repeat(sym, 1, 5, n_implicit, pstate)
-                n_implicit += 1
-                sym = None
-            elif defn[char] == "*":
-                if sym is None:
-                    raise ParseError("Error parsing regex, unexpected * at: %s" % defn[char:], pstate)
-                result.add_repeat(sym, 0, 5, n_implicit, pstate)
-                n_implicit += 1
-                char += 1
-                sym = None
-            elif defn[char] == "{":
-                if sym is None:
-                    raise ParseError("Error parsing regex, unexpected { at: %s" % defn[char:], pstate)
-                match = RegexSymbol._RE_REPEAT.match(defn[char:])
-                if match is None:
-                    raise ParseError("Error parsing regex, expecting {n} or {a,b} at: %s" % defn[char:], pstate)
-                min_ = int(match.group("a"))
-                max_ = int(match.group("b")) if match.group("b") else min_
-                result.add_repeat(sym, min_, max_, n_implicit, pstate)
-                n_implicit += 1
-                char += match.end(0)
-                sym = None
-            else:
-                # bare char
-                if sym is not None:
-                    result.append(sym.name)
-                sym = TextSymbol(defn[char], pstate)
-                char += 1
+                result.append("[regex alpha]")
+                defn = defn[match.end(0):]
+            elif match.group("esc"):
+                result.new_text(match.group(0)[1], n_implicit, pstate)
+                defn = defn[match.end(0):]
+            else: # repeat
+                if not len(result) or isinstance(pstate.grmr.symtab[result[-1]], RepeatSymbol):
+                    raise ParseError("Error parsing regex, unexpected repeat at: %s" % defn, pstate)
+                if match.group("a"):
+                    min_ = int(match.group("a"))
+                    max_ = int(match.group("b")) if match.group("b") else min_
+                else:
+                    min_, max_ = {"+": (1, 5),
+                                  "*": (0, 5),
+                                  "?": (0, 1)}[defn[0]]
+                result.add_repeat(min_, max_, n_implicit, pstate)
+                defn = defn[match.end(0):]
         raise ParseError("Unterminated regular expression", pstate)
 
 
@@ -1129,8 +1113,9 @@ class RepeatSampleSymbol(RepeatSymbol):
 class TextSymbol(Symbol):
     _RE_QUOTE = re.compile(r'''(?P<end>["'])|\\(?P<esc>.)''')
 
-    def __init__(self, value, pstate, no_prefix=False, no_add=False):
-        name = "[text (line %d #%d)]" % (pstate.line_no, pstate.implicit() if not no_add else -1)
+    def __init__(self, name, value, pstate, no_prefix=False, no_add=False):
+        if name is None:
+            name = "[text (line %d #%d)]" % (pstate.line_no, pstate.implicit() if not no_add else -1)
         name = "%s.%s" % (pstate.prefix, name) if not no_prefix else name
         Symbol.__init__(self, name, pstate, no_add=no_add)
         self.value = str(value)
@@ -1163,8 +1148,14 @@ class TextSymbol(Symbol):
         else:
             raise ParseError("Unterminated string literal!", pstate)
         defn = defn[last:]
-        sym = TextSymbol("".join(out), pstate, no_add=no_add)
+        sym = TextSymbol(None, "".join(out), pstate, no_add=no_add)
         return sym, defn
+
+
+class _TextChoiceSymbol(TextSymbol):
+
+    def generate(self, gstate):
+        gstate.append(random.choice(self.value))
 
 
 def main():
