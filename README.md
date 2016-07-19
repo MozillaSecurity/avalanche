@@ -1,7 +1,7 @@
 Avalanche
 =========
 
-[![Build Status](https://api.travis-ci.org/jschwartzentruber/avalanche.svg)](https://travis-ci.org/jschwartzentruber/avalanche)
+[![Build Status](https://api.travis-ci.org/MozillaSecurity/avalanche.svg)](https://travis-ci.org/MozillaSecurity/avalanche)
 
 Avalanche is a document generator which uses context-free grammars to generate
 randomized outputs for fuzz-testing.
@@ -11,18 +11,48 @@ Syntax Cheatsheet
 -----------------
 
 ```
-SymName         Def1 [Def2] (concat)
-SymName{a,b}    Def (repeat, between a-b instances)
-SymName   1     Def1 (choice, either Def1 (1:3 odds) or Def2 (2:3))
-          2     Def2
-SymName         /[A-Za-z]*..+[^a-f]{2}/ (simple regex)
-SymName         "text"
-SymName         @SymName1   (returns a previously defined instance of SymName1)
-FuncCall        rndint(a,b) (rndint, rndflt are built-in,
-                             others can be passed as keyword args to the Grammar constructor)
-SymName<a,b>    ChoiceDef (combine repeat and choice, but each defn will only be used at most once)
-Blah            import('another.gmr')    (can use imported symnames like Blah.SymName)
-SymName         Def1 ( 'A' 'B' )? (grouping, 'A' & 'B' will be generated 0 or 1 times)
+# BinSymbol
+SymName        x"41414141"      # generate b"AAAA" in the output (cannot be used with TextSymbol)
+
+# TextSymbol
+SymName         "text"          # generate u"text" in the output (cannot be used with BinSymbol)
+
+# ChoiceSymbol (must be named, no inline form)
+SymName   1     Defn1           # choose between generating Defn1 (1:3 odds)
+          2     Defn2           #                        or Defn2 (2:3 odds)
+
+SymName2  +     SymName         # '+' imports choices & weights from SymName into SymName2
+          1     Defn3           # ie. choices are Defn1 (1:4), Defn2 (2:4) or Defn3 (1:4)
+
+# ConcatSymbol
+SymName         SubSym1 SubSym2             # concat, generate SubSym1 then SubSym2
+SymName         SubSym1 ( SubSym2 SubSym3 ) # inline concat (grouping), SubSym2 & SubSym3 can be
+                                            # repeated using RepeatSymbol
+
+# RepeatSymbol
+SymName         SubSym{a,b}     # repeat SubSym a random number of times, between a and b
+SymName         SubSym{a}       # repeat SubSym 'a' times
+SymName         SubSym?         # shorthand for {0,1}
+# RepeatSampleSymbol
+SymName         SubSym<a,b>     # repeatedly generate SubSym between [a,b] unique choices
+                                # SubSym must be a choice or a concat with exactly
+                                # one choice followed or preceded by text/bin
+
+# RegexSymbol
+SymName         /[A-Za-z]{0,4}..?[^a-f]{2}/  # simple regex generator, generate from A-Za-z [0,4]
+                                             # times, '.' generates printable ASCII. [^] inverts
+                                             # characters. ? generates [0,1] instances, etc.
+
+# RefSymbol
+SymName         @SymName2       # returns a previously generated instance of SymName2
+
+# FuncSymbol
+SymName         rndint(a,b)     # rndint, rndflt, rndpow2 are built-in,
+                                # others can be passed as keyword args to the Grammar constructor
+                                # args can be numeric literals, or symbol definitions
+
+# Import
+Blah            import('another.gmr')    # can use imported symnames like Blah.SymName
 ```
 
 

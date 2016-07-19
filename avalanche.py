@@ -130,7 +130,7 @@ class _ParseState(object):
 class _WeightedChoice(object):
 
     def __init__(self, iterable=None):
-        self.total = 0.0
+        self.total = 0
         self.values = []
         self.weights = []
         if iterable is not None:
@@ -147,18 +147,18 @@ class _WeightedChoice(object):
         self.weights.append(weight)
 
     def choice(self):
-        target = random.uniform(0, self.total)
+        target = random.randint(0, self.total - 1)
         for weight, value in zip(self.weights, self.values):
             target -= weight
             if target < 0:
                 return value
-        raise AssertionError("Too much total weight? remainder is %0.2f from %0.2f total" % (target, self.total))
+        raise AssertionError("Too much total weight? remainder is %d from %d total" % (target, self.total))
 
     def sample(self, k):
         weights, values, total = self.weights[:], self.values[:], self.total
         result = []
         while k and total:
-            target = random.uniform(0, total)
+            target = random.randint(0, total - 1)
             for i, (weight, value) in enumerate(zip(weights, values)):
                 target -= weight
                 if target < 0:
@@ -169,7 +169,7 @@ class _WeightedChoice(object):
                     del values[i]
                     break
             else:
-                raise AssertionError("Too much total weight? remainder is %0.2f from %0.2f total" % (target, total))
+                raise AssertionError("Too much total weight? remainder is %d from %d total" % (target, total))
         return result
 
     def __repr__(self):
@@ -214,7 +214,7 @@ class Grammar(object):
                                 |\s+(\+|(?P<contweight>\d+))\s*(?P<cont>.+))$
                            """, re.VERBOSE)
 
-    def __init__(self, grammar="", limit=DEFAULT_LIMIT, **kwargs):
+    def __init__(self, grammar, limit=DEFAULT_LIMIT, **kwargs):
         self._limit = limit
         self.symtab = {}
         self.tracked = set()
@@ -292,7 +292,7 @@ class Grammar(object):
                 sym_type = sym_type.lstrip()
                 if sym_type.startswith("+") or match.group("weight"):
                     # choice
-                    weight = float(match.group("weight")) if match.group("weight") else "+"
+                    weight = int(match.group("weight")) if match.group("weight") else "+"
                     sym = ChoiceSymbol(sym_name, pstate)
                     sym.append(_Symbol.parse(sym_def, pstate), weight)
                 elif sym_type.startswith("import("):
@@ -581,6 +581,26 @@ class _Symbol(object):
             raise ParseError("Unexpected token in definition: %s" % remain, pstate)
         return res
 
+    def choice_idx(self, parts, grmr):
+        # given a set of symbols, return the index of the ChoiceSymbol
+        # this will raise if parts does not contain exactly one ChoiceSymbol,
+        # or if any other symbol is other than TextSymbol/BinSymbol
+        choice_idx = None
+        for i, child in enumerate(parts):
+            if isinstance(grmr.symtab[child], ChoiceSymbol):
+                if choice_idx is not None:
+                    raise IntegrityError("Expecting exactly one ChoiceSymbol in %s" % self.name, self.line_no)
+                choice_idx = i
+            elif isinstance(grmr.symtab[child], (TextSymbol, BinSymbol)):
+                pass # allowed
+            else:
+                raise IntegrityError("Invalid child type in %s: %s(%s)"
+                                     % (self.name, type(grmr.symtab[child]).__name__, child),
+                                     self.line_no)
+        if choice_idx is None:
+            raise IntegrityError("Expecting exactly one ChoiceSymbol in %s" % self.name, self.line_no)
+        return choice_idx
+
 
 class _AbstractSymbol(_Symbol):
 
@@ -598,8 +618,8 @@ class BinSymbol(_Symbol):
 
            SymbolName      x'41414141'
 
-       Defines a chunk of binary data encoded in hex notation. BinSymbol and TextSymbol cannot be combined in the
-       output.
+       Defines a chunk of binary data encoded in hex notation. ``BinSymbol`` and ``TextSymbol`` cannot be combined in
+       the output.
     """
 
     _RE_QUOTE = re.compile(r"""(?P<end>["'])""")
@@ -642,10 +662,10 @@ class ChoiceSymbol(_Symbol, _WeightedChoice):
 
        A choice consists of one or more weighted sub-symbols. At generation, only one of the sub-symbols will be
        generated at random, with each sub-symbol being generated with probability of weight/sum(weights) (the sum of
-       all weights in this choice). Weight can be a non-negative integer.
+       all weights in this choice). Weight is a non-negative integer.
 
-       Weight can also be ``+``, which imports another ChoiceSymbol into this definition. SubSymbol must be another
-       ChoiceSymbol, and the total weight of that symbol will be used as the weight in this choice definition.
+       Weight can also be ``+``, which imports another ``ChoiceSymbol`` into this definition. SubSymbol must be another
+       ``ChoiceSymbol`` (or a concatenation of one or more ``TextSymbol``s and exactly one ``ChoiceSymbol``).
     """
 
     def __init__(self, name, pstate=None, _test=False):
@@ -656,20 +676,27 @@ class ChoiceSymbol(_Symbol, _WeightedChoice):
         self._choices_terminate = []
         if _test:
             self.extend(name)
+        self.normalized = False
 
     def append(self, value, weight):
         _WeightedChoice.append(self, value, weight)
         self._choices_terminate.append(None)
 
     def normalize(self, grmr):
+        if self.normalized:
+            return
+        self.normalized = True
         for i, (value, weight) in enumerate(zip(self.values, self.weights)):
             if weight == '+':
-                if len(value) == 1 and isinstance(grmr.symtab[value[0]], ChoiceSymbol):
-                    if any(weight == '+' for weight in grmr.symtab[value[0]].weights):
-                        grmr.symtab[value[0]].normalize(grmr) # resolve the child '+' first, could recurse forever :(
-                    self.weights[i] = grmr.symtab[value[0]].total
-                else:
-                    raise IntegrityError("Invalid use of '+' on non-ChoiceSymbol in %s" % self.name, self.line_no)
+                choice_idx = self.choice_idx(value, grmr)
+                choice = grmr.symtab[value[choice_idx]]
+                if any(weight == '+' for weight in choice.weights):
+                    if choice.normalized:
+                        # recursive definition
+                        raise IntegrityError("Can't resolve weight for '+' in %s, expansion of %s causes unbounded "
+                                             "recursion" % (self.name, choice.name), self.line_no)
+                    choice.normalize(grmr) # resolve the child '+' first
+                self.weights[i] = choice.total
                 self.total += self.weights[i]
 
     def generate(self, gstate):
@@ -713,7 +740,7 @@ class ConcatSymbol(_Symbol, list):
 
        A concatenation consists of one or more symbols which will be generated in succession. The sub-symbol can be
        any named symbol, reference, or an implicit declaration of terminal symbol types. A concatenation can also be
-       implicitly used as the sub-symbol of a choice or repeat symbol, or inline using ``(`` and ``)``. eg::
+       implicitly used as the sub-symbol of a ``ChoiceSymbol``, or inline using ``(`` and ``)``. eg::
 
            SymbolName      SubSymbol1 ( SubSymbol2 SubSymbol3 ) ...
 
@@ -874,8 +901,8 @@ class RegexSymbol(ConcatSymbol):
 
        ::
 
-           SymbolName      /[a-zA][0-9]*.+[^0-9]{2}.[^abc]{1,3}/
-           ...             /a?far/  (generates either 'far' or 'afar')
+           SymbolName         /id[0-9]{4}/      (generates strings between 'id0000' and 'id9999')
+           ...                /a?far/           (generates either 'far' or 'afar')
 
        A regular expression (regex) symbol is a minimal regular expression implementation used for generating text
        patterns (rather than the traditional use for matching text patterns). A regex symbol consists of one or more
@@ -889,8 +916,7 @@ class RegexSymbol(ConcatSymbol):
 
        The optional repetition specification can be a range of integers in curly braces, eg. ``{1,10}`` will generate
        between 1 and 10 repetitions (at random), a single integer in curly braces, eg. ``{10}`` will generate exactly
-       10 repetitions, an asterisk character (``*``) which is equivalent to ``{0,5}``, a plus character (``+``) which
-       is equivalent to ``{1,5}``, or a question mark (``?``) which is equivalent to ``{0,1}``.
+       10 repetitions, or a question mark (``?``) which is equivalent to ``{0,1}``.
 
        A notable exclusion from ordinary regular expression implementations is groups using ``()`` or ``(a|b)``. This
        syntax is *not* supported in RegexSymbol. The characters "()|" have no special meaning and do not need to be
@@ -1006,13 +1032,14 @@ class RepeatSymbol(ConcatSymbol):
 
        ::
 
-           SymbolName      {Min,Max}   SubSymbol        (named)
-           SymbolName      ?           SubSymbol        (named)
-           ...             ... SubSymbol {Min,Max}      (inline)
-           ...             ... SubSymbol ?              (inline)
+           SymbolName      SubSymbol {Min,Max}
+           SymbolName      SubSymbol {n}
+           SymbolName      SubSymbol ?
 
        Defines a repetition of subsymbols. The number of repetitions is at most ``Max``, and at minimum ``Min``.
-       ``?`` is shorthand for {0,1}.
+       The second parameter is optional, in which case exactly ``n`` will be generated. ``?`` is shorthand for
+       {0,1}. ``*`` can also be used, which evaluates to the number of choices in SubSymbol (must be ``ChoiceSymbol``
+       or concatenation of text with one ``ChoiceSymbol`` to use ``*``).
     """
 
     def __init__(self, name, min_, max_, pstate, no_prefix=False):
@@ -1021,7 +1048,17 @@ class RepeatSymbol(ConcatSymbol):
         self.min_, self.max_ = min_, max_
 
     def normalize(self, grmr):
-        pass
+        if self.min_ == "*" or self.max_ == "*":
+            choice_len = len(grmr.symtab[self[self.choice_idx(self, grmr)]])
+            if self.min_ == "*":
+                self.min_ = choice_len
+            if self.max_ == "*":
+                self.max_ = choice_len
+
+    def sanity_check(self, grmr):
+        if self.min_ > self.max_ or self.min_ < 0:
+            raise IntegrityError("Invalid range for repeat in %s: [%d,%d]" % (self.name, self.min_, self.max_),
+                                 self.line_no)
 
     def generate(self, gstate):
         if gstate.grmr.is_limit_exceeded(gstate.length):
@@ -1042,8 +1079,10 @@ class RepeatSampleSymbol(RepeatSymbol):
                 SymbolName      <Min,Max>   SubSymbol
 
         Defines a repetition of a sub-symbol. The number of repetitions is at most ``Max``, and at minimum ``Min``.
-        The sub-symbol must be a single ``ChoiceSymbol``, and the generated repetitions will be unique from the
-        choices in the sub-symbol.
+        The sub-symbol must be a single ``ChoiceSymbol`` (or concatenation of text with one ``ChoiceSymbol``), and
+        the generated repetitions will be unique from the choices in the sub-symbol. ``*`` can also be used, which
+        evaluates to the number of choices in the sub-symbol (must be ``ChoiceSymbol`` or concatenation of text
+        with one ``ChoiceSymbol``).
     """
 
     def __init__(self, name, min_, max_, pstate, no_prefix=False):
@@ -1051,20 +1090,11 @@ class RepeatSampleSymbol(RepeatSymbol):
         self.sample_idx = None
 
     def normalize(self, grmr):
-        num_choices = 0
-        for i, child in enumerate(self):
-            if isinstance(grmr.symtab[child], ChoiceSymbol):
-                num_choices += 1
-                self.sample_idx = i
-            elif isinstance(grmr.symtab[child], (TextSymbol, BinSymbol)):
-                pass # allowed
-            else:
-                raise IntegrityError("RepeatSampleSymbol %s has invalid child type: %s(%s)"
-                                     % (self.name, type(grmr.symtab[child]).__name__, child),
-                                     self.line_no)
-        if num_choices != 1:
-            raise IntegrityError("RepeatSampleSymbol %s must have one ChoiceSymbol in its children, got %d"
-                                 % (self.name, num_choices), self.line_no)
+        self.sample_idx = self.choice_idx(self, grmr)
+        if self.min_ == "*":
+            self.min_ = len(grmr.symtab[self[self.sample_idx]])
+        if self.max_ == "*":
+            self.max_ = len(grmr.symtab[self[self.sample_idx]])
 
     def generate(self, gstate):
         if gstate.grmr.is_limit_exceeded(gstate.length):
@@ -1090,17 +1120,23 @@ class TextSymbol(_Symbol):
            SymbolName      'some text'
            SymbolName      "some text"
 
-       A text symbol is a string generated verbatim in the output. A few escape codes are recognized:
+       A text symbol is a string generated verbatim in the output. C escape codes are recognized:
+           * ``\\0``  null (ASCII 0x00)
+           * ``\\a``  bell (ASCII 0x07)
+           * ``\\b``  backspace (ASCII 0x08)
            * ``\\t``  horizontal tab (ASCII 0x09)
-           * ``\\n``   line feed (ASCII 0x0A)
+           * ``\\n``  line feed (ASCII 0x0A)
            * ``\\v``  vertical tab (ASCII 0x0B)
+           * ``\\f``  form feed (ASCII 0x0C)
            * ``\\r``  carriage return (ASCII 0x0D)
+           * ``\\e``  escape (ASCII 0x1B)
+
        Any other character preceded by backslash will appear in the output without the backslash (including backslash,
        single quote, and double quote).
     """
 
     _RE_QUOTE = re.compile(r"""(?P<end>["'])|\\(?P<esc>.)""")
-    ESCAPES = {"f": "\f", "n": "\n", "r": "\r", "t": "\t", "v": "\v"}
+    ESCAPES = {"0": "\0", "a": "\a", "b": "\b", "t": "\t", "n": "\n", "v": "\v", "f": "\f", "r": "\r", "e": "\x1b"}
 
     def __init__(self, name, value, pstate, no_prefix=False, no_add=False):
         if name is None:

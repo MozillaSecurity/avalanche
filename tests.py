@@ -137,20 +137,29 @@ class GrammarTests(TestCase):
                     raise Exception("unexpected line: %s" % line)
 
     def test_plus(self):
-        iters = 10000
+        iters = 1000
         w = Grammar("var     1 'a'\n"
                     "        1 'b'\n"
                     "        1 'c'\n"
                     "root    + var\n"
                     "        1 'd'")
         r = {'a':0, 'b':0, 'c':0, 'd':0}
-        i = 0
-        while i < iters:
-            i += 1
-            v = w.generate()
-            r[v] += 1
+        for _ in range(iters):
+            r[w.generate()] += 1
         for v in r.values():
-            self.assertAlmostEqual(1.0*v/iters, 0.25, delta=0.03)
+            self.assertAlmostEqual(1.0*v/iters, 0.25, delta=0.04)
+        with self.assertRaises(IntegrityError):
+            Grammar("root + 'a'")
+        w = Grammar("var     1 'a'\n"
+                    "        1 'b'\n"
+                    "        1 'c'\n"
+                    "root    + 'A' var\n"
+                    "        1 'd'")
+        r = {'Aa':0, 'Ab':0, 'Ac':0, 'd':0}
+        for _ in range(iters):
+            r[w.generate()] += 1
+        for v in r.values():
+            self.assertAlmostEqual(1.0*v/iters, 0.25, delta=0.04)
 
     def test_basic(self):
         w = Grammar("root    ok\n"
