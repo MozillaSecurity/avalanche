@@ -21,6 +21,7 @@
 
 from __future__ import unicode_literals
 import io
+import logging as log
 import os
 import re
 import shutil
@@ -83,7 +84,7 @@ class GrammarTests(TestCase):
         for _ in range(iters):
             r[w.choice()] += 1
         for v in r.values():
-            self.assertAlmostEqual(v/iters, 1/3, delta=.02)
+            self.assertAlmostEqual(float(v)/iters, 1.0/3, delta=.02)
         w = ChoiceSymbol([(1, 1), (2, 2), (3, 1)], _test=True)
         r = {1:0, 2:0, 3:0}
         for _ in range(iters):
@@ -138,28 +139,24 @@ class GrammarTests(TestCase):
 
     def test_plus(self):
         iters = 1000
-        w = Grammar("var     1 'a'\n"
-                    "        1 'b'\n"
-                    "        1 'c'\n"
-                    "root    + var\n"
-                    "        1 'd'")
-        r = {'a':0, 'b':0, 'c':0, 'd':0}
-        for _ in range(iters):
-            r[w.generate()] += 1
-        for v in r.values():
-            self.assertAlmostEqual(1.0*v/iters, 0.25, delta=0.04)
+        self.balanced_choice("var     1 'a'\n"
+                             "        1 'b'\n"
+                             "        1 'c'\n"
+                             "root    + var\n"
+                             "        1 'd'",
+                             ["a", "b", "c", "d"])
         with self.assertRaises(IntegrityError):
             Grammar("root + 'a'")
-        w = Grammar("var     1 'a'\n"
-                    "        1 'b'\n"
-                    "        1 'c'\n"
-                    "root    + 'A' var\n"
-                    "        1 'd'")
-        r = {'Aa':0, 'Ab':0, 'Ac':0, 'd':0}
-        for _ in range(iters):
-            r[w.generate()] += 1
-        for v in r.values():
-            self.assertAlmostEqual(1.0*v/iters, 0.25, delta=0.04)
+        self.balanced_choice("var     1 'a'\n"
+                             "        1 'b'\n"
+                             "        1 'c'\n"
+                             "root    + 'A' var\n"
+                             "        1 'd'",
+                             ['Aa', 'Ab', 'Ac', 'd'])
+        with self.assertRaises(IntegrityError):
+            Grammar("root + a\n"
+                    "a + root\n"
+                    "  1 'a'")
 
     def test_basic(self):
         w = Grammar("root    ok\n"
@@ -454,6 +451,54 @@ class GrammarTests(TestCase):
     def test_regex(self):
         with self.assertRaises(ParseError):
             Grammar('root /[+-*]/')
+
+    def test_plus_text(self):
+        iters = 2000
+        g = Grammar("root a\n"
+                    "a + (b 'X')\n"
+                    "  1 'c'\n"
+                    "b 1 'a'\n"
+                    "  1 'b'")
+        r = {"c": 0, "aX": 0, "bX": 0}
+        for _ in range(iters):
+            r[g.generate()] += 1
+        for v in r.values():
+            self.assertAlmostEqual(float(v)/iters, 1.0/3, delta=0.04)
+
+    def test_repeat_star(self):
+        self.balanced_choice("root a<*>\n"
+                             "a 1 'a'\n"
+                             "  1 'b'",
+                             ["ab", "ba"])
+        g = Grammar("root a<0,*>\n"
+                    "a 1 'a'\n"
+                    "  1 'b'")
+        r = {"ab": 0, "ba": 0, "a": 0, "b": 0, "": 0}
+        for _ in range(1000):
+            r[g.generate()] += 1
+        self.assertGreater(r["a"] + r["b"], r["ab"] + r["ba"])
+        self.assertGreater(r[""], r["a"] + r["b"])
+        with self.assertRaises(IntegrityError):
+            Grammar("root 'a'{*}")
+        with self.assertRaises(IntegrityError):
+            Grammar("root 'a'<*>")
+        with self.assertRaises(IntegrityError):
+            Grammar("root a{*,0}\n"
+                    "a 1 'a'")
+        g = Grammar("root a{*}\n"
+                    "a 1 'a'\n")
+        w = g.generate()
+        self.assertEqual(set(w), {"a"})
+        self.assertEqual(len(w), 1)
+
+    def balanced_choice(self, grammar, values, iters=1000):
+        r = {v: 0 for v in values}
+        g = Grammar(grammar)
+        for _ in range(iters):
+            r[g.generate()] += 1
+        log.debug("balanced_repeat(%s) -> %s", values, r)
+        for v in r.values():
+            self.assertAlmostEqual(float(v)/iters, 1.0/len(values), delta=0.04)
 
 
 class GrammarImportTests(TestCase):

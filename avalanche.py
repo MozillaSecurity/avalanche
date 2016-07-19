@@ -268,6 +268,7 @@ class Grammar(object):
         grammar_fn = getattr(grammar, "name", None)
         if grammar_hash in imports:
             return grammar_hash
+        log.debug("parsing new grammar %r:%s", grammar_fn, grammar_hash)
         imports[grammar_hash] = prefix
         grammar.seek(0)
         pstate = _ParseState(grammar_hash, self, grammar_fn)
@@ -687,6 +688,13 @@ class ChoiceSymbol(_Symbol, _WeightedChoice):
             return
         self.normalized = True
         for i, (value, weight) in enumerate(zip(self.values, self.weights)):
+            if len(value) == 1 and "[concat" in grmr.symtab[value[0]].name:
+                # implicit concat, get rid of it
+                log.debug("%s choice #%d has only implicit concat for child, removing it", self.name, i)
+                old = grmr.symtab[value[0]]
+                self.values[i] = tuple(old)
+                value = self.values[i]
+                del grmr.symtab[old.name]
             if weight == '+':
                 choice_idx = self.choice_idx(value, grmr)
                 choice = grmr.symtab[value[choice_idx]]
@@ -694,7 +702,7 @@ class ChoiceSymbol(_Symbol, _WeightedChoice):
                     if choice.normalized:
                         # recursive definition
                         raise IntegrityError("Can't resolve weight for '+' in %s, expansion of %s causes unbounded "
-                                             "recursion" % (self.name, choice.name), self.line_no)
+                                             "recursion" % (self.name, choice.name), self.line_no + i)
                     choice.normalize(grmr) # resolve the child '+' first
                 self.weights[i] = choice.total
                 self.total += self.weights[i]
@@ -1049,7 +1057,7 @@ class RepeatSymbol(ConcatSymbol):
 
     def normalize(self, grmr):
         if self.min_ == "*" or self.max_ == "*":
-            choice_len = len(grmr.symtab[self[self.choice_idx(self, grmr)]])
+            choice_len = len(grmr.symtab[self[self.choice_idx(self, grmr)]].values)
             if self.min_ == "*":
                 self.min_ = choice_len
             if self.max_ == "*":
@@ -1092,9 +1100,9 @@ class RepeatSampleSymbol(RepeatSymbol):
     def normalize(self, grmr):
         self.sample_idx = self.choice_idx(self, grmr)
         if self.min_ == "*":
-            self.min_ = len(grmr.symtab[self[self.sample_idx]])
+            self.min_ = len(grmr.symtab[self[self.sample_idx]].values)
         if self.max_ == "*":
-            self.max_ = len(grmr.symtab[self[self.sample_idx]])
+            self.max_ = len(grmr.symtab[self[self.sample_idx]].values)
 
     def generate(self, gstate):
         if gstate.grmr.is_limit_exceeded(gstate.length):
