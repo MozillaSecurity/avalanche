@@ -35,8 +35,8 @@ SymName         SubSym{a}       # repeat SubSym 'a' times
 SymName         SubSym?         # shorthand for {0,1}
 # RepeatSampleSymbol
 SymName         SubSym<a,b>     # repeatedly generate SubSym between [a,b] unique choices
-                                # SubSym must be a choice or a concat with exactly
-                                # one choice followed or preceded by text/bin
+                                # SubSym must be a choice or a concat containing exactly
+                                # one choice
 
 # RegexSymbol
 SymName         /[A-Za-z]{0,4}..?[^a-f]{2}/  # simple regex generator, generate from A-Za-z [0,4]

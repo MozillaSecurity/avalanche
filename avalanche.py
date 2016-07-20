@@ -172,6 +172,9 @@ class _WeightedChoice(object):
                 raise AssertionError("Too much total weight? remainder is %d from %d total" % (target, total))
         return result
 
+    def __len__(self):
+        return len(self.values)
+
     def __repr__(self):
         return "WeightedChoice(%s)" % list(zip(self.values, self.weights))
 
@@ -430,6 +433,11 @@ class Grammar(object):
             if isinstance(this, tuple):
                 if this[0] == 'unwind':
                     continue
+                if this[0] == 'faketrack':
+                    # means that someone like RepeatSampleSymbol has expanded a tracked symbol
+                    # they will have generated the untrack tuple already, we just need to update `tracking` here.
+                    tracking.append((this[1], len(gstate.output)))
+                    continue
                 assert this[0] == "untrack", "Tracking mismatch: expected ('untrack', ...), got %r" % this
                 tracked = tracking.pop()
                 assert this[1] == tracked[0], "Tracking mismatch: expected '%s', got '%s'" % (tracked[0], this[1])
@@ -590,16 +598,17 @@ class _Symbol(object):
         for i, child in enumerate(parts):
             if isinstance(grmr.symtab[child], ChoiceSymbol):
                 if choice_idx is not None:
-                    raise IntegrityError("Expecting exactly one ChoiceSymbol in %s" % self.name, self.line_no)
+                    raise IntegrityError("Expecting exactly one ChoiceSymbol in %s (got more than one)" % self.name,
+                                         self.line_no)
                 choice_idx = i
-            elif isinstance(grmr.symtab[child], (TextSymbol, BinSymbol)):
-                pass # allowed
-            else:
-                raise IntegrityError("Invalid child type in %s: %s(%s)"
-                                     % (self.name, type(grmr.symtab[child]).__name__, child),
-                                     self.line_no)
+            #elif isinstance(grmr.symtab[child], (TextSymbol, BinSymbol)):
+            #    pass # allowed
+            #else:
+            #    raise IntegrityError("Invalid child type in %s: %s(%s)"
+            #                         % (self.name, type(grmr.symtab[child]).__name__, child),
+            #                         self.line_no)
         if choice_idx is None:
-            raise IntegrityError("Expecting exactly one ChoiceSymbol in %s" % self.name, self.line_no)
+            raise IntegrityError("Expecting exactly one ChoiceSymbol in %s (got none)" % self.name, self.line_no)
         return choice_idx
 
 
@@ -774,6 +783,18 @@ class ConcatSymbol(_Symbol, list):
             del grmr.symtab[child_name]
             # boom, I don't exist
             child.normalize(grmr) # may not get called otherwise
+        """
+        # if I only have one imported child, there's no reason for me to exist
+        elif "." not in self.name and len(self) == 1 and "." in self[0]:
+            imported = self[0]
+            log.debug("concat has only one imported child, renaming %s to %s (line %d)",
+                      self.name, imported, self.line_no)
+            for sym in grmr.symtab.values():
+                sym.map(lambda name: imported if name == self.name else name)
+            if self.name != "root":
+                del grmr.symtab[self.name]
+            grmr.symtab[imported].normalize(grmr)
+        """
 
     def children(self):
         return set(self)
@@ -1057,7 +1078,10 @@ class RepeatSymbol(ConcatSymbol):
 
     def normalize(self, grmr):
         if self.min_ == "*" or self.max_ == "*":
-            choice_len = len(grmr.symtab[self[self.choice_idx(self, grmr)]].values)
+            if len(self) == 1 and isinstance(grmr.symtab[self[0]], ConcatSymbol):
+                choice_len = len(grmr.symtab[self[self.choice_idx(grmr.symtab[self[0]], grmr)]])
+            else:
+                choice_len = len(grmr.symtab[self[self.choice_idx(self, grmr)]])
             if self.min_ == "*":
                 self.min_ = choice_len
             if self.max_ == "*":
@@ -1087,22 +1111,29 @@ class RepeatSampleSymbol(RepeatSymbol):
                 SymbolName      <Min,Max>   SubSymbol
 
         Defines a repetition of a sub-symbol. The number of repetitions is at most ``Max``, and at minimum ``Min``.
-        The sub-symbol must be a single ``ChoiceSymbol`` (or concatenation of text with one ``ChoiceSymbol``), and
-        the generated repetitions will be unique from the choices in the sub-symbol. ``*`` can also be used, which
-        evaluates to the number of choices in the sub-symbol (must be ``ChoiceSymbol`` or concatenation of text
-        with one ``ChoiceSymbol``).
+        The sub-symbol must be choosable, ie. a single ``ChoiceSymbol`` or concatenation with exactly one
+        ``ChoiceSymbol``. The generated repetitions will be unique from the choices in the sub-symbol. ``*`` can also
+        be used, which evaluates to the number of choices in the sub-symbol (must be ``ChoiceSymbol`` or concatenation
+        of text with one ``ChoiceSymbol``).
     """
 
     def __init__(self, name, min_, max_, pstate, no_prefix=False):
         RepeatSymbol.__init__(self, name, min_, max_, pstate, no_prefix)
+        self.in_concat = False
         self.sample_idx = None
 
     def normalize(self, grmr):
-        self.sample_idx = self.choice_idx(self, grmr)
+        children = self
+        if len(self) == 1 and isinstance(grmr.symtab[self[0]], ConcatSymbol):
+            # must deref the concat to look for choice
+            self.in_concat = True
+            children = grmr.symtab[self[0]]
+            log.debug('choice for %s is nested in a concat', self.name)
+        self.sample_idx = self.choice_idx(children, grmr)
         if self.min_ == "*":
-            self.min_ = len(grmr.symtab[self[self.sample_idx]].values)
+            self.min_ = len(grmr.symtab[children[self.sample_idx]])
         if self.max_ == "*":
-            self.max_ = len(grmr.symtab[self[self.sample_idx]].values)
+            self.max_ = len(grmr.symtab[children[self.sample_idx]])
 
     def generate(self, gstate):
         if gstate.grmr.is_limit_exceeded(gstate.length):
@@ -1111,10 +1142,21 @@ class RepeatSampleSymbol(RepeatSymbol):
             reps = self.min_
         else:
             reps = random.randint(self.min_, random.randint(self.min_, self.max_)) # roughly betavariate(0.75, 2.25)
+        children = self
+        if self.in_concat:
+            children = gstate.grmr.symtab[self[0]]
+        pre = children[:self.sample_idx]
+        post = children[self.sample_idx + 1:]
+        choice = gstate.grmr.symtab[children[self.sample_idx]]
+        # if either the concat (if any) or the choice are tracked, we need to force tracking instances we generate
+        if self.in_concat and self[0] in gstate.grmr.tracked:
+            pre.insert(0, ("faketrack", self[0]))
+            post.append(("untrack", self[0]))
+        if choice.name in gstate.grmr.tracked:
+            pre.append(("faketrack", choice.name))
+            post.insert(0, ("untrack", choice.name))
         try:
-            pre = self[:self.sample_idx]
-            post = self[self.sample_idx + 1:]
-            for selection in reversed(gstate.grmr.symtab[self[self.sample_idx]].sample(reps)):
+            for selection in reversed(gstate.grmr.symtab[children[self.sample_idx]].sample(reps)):
                 gstate.symstack.extend(reversed(pre + selection + post))
         except AssertionError as err:
             raise GenerationError(err, gstate)

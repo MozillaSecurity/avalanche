@@ -402,10 +402,11 @@ class GrammarTests(TestCase):
                     'a 1 "A"')
         for _ in range(100):
             self.assertEqual(w.generate(), "aA")
-        with self.assertRaises(IntegrityError):
-            Grammar('root a<1,10>\n'
+        w = Grammar('root a<1,10>\n'
                     'a   "a" b\n'
                     'b 1 "A"')
+        for _ in range(100):
+            self.assertEqual(w.generate(), "aA")
         w = Grammar('root a <1,10>\n'
                     'a 9 "A"\n'
                     ' 1 "B"')
@@ -491,7 +492,23 @@ class GrammarTests(TestCase):
         self.assertEqual(set(w), {"a"})
         self.assertEqual(len(w), 1)
 
-    def balanced_choice(self, grammar, values, iters=1000):
+    def test_tracked_repeatsample(self):
+        g = Grammar("root b<*> @b\n"
+                    "a 1 /[0-9]/\n"
+                    "b a 'A'")
+        for _ in range(100):
+            w = g.generate()
+            self.assertEqual(len(w), 4)
+            self.assertEqual(w[:2], w[2:])
+        g = Grammar("root a<*> @a\n"
+                    "a 1 b\n"
+                    "b /[0-9]/")
+        for _ in range(100):
+            w = g.generate()
+            self.assertEqual(len(w), 2)
+            self.assertEqual(w[0], w[1])
+
+    def balanced_choice(self, grammar, values, iters=2000):
         r = {v: 0 for v in values}
         g = Grammar(grammar)
         for _ in range(iters):
@@ -567,6 +584,14 @@ class GrammarImportTests(TestCase):
         w = Grammar('a import("a.gmr")\n'
                     'root a.a')
         self.assertEqual(w.generate(), "A")
+
+    def test_imported_choice(self):
+        with open('a.gmr', 'w') as g:
+            g.write('a 1 "A"')
+        w = Grammar("b import('a.gmr')\n"
+                    "root a<*>\n"
+                    "a b.a")
+        self.assertEqual(w.generate(), 'A')
 
 
 suite = unittest.TestSuite(unittest.defaultTestLoader.loadTestsFromTestCase(t) for t in (GrammarTests,
