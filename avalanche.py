@@ -109,7 +109,7 @@ class _ParseState(object):
 
     def get_prefixed(self, symprefix, sym):
         if symprefix:
-            symprefix = symprefix[:-1]
+            symprefix = symprefix[:-1] # strip trailing .
             try:
                 newprefix = self.imports[symprefix][0]
                 self.imports_used.add(symprefix)
@@ -371,15 +371,12 @@ class Grammar(object):
         self.tracked = {get_prefixed(t) for t in self.tracked}
 
         # normalize symbol tree (remove implicit concats, etc.)
-        while True:
-            for name in list(self.symtab):
-                try:
-                    sym = self.symtab[name]
-                except KeyError:
-                    continue # can happen if symbol is optimized out
-                sym.normalize(self)
-            else:
-                break
+        for name in list(self.symtab):
+            try:
+                sym = self.symtab[name]
+            except KeyError:
+                continue # can happen if symbol is optimized out
+            sym.normalize(self)
 
     def sanity_check(self):
         log.debug("sanity checking symtab: %s", self.symtab)
