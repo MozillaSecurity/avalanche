@@ -42,40 +42,14 @@ class TestCase(unittest.TestCase):
             return self.assertRaisesRegexp(*args, **kwds)
 
 
-class GrammarTests(TestCase):
-
-    def test_str(self):
-        w = Grammar(b"root 'a'")
-        self.assertEqual(w.generate(), 'a')
-
-    def test_binfilelike(self):
-        f = io.BytesIO(b'root "a"')
-        w = Grammar(f)
-        self.assertEqual(w.generate(), 'a')
-
-    def test_filelike(self):
-        f = io.StringIO('root "a"')
-        w = Grammar(f)
-        self.assertEqual(w.generate(), 'a')
-
-    def test_binfile(self):
-        with tempfile.NamedTemporaryFile('w+b') as f:
-            f.write(b'root "a"')
-            f.seek(0)
-            w = Grammar(f)
-        self.assertEqual(w.generate(), 'a')
-
-    def test_file(self):
-        with tempfile.NamedTemporaryFile('w+') as f:
-            f.write('root "a"')
-            f.seek(0)
-            w = Grammar(f)
-        self.assertEqual(w.generate(), 'a')
+class Tests(TestCase):
+    # anything not in a proper testcase or cleaned up yet
 
     def test_broken(self):
-        w = Grammar("root 'a' 'b'\\\n"
-                    "     'c'\n")
-        self.assertEqual(w.generate(), "abc")
+        "test broken lines"
+        gmr = Grammar("root 'a' 'b'\\\n"
+                      "     'c'")
+        self.assertEqual(gmr.generate(), "abc")
 
     def test_wchoice(self):
         iters = 10000
@@ -138,7 +112,6 @@ class GrammarTests(TestCase):
                     raise Exception("unexpected line: %s" % line)
 
     def test_plus(self):
-        iters = 1000
         self.balanced_choice("var     1 'a'\n"
                              "        1 'b'\n"
                              "        1 'c'\n"
@@ -508,6 +481,12 @@ class GrammarTests(TestCase):
             self.assertEqual(len(w), 2)
             self.assertEqual(w[0], w[1])
 
+    def test_altstart(self):
+        "test that starting symbols other than 'root' work"
+        gmr = Grammar("root a 'B'\n"
+                      "a 'A'")
+        self.assertEqual(gmr.generate(start='a'), 'A')
+
     def balanced_choice(self, grammar, values, iters=2000):
         r = {v: 0 for v in values}
         g = Grammar(grammar)
@@ -516,6 +495,42 @@ class GrammarTests(TestCase):
         log.debug("balanced_repeat(%s) -> %s", values, r)
         for v in r.values():
             self.assertAlmostEqual(float(v)/iters, 1.0/len(values), delta=0.04)
+
+
+class Inputs(TestCase):
+
+    def test_str(self):
+        "test grammar with byte string as input"
+        gmr = Grammar(b"root 'a'")
+        self.assertEqual(gmr.generate(), 'a')
+
+    def test_binfilelike(self):
+        "test grammar with binary file-like object as input"
+        infile = io.BytesIO(b'root "a"')
+        gmr = Grammar(infile)
+        self.assertEqual(gmr.generate(), 'a')
+
+    def test_filelike(self):
+        "test grammar with utf-8 file-like object as input"
+        infile = io.StringIO('root "a"')
+        gmr = Grammar(infile)
+        self.assertEqual(gmr.generate(), 'a')
+
+    def test_binfile(self):
+        "test grammar with binary file as input"
+        with tempfile.NamedTemporaryFile('w+b') as gmrfile:
+            gmrfile.write(b'root "a"')
+            gmrfile.seek(0)
+            gmr = Grammar(gmrfile)
+        self.assertEqual(gmr.generate(), 'a')
+
+    def test_file(self):
+        "test grammar with utf-8 file as input"
+        with tempfile.NamedTemporaryFile('w+') as gmrfile:
+            gmrfile.write('root "a"')
+            gmrfile.seek(0)
+            gmr = Grammar(gmrfile)
+        self.assertEqual(gmr.generate(), 'a')
 
 
 class Backrefs(TestCase):
@@ -560,7 +575,7 @@ class Backrefs(TestCase):
         self.assertLess(n_same, 100)
 
 
-class GrammarImportTests(TestCase):
+class Imports(TestCase):
 
     def setUp(self):
         self.tmpd = tempfile.mkdtemp(prefix='gmrtesttmp')
@@ -636,7 +651,8 @@ class GrammarImportTests(TestCase):
         self.assertEqual(w.generate(), 'A')
 
 
-suite = unittest.TestSuite(unittest.defaultTestLoader.loadTestsFromTestCase(t) for t in (GrammarTests,
+suite = unittest.TestSuite(unittest.defaultTestLoader.loadTestsFromTestCase(t) for t in (Tests,
+                                                                                         Inputs,
                                                                                          Backrefs,
-                                                                                         GrammarImportTests))
+                                                                                         Imports))
 
