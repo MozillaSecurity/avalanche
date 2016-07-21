@@ -518,6 +518,48 @@ class GrammarTests(TestCase):
             self.assertAlmostEqual(float(v)/iters, 1.0/len(values), delta=0.04)
 
 
+class Backrefs(TestCase):
+
+    def test_0(self):
+        "test that basic backreferences work, generate a single digit and reference to it, make sure they match"
+        gmr = Grammar("root  (/[0-9]/) @1")
+        for _ in range(100):
+            x1, x2 = gmr.generate()
+            self.assertEqual(x1, x2)
+
+    def test_1(self):
+        "negative tests for backreferences, check use without declaration and use before declaration"
+        with self.assertRaises(IntegrityError):
+            Grammar("root  'a' @1")
+        with self.assertRaises(IntegrityError):
+            Grammar("root  'a' @1 ('b')")
+
+    def test_2(self):
+        "test that backreferences work in function args"
+        gmr = Grammar("root  (/[0-9]/) rndint((/[0-9]/), @2) @2 @1")
+        n_same = 0
+        for _ in range(100):
+            x1, y1, y2, x2 = gmr.generate()
+            self.assertEqual(x1, x2)
+            self.assertEqual(y1, y2)
+            if x1 == y1:
+                n_same += 1
+        self.assertLess(n_same, 100)
+
+    def test_3(self):
+        "test that backreferences on different lines don't get messed up"
+        gmr = Grammar("root  (/[0-9]/) y @1\n"
+                      "y     (/[0-9]/) @1")
+        n_same = 0
+        for _ in range(100):
+            x1, y1, y2, x2 = gmr.generate()
+            self.assertEqual(x1, x2)
+            self.assertEqual(y1, y2)
+            if x1 == y1:
+                n_same += 1
+        self.assertLess(n_same, 100)
+
+
 class GrammarImportTests(TestCase):
 
     def setUp(self):
@@ -595,5 +637,6 @@ class GrammarImportTests(TestCase):
 
 
 suite = unittest.TestSuite(unittest.defaultTestLoader.loadTestsFromTestCase(t) for t in (GrammarTests,
+                                                                                         Backrefs,
                                                                                          GrammarImportTests))
 
