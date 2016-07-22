@@ -227,7 +227,7 @@ class Grammar(object):
         if "rndint" not in self.funcs:
             self.funcs["rndint"] = lambda a, b: str(random.randint(int(a), int(b)))
         if "rndpow2" not in self.funcs:
-            self.funcs["rndpow2"] = lambda a, b: str(2 ** random.randint(0, int(a)) + random.randint(-int(b), int(b)))
+            self.funcs["rndpow2"] = lambda a, b: str(max(2 ** random.randint(0, int(a)) + random.randint(-int(b), int(b)), 0))
         if "rndflt" not in self.funcs:
             self.funcs["rndflt"] = lambda a, b: str(random.uniform(float(a), float(b)))
         if "import" in self.funcs:
