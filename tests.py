@@ -487,6 +487,19 @@ class Tests(TestCase):
                       "a 'A'")
         self.assertEqual(gmr.generate(start='a'), 'A')
 
+    def test_incomplete_sym_defn(self):
+        "test incomplete symbol definitions raise ParseError"
+        with self.assertRaises(ParseError):
+            Grammar("root a\n"
+                    "a")
+        with self.assertRaises(ParseError):
+            Grammar("root a\n"
+                    "a  ")
+        # just being mean here
+        with self.assertRaises(ParseError):
+            Grammar("root a\n"
+                    "a\r\t")
+
     def balanced_choice(self, grammar, values, iters=2000):
         r = {v: 0 for v in values}
         g = Grammar(grammar)
