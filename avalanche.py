@@ -211,11 +211,11 @@ class Grammar(object):
                                 |\s*(?P<comment>\#).*
                                 |(?P<nothing>\s*)
                                 |(?P<name>[\w:-]+)
-                                 (?P<type>((?P<weight>\s+\d+\s+)
-                                           |\s*\+\s*
-                                           |\s+import\(\s*)
+                                 (?P<type>(?P<weight>\s+\d+\s+)
+                                  |\s*\+\s*
+                                  |\s+import\(\s*
                                   |\s+)
-                                 (?P<def>.+)
+                                 (?P<def>[^\s].*)
                                 |\s+(\+|(?P<contweight>\d+))\s*(?P<cont>.+))$
                            """, re.VERBOSE)
 
