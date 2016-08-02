@@ -1248,3 +1248,7 @@ def main():
     args.function = {func: eval(defn) for (func, defn) in args.function}
     args.output.write(Grammar(args.input, limit=args.limit, **args.function).generate())
 
+
+if __name__ == "__main__":
+    main()
+
