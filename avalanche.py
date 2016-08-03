@@ -701,7 +701,7 @@ class ChoiceSymbol(_Symbol, _WeightedChoice):
 
        A choice consists of one or more weighted sub-symbols. At generation, only one of the sub-symbols will be
        generated at random, with each sub-symbol being generated with probability of weight/sum(weights) (the sum of
-       all weights in this choice). Weight is a non-negative integer.
+       all weights in this choice). Weight is a decimal number in the range 0.0 to 1.0 inclusive.
 
        Weight can also be ``+``, which imports another ``ChoiceSymbol`` into this definition. SubSymbol must be another
        ``ChoiceSymbol`` (or a concatenation of one or more ``TextSymbol``s and exactly one ``ChoiceSymbol``).
