@@ -1247,9 +1247,17 @@ class _TextChoiceSymbol(TextSymbol):
 
 
 def main():
+
+    class _SafeFileType(argparse.FileType):
+
+        def __call__(self, string):
+            if 'w' in self._mode and os.path.isfile(string):
+                raise argparse.ArgumentTypeError("output file exists, not overwriting: %s" % string)
+            return argparse.FileType.__call__(self, string)
+
     argp = argparse.ArgumentParser(description="Generate a testcase from a grammar")
-    argp.add_argument("input", type=argparse.FileType('r'), help="Input grammar definition")
-    argp.add_argument("output", type=argparse.FileType('w'), nargs="?", default=sys.stdout, help="Output testcase")
+    argp.add_argument("input", type=_SafeFileType('r'), help="Input grammar definition")
+    argp.add_argument("output", type=_SafeFileType('w'), nargs="?", default=sys.stdout, help="Output testcase")
     argp.add_argument("-f", "--function", action="append", nargs=2, default=[],
                       help="Function used in the grammar (eg. -f filter lambda x:x.replace('x','y')")
     argp.add_argument("-l", "--limit", type=int, default=DEFAULT_LIMIT, help="Set a generation limit (roughly)")
