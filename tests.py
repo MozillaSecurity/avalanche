@@ -315,6 +315,20 @@ class Tests(TestCase):
         self.assertGreaterEqual(float(w.generate()), 1)
         self.assertLessEqual(float(w.generate()), 10)
 
+    def test_builtin_rndpow2(self):
+        w = Grammar("root       rndpow2(2,0)")
+        for _ in range(10):
+            value = int(w.generate())
+            self.assertNotEqual(value, 0)
+            self.assertNotEqual(value, 3)
+            self.assertGreaterEqual(value, 1)
+            self.assertLessEqual(value, 4)
+        w = Grammar("root       rndpow2(2,1)")
+        for _ in range(10):
+            value = int(w.generate())
+            self.assertGreaterEqual(value, 0)
+            self.assertLessEqual(value, 5)
+
     def test_nested_choice_weight(self):
         w = Grammar("root a {1000}\n"
                     "b .9 'b'\n"
