@@ -117,7 +117,13 @@ class _ParseState(object):
                 self.imports_used.add(symprefix)
                 symprefix = newprefix
             except KeyError:
-                raise ParseError("Attempt to use symbol from unknown prefix: %s" % symprefix, self)
+                try:
+                    float("%s.%s" % (symprefix, sym))
+                except ValueError:
+                    raise ParseError("Attempt to use symbol from unknown prefix: %s" % symprefix, self)
+                # it's a float .. let it through for now
+                sym = "%s.%s" % (symprefix, sym)
+                symprefix = self.prefix
         else:
             symprefix = self.prefix
         return "%s.%s" % (symprefix, sym)
