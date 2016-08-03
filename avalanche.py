@@ -57,6 +57,8 @@ class GrammarException(Exception):
                 return "%s (%sline %d)" % (msg, "%s " % state.name if state.name else "", state.line_no)
             if isinstance(state, _GenState):
                 return "%s (generation backtrace: %s)" % (msg, state.backtrace())
+            if isinstance(state, _Symbol):
+                state = state.line_no
             return "%s (line %d)" % (msg, state) # state is line_no in this case
         if len(self.args) == 1:
             return str(self.args[0])
@@ -132,7 +134,7 @@ class _ParseState(object):
 class _WeightedChoice(object):
 
     def __init__(self, iterable=None):
-        self.total = 0
+        self.total = 0.0
         self.values = []
         self.weights = []
         if iterable is not None:
@@ -144,34 +146,38 @@ class _WeightedChoice(object):
 
     def append(self, value, weight):
         if weight != '+':
+            if not (0.0 <= weight <= 1.0):
+                raise IntegrityError("Invalid weight value for choice: %.2f (expecting [0,1])" % weight, self)
             self.total += weight
         self.values.append(value)
         self.weights.append(weight)
 
-    def choice(self):
-        target = random.randint(0, self.total - 1)
-        for weight, value in zip(self.weights, self.values):
+    def _internal_choice(self, total, used):
+        target = random.uniform(0, total[0])
+        for i, (weight, value) in enumerate(zip(self.weights, self.values)):
+            if used[i]:
+                continue
             target -= weight
-            if target < 0:
+            if target < 0.0:
+                used[i] = True
+                total[0] -= weight
                 return value
-        raise AssertionError("Too much total weight? remainder is %d from %d total" % (target, self.total))
+        raise AssertionError("Too much total weight? remainder is %.2f from %.2f total" % (target, total[0]))
+
+    def choice(self, whitelist=None):
+        if whitelist is not None:
+            assert len(whitelist) == len(self)
+            blacklist = [not x for x in whitelist]
+        else:
+            blacklist = [False] * len(self)
+        return self._internal_choice([self.total], blacklist)
 
     def sample(self, k):
-        weights, values, total = self.weights[:], self.values[:], self.total
-        result = []
-        while k and total:
-            target = random.randint(0, total - 1)
-            for i, (weight, value) in enumerate(zip(weights, values)):
-                target -= weight
-                if target < 0:
-                    result.append(value)
-                    total -= weight
-                    k -= 1
-                    del weights[i]
-                    del values[i]
-                    break
-            else:
-                raise AssertionError("Too much total weight? remainder is %d from %d total" % (target, total))
+        result, used, total = [], ([False] * len(self)), [self.total]
+        for _ in range(k):
+            if total[0] <= 0.0:
+                break
+            result.append(self._internal_choice(total, used))
         return result
 
     def __len__(self):
@@ -211,12 +217,12 @@ class Grammar(object):
                                 |\s*(?P<comment>\#).*
                                 |(?P<nothing>\s*)
                                 |(?P<name>[\w:-]+)
-                                 (?P<type>(?P<weight>\s+\d+\s+)
+                                 (?P<type>(?P<weight>\s+(\d*\.)?\d+(e-?\d+)?\s+)
                                   |\s*\+\s*
                                   |\s+import\(\s*
                                   |\s+)
                                  (?P<def>[^\s].*)
-                                |\s+(\+|(?P<contweight>\d+))\s*(?P<cont>.+))$
+                                |\s+(\+|(?P<contweight>(\d*\.)?\d+(e-?\d+)?))\s*(?P<cont>.+))$
                            """, re.VERBOSE)
 
     def __init__(self, grammar, limit=DEFAULT_LIMIT, **kwargs):
@@ -299,7 +305,7 @@ class Grammar(object):
                 sym_type = sym_type.lstrip()
                 if sym_type.startswith("+") or match.group("weight"):
                     # choice
-                    weight = int(match.group("weight")) if match.group("weight") else "+"
+                    weight = float(match.group("weight")) if match.group("weight") else "+"
                     sym = ChoiceSymbol(sym_name, pstate)
                     sym.append(_Symbol.parse(sym_def, pstate), weight)
                 elif sym_type.startswith("import("):
@@ -708,6 +714,7 @@ class ChoiceSymbol(_Symbol, _WeightedChoice):
         _WeightedChoice.__init__(self)
         self._choices_terminate = []
         if _test:
+            self.line_no = 0
             self.extend(name)
         self.normalized = False
 
@@ -739,11 +746,7 @@ class ChoiceSymbol(_Symbol, _WeightedChoice):
     def generate(self, gstate):
         try:
             if gstate.grmr.is_limit_exceeded(gstate.length) and self.can_terminate:
-                terminators = _WeightedChoice()
-                for i in range(len(self.values)):
-                    if self._choices_terminate[i]:
-                        terminators.append(self.values[i], self.weights[i])
-                gstate.symstack.extend(reversed(terminators.choice()))
+                gstate.symstack.extend(reversed(self.choice(whitelist=self._choices_terminate)))
             else:
                 gstate.symstack.extend(reversed(self.choice()))
         except AssertionError as err:

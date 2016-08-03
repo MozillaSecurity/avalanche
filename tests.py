@@ -59,21 +59,21 @@ class Tests(TestCase):
             r[w.choice()] += 1
         for v in r.values():
             self.assertAlmostEqual(float(v)/iters, 1.0/3, delta=.02)
-        w = ChoiceSymbol([(1, 1), (2, 2), (3, 1)], _test=True)
+        w = ChoiceSymbol([(1, .5), (2, 1), (3, .5)], _test=True)
         r = {1:0, 2:0, 3:0}
         for _ in range(iters):
             r[w.choice()] += 1
         self.assertAlmostEqual(float(r[1])/iters, 0.25, delta=.02)
         self.assertAlmostEqual(float(r[2])/iters, 0.5, delta=.02)
         self.assertAlmostEqual(float(r[3])/iters, 0.25, delta=.02)
-        w = ChoiceSymbol([(1, 3), (2, 1), (3, 1)], _test=True)
+        w = ChoiceSymbol([(1, .3), (2, .1), (3, .1)], _test=True)
         r = {1:0, 2:0, 3:0}
         for _ in range(iters):
             r[w.choice()] += 1
         self.assertAlmostEqual(float(r[1])/iters, 0.6, delta=.02)
         self.assertAlmostEqual(float(r[2])/iters, 0.2, delta=.02)
         self.assertAlmostEqual(float(r[3])/iters, 0.2, delta=.02)
-        w = ChoiceSymbol([(1, 1), (2, 1), (3, 4)], _test=True)
+        w = ChoiceSymbol([(1, .25), (2, .25), (3, 1)], _test=True)
         r = {1:0, 2:0, 3:0}
         for _ in range(iters):
             r[w.choice()] += 1
@@ -317,9 +317,9 @@ class Tests(TestCase):
 
     def test_nested_choice_weight(self):
         w = Grammar("root a {1000}\n"
-                    "b 9 'b'\n"
-                    "a 1 'a'\n"
-                    "  1 b")
+                    "b .9 'b'\n"
+                    "a .1 'a'\n"
+                    "  .1 b")
         o = w.generate()
         a_count = len([c for c in o if c == 'a'])
         b_count = len(o) - a_count
@@ -344,7 +344,7 @@ class Tests(TestCase):
     def test_repeat(self):
         g = Grammar('root "A"{1,10}')
         lengths = set()
-        for _ in range(1000):
+        for _ in range(2000):
             w = g.generate()
             self.assertEqual(len(set(w)), 1)
             self.assertEqual(w[0], "A")
@@ -353,7 +353,7 @@ class Tests(TestCase):
         self.assertEqual(len(lengths), 10)
         g = Grammar('root ("A" "B" ","){ 0 , 10 } "AB"')
         lengths = set()
-        for _ in range(1000):
+        for _ in range(2000):
             w = g.generate().split(",")
             self.assertEqual(len(set(w)), 1)
             self.assertEqual(w[0], "AB")
@@ -381,8 +381,8 @@ class Tests(TestCase):
         for _ in range(100):
             self.assertEqual(w.generate(), "aA")
         w = Grammar('root a <1,10>\n'
-                    'a 9 "A"\n'
-                    ' 1 "B"')
+                    'a .9 "A"\n'
+                    '  .1 "B"')
         outs = {"A": 0, "B": 0, "BA": 0, "AB": 0}
         for _ in range(1000):
             outs[w.generate()] += 1
