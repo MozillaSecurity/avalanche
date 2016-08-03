@@ -311,9 +311,12 @@ class Tests(TestCase):
         self.assertLessEqual(int(w.generate()), 10)
 
     def test_builtin_rndflt(self):
-        w = Grammar("root       rndflt(1,10)")
-        self.assertGreaterEqual(float(w.generate()), 1)
+        w = Grammar("root       rndflt(0,10)")
+        self.assertGreaterEqual(float(w.generate()), 0)
         self.assertLessEqual(float(w.generate()), 10)
+        w = Grammar("root       rndflt(0.1,1)")
+        self.assertGreaterEqual(float(w.generate()), 0.1)
+        self.assertLessEqual(float(w.generate()), 1)
 
     def test_builtin_rndpow2(self):
         w = Grammar("root       rndpow2(2,0)")
