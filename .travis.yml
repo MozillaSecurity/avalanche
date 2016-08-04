@@ -9,4 +9,6 @@ python:
 branches:
     only:
         - master
+env:
+    - DEBUG=1
 script: "python -m unittest -b tests"
