@@ -271,8 +271,10 @@ class Grammar(object):
         finally:
             if need_to_close:
                 grammar.close()
-        self.normalize(imports)
+        self.reprefix(imports)
         self.sanity_check()
+        self.normalize()
+        self.check_termination()
 
     def parse(self, grammar, imports, prefix=""):
         grammar_hash = hashlib.sha512()
@@ -352,7 +354,8 @@ class Grammar(object):
         pstate.sanity_check()
         return grammar_hash
 
-    def normalize(self, imports):
+    def reprefix(self, imports):
+
         def get_prefixed(symname):
             try:
                 prefix, name = symname.split(".", 1)
@@ -382,6 +385,7 @@ class Grammar(object):
             sym.map(get_prefixed)
         self.tracked = {get_prefixed(t) for t in self.tracked}
 
+    def normalize(self):
         # normalize symbol tree (remove implicit concats, etc.)
         for name in list(self.symtab):
             try:
@@ -418,6 +422,8 @@ class Grammar(object):
         unused_syms = list(set(self.symtab) - syms_used - syms_ignored)
         if unused_syms:
             raise IntegrityError("Unused symbol%s: %s" % ("s" if len(unused_syms) > 1 else "", unused_syms))
+
+    def check_termination(self):
         # build paths to terminal symbols
         do_over = True
         while do_over:
@@ -1092,17 +1098,22 @@ class RepeatSymbol(ConcatSymbol):
         self.min_, self.max_ = min_, max_
 
     def normalize(self, grmr):
-        if self.min_ == "*" or self.max_ == "*":
-            if len(self) == 1 and isinstance(grmr.symtab[self[0]], ConcatSymbol):
-                choice_len = len(grmr.symtab[self[self.choice_idx(grmr.symtab[self[0]], grmr)]])
-            else:
-                choice_len = len(grmr.symtab[self[self.choice_idx(self, grmr)]])
+        children = self
+        if len(self) == 1 and isinstance(grmr.symtab[self[0]], ConcatSymbol):
+            # must deref the concat to look for choice
+            if isinstance(self, RepeatSampleSymbol):
+                self.in_concat = True
+            children = grmr.symtab[self[0]]
+            log.debug('choice for %s is nested in a concat', self.name)
+        if isinstance(self, RepeatSampleSymbol) or self.min_ == "*" or self.max_ == "*":
+            choice_idx = self.choice_idx(children, grmr)
+            choice_len = len(grmr.symtab[children[choice_idx]])
+            if isinstance(self, RepeatSampleSymbol):
+                self.sample_idx = choice_idx
             if self.min_ == "*":
                 self.min_ = choice_len
             if self.max_ == "*":
                 self.max_ = choice_len
-
-    def sanity_check(self, grmr):
         if self.min_ > self.max_ or self.min_ < 0:
             raise IntegrityError("Invalid range for repeat in %s: [%d,%d]" % (self.name, self.min_, self.max_),
                                  self.line_no)
@@ -1145,19 +1156,6 @@ class RepeatSampleSymbol(RepeatSymbol):
         RepeatSymbol.__init__(self, name, min_, max_, pstate, no_prefix)
         self.in_concat = False
         self.sample_idx = None
-
-    def normalize(self, grmr):
-        children = self
-        if len(self) == 1 and isinstance(grmr.symtab[self[0]], ConcatSymbol):
-            # must deref the concat to look for choice
-            self.in_concat = True
-            children = grmr.symtab[self[0]]
-            log.debug('choice for %s is nested in a concat', self.name)
-        self.sample_idx = self.choice_idx(children, grmr)
-        if self.min_ == "*":
-            self.min_ = len(grmr.symtab[children[self.sample_idx]])
-        if self.max_ == "*":
-            self.max_ = len(grmr.symtab[children[self.sample_idx]])
 
     def generate(self, gstate):
         if gstate.grmr.is_limit_exceeded(gstate.length):

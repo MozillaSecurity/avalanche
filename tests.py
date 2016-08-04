@@ -355,6 +355,8 @@ class Tests(TestCase):
             Grammar('root a\n'
                     'a "A"\n'
                     'b "B"')
+        with self.assertRaisesRegex(IntegrityError, r'^Symbol.*used but not defined'):
+            Grammar('root + undef')
 
     def test_unused_cycle(self):
         with self.assertRaises(IntegrityError):
