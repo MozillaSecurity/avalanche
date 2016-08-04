@@ -196,10 +196,10 @@ class _WeightedChoice(object):
 class Grammar(object):
     """Generate a language conforming to a given grammar specification.
 
-       A Grammar consists of a set of symbol definitions which are used to define the structure of a language. The Grammar
-       object is created from a text input with the format described below, and then used to generate randomly constructed
-       instances of the described language. The entrypoint of the grammar is the named symbol 'root'. Comments are allowed
-       anywhere in the file, preceded by a hash character (``#``).
+       A Grammar consists of a set of symbol definitions which are used to define the structure of a language. The
+       Grammar object is created from a text input with the format described below, and then used to generate randomly
+       constructed instances of the described language. The entrypoint of the grammar is the named symbol 'root'.
+       Comments are allowed anywhere in the file, preceded by a hash character (``#``).
 
        Symbols can either be named or implicit. A named symbol consists of a symbol name at the beginning of a line,
        followed by at least one whitespace character, followed by the symbol definition.
@@ -208,8 +208,9 @@ class Grammar(object):
 
            SymbolName  Definition
 
-       Implicit symbols are defined without being assigned an explicit name. For example a regular expression can be used
-       in a concatenation definition directly, without being assigned a name. Choice symbols cannot be defined implicitly.
+       Implicit symbols are defined without being assigned an explicit name. For example a regular expression can be
+       used in a concatenation definition directly, without being assigned a name. Choice symbols cannot be defined
+       implicitly.
 
        ::
 
@@ -239,7 +240,8 @@ class Grammar(object):
         if "rndint" not in self.funcs:
             self.funcs["rndint"] = lambda a, b: str(random.randint(int(a), int(b)))
         if "rndpow2" not in self.funcs:
-            self.funcs["rndpow2"] = lambda a, b: str(max(2 ** random.randint(0, int(a)) + random.randint(-int(b), int(b)), 0))
+            self.funcs["rndpow2"] = lambda a, b: str(max(2 ** random.randint(0, int(a))
+                                                         + random.randint(-int(b), int(b)), 0))
         if "rndflt" not in self.funcs:
             self.funcs["rndflt"] = lambda a, b: str(random.uniform(float(a), float(b)))
         if "import" in self.funcs:
@@ -434,7 +436,7 @@ class Grammar(object):
                 if sym.can_terminate is None:
                     do_over = sym.update_can_terminate(self) or do_over
         terminators = {sym for sym in self.symtab if self.symtab[sym].can_terminate}
-        maybes = {sym: None for sym in (set(self.symtab) - terminators)}
+        maybes = {sym: None for sym in set(self.symtab) - terminators}
         do_over = True
         while do_over:
             do_over = False

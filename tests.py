@@ -28,7 +28,7 @@ import shutil
 import sys
 import tempfile
 import unittest
-from avalanche import ChoiceSymbol, Grammar, GenerationError, IntegrityError, ParseError
+from avalanche import Grammar, GenerationError, IntegrityError, ParseError
 
 
 class TestCase(unittest.TestCase):
@@ -421,7 +421,7 @@ class Parser(TestCase):
     def test_basic(self):
         "test basic grammar features"
         gmr = Grammar("root    ok\n"
-                    "ok      '1'")
+                      "ok      '1'")
         self.assertEqual(gmr.generate(), "1")
         gmr = Grammar("root   a\n"
                       "a      '1234' /[a-z]/ b\n"
@@ -589,7 +589,7 @@ class Repeats(TestCase):
             Grammar("root a{*,0}\n"
                     "a 1 'a'")
         gmr = Grammar("root a{*}\n"
-                    "a 1 'a'\n")
+                      "a 1 'a'\n")
         result = gmr.generate()
         self.assertEqual(len(result), 1)
         self.assertEqual(result, "a")
