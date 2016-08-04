@@ -480,7 +480,12 @@ class Grammar(object):
             if "[" not in this:
                 gstate.symstack.append(("resetbackref",))
                 gstate.backrefs.append({})
-            self.symtab[this].generate(gstate)
+            try:
+                self.symtab[this].generate(gstate)
+            except GenerationError:
+                raise
+            except Exception as err:
+                raise GenerationError("%s: %s" % (type(err).__name__, str(err)), gstate)
         try:
             return "".join(gstate.output)
         except TypeError:

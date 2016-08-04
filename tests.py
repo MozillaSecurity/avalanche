@@ -28,7 +28,7 @@ import shutil
 import sys
 import tempfile
 import unittest
-from avalanche import Grammar, ChoiceSymbol, ParseError, IntegrityError
+from avalanche import ChoiceSymbol, Grammar, GenerationError, IntegrityError, ParseError
 
 
 class TestCase(unittest.TestCase):
@@ -309,6 +309,8 @@ class Tests(TestCase):
         w = Grammar("root       rndint(1,10)")
         self.assertGreaterEqual(int(w.generate()), 1)
         self.assertLessEqual(int(w.generate()), 10)
+        with self.assertRaisesRegex(GenerationError, '^ValueError'):
+            Grammar('root rndint(2,1)').generate()
 
     def test_builtin_rndflt(self):
         w = Grammar("root       rndflt(0,10)")
@@ -331,6 +333,8 @@ class Tests(TestCase):
             value = int(w.generate())
             self.assertGreaterEqual(value, 0)
             self.assertLessEqual(value, 5)
+        with self.assertRaisesRegex(GenerationError, '^ValueError'):
+            Grammar('root rndpow2(-1,0)').generate()
 
     def test_nested_choice_weight(self):
         w = Grammar("root a {1000}\n"
