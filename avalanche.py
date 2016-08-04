@@ -726,15 +726,11 @@ class ChoiceSymbol(_Symbol, _WeightedChoice):
        ``ChoiceSymbol`` (or a concatenation of one or more ``TextSymbol``s and exactly one ``ChoiceSymbol``).
     """
 
-    def __init__(self, name, pstate=None, _test=False):
-        if not _test:
-            name = "%s.%s" % (pstate.prefix, name)
-            _Symbol.__init__(self, name, pstate)
+    def __init__(self, name, pstate=None):
+        name = "%s.%s" % (pstate.prefix, name)
+        _Symbol.__init__(self, name, pstate)
         _WeightedChoice.__init__(self)
         self._choices_terminate = []
-        if _test:
-            self.line_no = 0
-            self.extend(name)
         self.normalized = False
 
     def append(self, value, weight):
