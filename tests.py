@@ -373,6 +373,14 @@ class Imports(TestCase):
                       "a b.a")
         self.assertEqual(gmr.generate(), 'A')
 
+    def test_import_in_error(self):
+        "test that imported filename shows up in the exception message"
+        with open('a.gmr', 'w') as fd:
+            fd.write('a 20 b')
+        with self.assertRaisesRegex(IntegrityError, r'^Invalid weight value for choice.* \(a\.gmr line 1\)'):
+            Grammar('a import("a.gmr")\n'
+                    'root a.a')
+
 
 class Inputs(TestCase):
 

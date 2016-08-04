@@ -137,62 +137,6 @@ class _ParseState(object):
             raise IntegrityError("Unused import%s: %s" % ("s" if len(unused) > 1 else "", list(unused)), self)
 
 
-class _WeightedChoice(object):
-
-    def __init__(self, iterable=None):
-        self.total = 0.0
-        self.values = []
-        self.weights = []
-        if iterable is not None:
-            self.extend(iterable)
-
-    def extend(self, iterable):
-        for value in iterable:
-            self.append(*value)
-
-    def append(self, value, weight):
-        if weight != '+':
-            if not (0.0 <= weight <= 1.0):
-                raise IntegrityError("Invalid weight value for choice: %.2f (expecting [0,1])" % weight, self)
-            self.total += weight
-        self.values.append(value)
-        self.weights.append(weight)
-
-    def _internal_choice(self, total, used):
-        target = random.uniform(0, total[0])
-        for i, (weight, value) in enumerate(zip(self.weights, self.values)):
-            if used[i]:
-                continue
-            target -= weight
-            if target < 0.0:
-                used[i] = True
-                total[0] -= weight
-                return value
-        raise AssertionError("Too much total weight? remainder is %.2f from %.2f total" % (target, total[0]))
-
-    def choice(self, whitelist=None):
-        if whitelist is not None:
-            assert len(whitelist) == len(self)
-            blacklist = [not x for x in whitelist]
-        else:
-            blacklist = [False] * len(self)
-        return self._internal_choice([self.total], blacklist)
-
-    def sample(self, k):
-        result, used, total = [], ([False] * len(self)), [self.total]
-        for _ in range(k):
-            if total[0] <= 0.0:
-                break
-            result.append(self._internal_choice(total, used))
-        return result
-
-    def __len__(self):
-        return len(self.values)
-
-    def __repr__(self):
-        return "WeightedChoice(%s)" % list(zip(self.values, self.weights))
-
-
 class Grammar(object):
     """Generate a language conforming to a given grammar specification.
 
@@ -319,7 +263,7 @@ class Grammar(object):
                     # choice
                     weight = float(match.group("weight")) if match.group("weight") else "+"
                     sym = ChoiceSymbol(sym_name, pstate)
-                    sym.append(_Symbol.parse(sym_def, pstate), weight)
+                    sym.append(_Symbol.parse(sym_def, pstate), weight, pstate)
                 elif sym_type.startswith("import("):
                     # import
                     if "%s.%s" % (grammar_hash, sym_name) in self.symtab:
@@ -353,7 +297,7 @@ class Grammar(object):
                 if sym is None or not isinstance(sym, ChoiceSymbol):
                     raise ParseError("Unexpected continuation of choice symbol", pstate)
                 weight = float(match.group("contweight")) if match.group("contweight") else "+"
-                sym.append(_Symbol.parse(match.group("cont"), pstate), weight)
+                sym.append(_Symbol.parse(match.group("cont"), pstate), weight, pstate)
 
         pstate.sanity_check()
         return grammar_hash
@@ -711,7 +655,7 @@ class BinSymbol(_Symbol):
         return sym, defn
 
 
-class ChoiceSymbol(_Symbol, _WeightedChoice):
+class ChoiceSymbol(_Symbol):
     """Choose between several options
 
        ::
@@ -731,13 +675,48 @@ class ChoiceSymbol(_Symbol, _WeightedChoice):
     def __init__(self, name, pstate=None):
         name = "%s.%s" % (pstate.prefix, name)
         _Symbol.__init__(self, name, pstate)
-        _WeightedChoice.__init__(self)
+        self.total = 0.0
+        self.values = []
+        self.weights = []
         self._choices_terminate = []
         self.normalized = False
 
-    def append(self, value, weight):
-        _WeightedChoice.append(self, value, weight)
+    def append(self, value, weight, pstate):
+        if weight != '+':
+            if not 0.0 <= weight <= 1.0:
+                raise IntegrityError("Invalid weight value for choice: %.2f (expecting [0,1])" % weight, pstate)
+            self.total += weight
+        self.values.append(value)
+        self.weights.append(weight)
         self._choices_terminate.append(None)
+
+    def _internal_choice(self, total, used):
+        target = random.uniform(0, total[0])
+        for i, (weight, value) in enumerate(zip(self.weights, self.values)):
+            if used[i]:
+                continue
+            target -= weight
+            if target < 0.0:
+                used[i] = True
+                total[0] -= weight
+                return value
+        raise AssertionError("Too much total weight? remainder is %.2f from %.2f total" % (target, total[0]))
+
+    def choice(self, whitelist=None):
+        if whitelist is not None:
+            assert len(whitelist) == len(self)
+            blacklist = [not x for x in whitelist]
+        else:
+            blacklist = [False] * len(self)
+        return self._internal_choice([self.total], blacklist)
+
+    def sample(self, k):
+        result, used, total = [], ([False] * len(self)), [self.total]
+        for _ in range(k):
+            if total[0] <= 0.0:
+                break
+            result.append(self._internal_choice(total, used))
+        return result
 
     def normalize(self, grmr):
         if self.normalized:
@@ -787,6 +766,12 @@ class ChoiceSymbol(_Symbol, _WeightedChoice):
             self.can_terminate = True
             return True
         return False
+
+    def __len__(self):
+        return len(self.values)
+
+    def __repr__(self):
+        return "ChoiceSymbol(%s)" % list(zip(self.values, self.weights))
 
 
 class ConcatSymbol(_Symbol, list):
