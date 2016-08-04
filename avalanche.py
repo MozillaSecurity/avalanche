@@ -256,6 +256,8 @@ class Grammar(object):
                 except (AttributeError, IOError):
                     # can't reopen, no choice but to read the whole input
                     grammar = io.StringIO(grammar.read().decode("utf-8"))
+            else:
+                grammar.seek(0)
         elif isinstance(grammar, bytes):
             grammar = io.StringIO(grammar.decode("utf-8"))
         else:
@@ -754,7 +756,7 @@ class ChoiceSymbol(_Symbol, _WeightedChoice):
                 if any(weight == '+' for weight in choice.weights):
                     if choice.normalized:
                         # recursive definition
-                        raise IntegrityError("Can't resolve weight for '+' in %s, expansion of %s causes unbounded "
+                        raise IntegrityError("Can't resolve weight for '+' in %s, expansion of '%s' causes unbounded "
                                              "recursion" % (self.name, choice.name), self.line_no + i)
                     choice.normalize(grmr) # resolve the child '+' first
                 self.weights[i] = choice.total

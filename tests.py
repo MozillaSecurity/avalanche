@@ -118,7 +118,7 @@ class Tests(TestCase):
                              "root    + var\n"
                              "        1 'd'",
                              ["a", "b", "c", "d"])
-        with self.assertRaises(IntegrityError):
+        with self.assertRaisesRegex(IntegrityError, r'^Expecting exactly one ChoiceSymbol'):
             Grammar("root + 'a'")
         self.balanced_choice("var     1 'a'\n"
                              "        1 'b'\n"
@@ -126,7 +126,7 @@ class Tests(TestCase):
                              "root    + 'A' var\n"
                              "        1 'd'",
                              ['Aa', 'Ab', 'Ac', 'd'])
-        with self.assertRaises(IntegrityError):
+        with self.assertRaisesRegex(IntegrityError, r"^Can't resolve weight for '\+'"):
             Grammar("root + a\n"
                     "a + root\n"
                     "  1 'a'")
@@ -183,9 +183,9 @@ class Tests(TestCase):
 
     def test_quo5(self):
         # unbalanced parens, end paren is escaped .. should raise
-        with self.assertRaises(ParseError):
+        with self.assertRaisesRegex(ParseError, r'^Unterminated string literal'):
             Grammar(r"root    '\\\\\\\'")
-        with self.assertRaises(ParseError):
+        with self.assertRaisesRegex(ParseError, r'^Unterminated string literal'):
             Grammar(r'root    "\\\\\\\"')
 
     def test_quo6(self):
@@ -309,7 +309,7 @@ class Tests(TestCase):
         w = Grammar("root       rndint(1,10)")
         self.assertGreaterEqual(int(w.generate()), 1)
         self.assertLessEqual(int(w.generate()), 10)
-        with self.assertRaisesRegex(GenerationError, '^ValueError'):
+        with self.assertRaisesRegex(GenerationError, r'^ValueError'):
             Grammar('root rndint(2,1)').generate()
 
     def test_builtin_rndflt(self):
@@ -333,7 +333,7 @@ class Tests(TestCase):
             value = int(w.generate())
             self.assertGreaterEqual(value, 0)
             self.assertLessEqual(value, 5)
-        with self.assertRaisesRegex(GenerationError, '^ValueError'):
+        with self.assertRaisesRegex(GenerationError, r'^ValueError'):
             Grammar('root rndpow2(-1,0)').generate()
 
     def test_nested_choice_weight(self):
@@ -347,7 +347,7 @@ class Tests(TestCase):
         self.assertAlmostEqual(a_count, b_count, delta=len(o) * 0.2)
 
     def test_recursive_defn(self):
-        with self.assertRaises(IntegrityError):
+        with self.assertRaisesRegex(IntegrityError, r'^Symbol has no paths to termination'):
             Grammar("root root")
 
     def test_unused_sym(self):
@@ -359,7 +359,7 @@ class Tests(TestCase):
             Grammar('root + undef')
 
     def test_unused_cycle(self):
-        with self.assertRaises(IntegrityError):
+        with self.assertRaisesRegex(IntegrityError, r'^Unused symbols:'):
             Grammar('root "A"\n'
                     'a b\n'
                     'b a')
@@ -385,9 +385,9 @@ class Tests(TestCase):
         self.assertEqual(len(lengths), 11)
 
     def test_repeat_sample(self):
-        with self.assertRaises(IntegrityError):
+        with self.assertRaisesRegex(IntegrityError, r'^Expecting exactly one ChoiceSymbol'):
             Grammar('root "A" <1,10>')
-        with self.assertRaises(IntegrityError):
+        with self.assertRaisesRegex(IntegrityError, r'^Expecting exactly one ChoiceSymbol'):
             Grammar('root (a a) <1,10>\n'
                     'a 1 "A"')
         w = Grammar('root a<1,10>\n'
@@ -414,7 +414,7 @@ class Tests(TestCase):
         self.assertGreater(outs["A"], outs["B"])
 
     def test_unicode_in_hex(self):
-        with self.assertRaises(ParseError):
+        with self.assertRaisesRegex(ParseError, r'^Invalid hex string'):
             Grammar("root x'000ü'")
 
     def test_unicode(self):
@@ -446,7 +446,7 @@ class Tests(TestCase):
         self.assertEqual(len(lengths), 2)
 
     def test_regex(self):
-        with self.assertRaises(ParseError):
+        with self.assertRaisesRegex(ParseError, r'^Empty range in regex'):
             Grammar('root /[+-*]/')
 
     def test_plus_text(self):
@@ -475,11 +475,11 @@ class Tests(TestCase):
             r[g.generate()] += 1
         self.assertGreater(r["a"] + r["b"], r["ab"] + r["ba"])
         self.assertGreater(r[""], r["a"] + r["b"])
-        with self.assertRaises(IntegrityError):
+        with self.assertRaisesRegex(IntegrityError, r'^Expecting exactly one ChoiceSymbol'):
             Grammar("root 'a'{*}")
-        with self.assertRaises(IntegrityError):
+        with self.assertRaisesRegex(IntegrityError, r'^Expecting exactly one ChoiceSymbol'):
             Grammar("root 'a'<*>")
-        with self.assertRaises(IntegrityError):
+        with self.assertRaisesRegex(IntegrityError, r'^Invalid range for repeat'):
             Grammar("root a{*,0}\n"
                     "a 1 'a'")
         g = Grammar("root a{*}\n"
@@ -512,14 +512,14 @@ class Tests(TestCase):
 
     def test_incomplete_sym_defn(self):
         "test incomplete symbol definitions raise ParseError"
-        with self.assertRaises(ParseError):
+        with self.assertRaisesRegex(ParseError, r'^Failed to parse definition.*\(line 2\)'):
             Grammar("root a\n"
                     "a")
-        with self.assertRaises(ParseError):
+        with self.assertRaisesRegex(ParseError, r'^Failed to parse definition.*\(line 2\)'):
             Grammar("root a\n"
                     "a  ")
         # just being mean here
-        with self.assertRaises(ParseError):
+        with self.assertRaisesRegex(ParseError, r'^Failed to parse definition.*\(line 2\)'):
             Grammar("root a\n"
                     "a\r\t")
 
@@ -580,9 +580,9 @@ class Backrefs(TestCase):
 
     def test_1(self):
         "negative tests for backreferences, check use without declaration and use before declaration"
-        with self.assertRaises(IntegrityError):
+        with self.assertRaisesRegex(IntegrityError, r'^Invalid backreference'):
             Grammar("root  'a' @1")
-        with self.assertRaises(IntegrityError):
+        with self.assertRaisesRegex(IntegrityError, r'^Invalid backreference'):
             Grammar("root  'a' @1 ('b')")
 
     def test_2(self):
@@ -623,7 +623,7 @@ class Imports(TestCase):
         shutil.rmtree(self.tmpd)
 
     def test_import_reserved(self):
-        with self.assertRaises(ParseError):
+        with self.assertRaisesRegex(ParseError, r"^'import' is a reserved name"):
             Grammar('import blah "blah.gmr"')
 
     def test_unused_import(self):
@@ -637,7 +637,7 @@ class Imports(TestCase):
             Grammar("root a.b")
 
     def test_notfound_import(self):
-        with self.assertRaises(ParseError):
+        with self.assertRaisesRegex(ParseError, r'^Error parsing string'):
             Grammar("a import()")
         with self.assertRaisesRegex(IntegrityError, r'^Could not find imported grammar'):
             Grammar("a import('')")
@@ -666,7 +666,7 @@ class Imports(TestCase):
             g.write('b import("b.gmr")\n'
                     'root b.a\n'
                     'a b.a')
-        with self.assertRaises(IntegrityError):
+        with self.assertRaisesRegex(IntegrityError, r'^Symbol has no paths to termination'):
             with open('b.gmr') as b:
                 Grammar(b)
 
