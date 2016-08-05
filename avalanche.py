@@ -240,66 +240,71 @@ class Grammar(object):
         grammar.seek(0)
         pstate = _ParseState(grammar_hash, self, grammar_fn)
 
-        sym = None
-        ljoin = ""
-        for line in grammar:
-            pstate.line_no += 1
-            pstate.n_implicit = -1
-            log.debug("parsing line # %d: %s", pstate.line_no, line.rstrip())
-            match = Grammar._RE_LINE.match("%s%s" % (ljoin, line))
-            if match is None:
-                raise ParseError("Failed to parse definition at: %s%s" % (ljoin, line.rstrip()), pstate)
-            if match.group("broken") is not None:
-                ljoin = match.group("broken")
-                continue
-            pstate.capture_groups = []
+        try:
+            sym = None
             ljoin = ""
-            if match.group("comment") or match.group("nothing") is not None:
-                continue
-            if match.group("name"):
-                sym_name, sym_type, sym_def = match.group("name", "type", "def")
-                sym_type = sym_type.lstrip()
-                if sym_type.startswith("+") or match.group("weight"):
-                    # choice
-                    weight = float(match.group("weight")) if match.group("weight") else "+"
-                    sym = ChoiceSymbol(sym_name, pstate)
-                    sym.append(_Symbol.parse(sym_def, pstate), weight, pstate)
-                elif sym_type.startswith("import("):
-                    # import
-                    if "%s.%s" % (grammar_hash, sym_name) in self.symtab:
-                        raise ParseError("Redefinition of symbol %s previously declared on line %d"
-                                         % (sym_name, self.symtab["%s.%s" % (grammar_hash, sym_name)].line_no), pstate)
-                    sym, defn = TextSymbol.parse(sym_def, pstate, no_add=True)
-                    defn = defn.strip()
-                    if not defn.startswith(")"):
-                        raise ParseError("Expected ')' parsing import at: %s" % defn, pstate)
-                    defn = defn[1:].lstrip()
-                    if defn.startswith("#") or defn:
-                        raise ParseError("Unexpected input following import: %s" % defn, pstate)
-                    # resolve sym.value from current grammar path or "."
-                    import_paths = [sym.value]
-                    if grammar_fn is not None:
-                        import_paths.insert(0, os.path.join(os.path.dirname(grammar_fn), sym.value))
-                    for import_fn in import_paths:
-                        try:
-                            with open(import_fn) as import_fd:
-                                pstate.add_import(sym_name, self.parse(import_fd, imports, prefix=sym_name))
-                            break
-                        except IOError:
-                            pass
+            for line in grammar:
+                pstate.line_no += 1
+                pstate.n_implicit = -1
+                log.debug("parsing line # %d: %s", pstate.line_no, line.rstrip())
+                match = Grammar._RE_LINE.match("%s%s" % (ljoin, line))
+                if match is None:
+                    raise ParseError("Failed to parse definition at: %s%s" % (ljoin, line.rstrip()), pstate)
+                if match.group("broken") is not None:
+                    ljoin = match.group("broken")
+                    continue
+                pstate.capture_groups = []
+                ljoin = ""
+                if match.group("comment") or match.group("nothing") is not None:
+                    continue
+                if match.group("name"):
+                    sym_name, sym_type, sym_def = match.group("name", "type", "def")
+                    sym_type = sym_type.lstrip()
+                    if sym_type.startswith("+") or match.group("weight"):
+                        # choice
+                        weight = float(match.group("weight")) if match.group("weight") else "+"
+                        sym = ChoiceSymbol(sym_name, pstate)
+                        sym.append(_Symbol.parse(sym_def, pstate), weight, pstate)
+                    elif sym_type.startswith("import("):
+                        # import
+                        if "%s.%s" % (grammar_hash, sym_name) in self.symtab:
+                            raise ParseError("Redefinition of symbol %s previously declared on line %d"
+                                             % (sym_name, self.symtab["%s.%s" % (grammar_hash, sym_name)].line_no), pstate)
+                        sym, defn = TextSymbol.parse(sym_def, pstate, no_add=True)
+                        defn = defn.strip()
+                        if not defn.startswith(")"):
+                            raise ParseError("Expected ')' parsing import at: %s" % defn, pstate)
+                        defn = defn[1:].lstrip()
+                        if defn.startswith("#") or defn:
+                            raise ParseError("Unexpected input following import: %s" % defn, pstate)
+                        # resolve sym.value from current grammar path or "."
+                        import_paths = [sym.value]
+                        if grammar_fn is not None:
+                            import_paths.insert(0, os.path.join(os.path.dirname(grammar_fn), sym.value))
+                        for import_fn in import_paths:
+                            try:
+                                with open(import_fn) as import_fd:
+                                    pstate.add_import(sym_name, self.parse(import_fd, imports, prefix=sym_name))
+                                break
+                            except IOError:
+                                pass
+                        else:
+                            raise IntegrityError("Could not find imported grammar: %s" % sym.value, pstate)
                     else:
-                        raise IntegrityError("Could not find imported grammar: %s" % sym.value, pstate)
+                        # sym def
+                        sym = ConcatSymbol.parse(sym_name, sym_def, pstate)
                 else:
-                    # sym def
-                    sym = ConcatSymbol.parse(sym_name, sym_def, pstate)
-            else:
-                # continuation of choice
-                if sym is None or not isinstance(sym, ChoiceSymbol):
-                    raise ParseError("Unexpected continuation of choice symbol", pstate)
-                weight = float(match.group("contweight")) if match.group("contweight") else "+"
-                sym.append(_Symbol.parse(match.group("cont"), pstate), weight, pstate)
+                    # continuation of choice
+                    if sym is None or not isinstance(sym, ChoiceSymbol):
+                        raise ParseError("Unexpected continuation of choice symbol", pstate)
+                    weight = float(match.group("contweight")) if match.group("contweight") else "+"
+                    sym.append(_Symbol.parse(match.group("cont"), pstate), weight, pstate)
 
-        pstate.sanity_check()
+            pstate.sanity_check()
+        except (IntegrityError, ParseError):
+            raise
+        except Exception as err:
+            raise ParseError("%s: %s" % (type(err).__name__, str(err)), pstate)
         return grammar_hash
 
     def reprefix(self, imports):
@@ -1072,11 +1077,11 @@ class RegexSymbol(ConcatSymbol):
                 return result, defn[match.end(0):]
             elif match.group("dot"):
                 try:
-                    pstate.grmr.symtab["[regex alpha]"]
+                    pstate.grmr.symtab["%s.[regex alpha]" % pstate.prefix]
                 except KeyError:
-                    sym = _TextChoiceSymbol("[regex alpha]", RegexSymbol._REGEX_ALPHABET, pstate, no_prefix=True)
+                    sym = _TextChoiceSymbol("[regex alpha]", RegexSymbol._REGEX_ALPHABET, pstate)
                     sym.line_no = 0
-                result.append("[regex alpha]")
+                result.append(sym.name)
                 defn = defn[match.end(0):]
             elif match.group("esc"):
                 result.new_text(TextSymbol.ESCAPES.get(match.group(0)[1], match.group(0)[1]), n_implicit, pstate)

@@ -508,6 +508,9 @@ class Regexes(TestCase):
         with self.assertRaisesRegex(ParseError, r'^Empty range in regex'):
             Grammar('root /[+-*]/')
 
+    def test_2(self):
+        "test that '.' works in a regex"
+        Grammar('root /./').generate()
 
 class Repeats(TestCase):
 
