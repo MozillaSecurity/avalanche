@@ -208,17 +208,20 @@ class Choices(TestCase):
         g = Grammar("root     Ref '\\n' test\n"
                     "test   + @Ref ':' ChSym\n"
                     "       1 @Ref ':3'\n"
+                    "       1 @Ref ':4'\n"
                     "ChSym  1 '1'\n"
                     "       1 '2'\n"
                     "Ref      'ref' /[0-2]{1}/")
-        r = {"1": 0, "2": 0, "3":0}
-        for _ in range(1000):
+        r = {"1": 0, "2": 0, "3":0, "4":0}
+        count = 10000
+        for _ in range(count):
             v = g.generate()
-            self.assertRegex(v, r"\nref[0-2]:[0-3]$")
+            self.assertRegex(v, r"\nref[0-2]:[0-4]$")
             r[v[-1]] += 1
-        self.assertAlmostEqual(r["1"], 333, delta=40)
-        self.assertAlmostEqual(r["2"], 333, delta=40)
-        self.assertAlmostEqual(r["3"], 333, delta=40)
+        self.assertAlmostEqual(float(r["1"])/count, 0.25, delta=0.1)
+        self.assertAlmostEqual(float(r["1"])/count, 0.25, delta=0.1)
+        self.assertAlmostEqual(float(r["1"])/count, 0.25, delta=0.1)
+        self.assertAlmostEqual(float(r["1"])/count, 0.25, delta=0.1)
 
     def test_nested_choice_weight(self):
         "test that weights in a nested choice are ignored. has gone wrong before."
@@ -475,12 +478,13 @@ class Parser(TestCase):
                       "c      'C'\n"
                       "d      'D'")
         result = {"C": 0, "D": 0}
-        for _ in range(1000):
+        count = 10000
+        for _ in range(count):
             value = gmr.generate()
             self.assertRegex(value, r"^1234[a-z][CD]$")
             result[value[-1]] += 1
-        self.assertAlmostEqual(result["C"], 500, delta=50)
-        self.assertAlmostEqual(result["D"], 500, delta=50)
+        self.assertAlmostEqual(float(result["C"])/count, 0.5, delta=0.1)
+        self.assertAlmostEqual(float(result["D"])/count, 0.5, delta=0.1)
 
     def test_dashname(self):
         "test that dash is allowed in symbol names"
