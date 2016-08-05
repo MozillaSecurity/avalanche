@@ -593,7 +593,6 @@ class _Symbol(object):
     def choice_idx(self, parts, grmr):
         # given a set of symbols, return the index of the ChoiceSymbol
         # this will raise if parts does not contain exactly one ChoiceSymbol,
-        # or if any other symbol is other than TextSymbol/BinSymbol
         choice_idx = None
         for i, child in enumerate(parts):
             if isinstance(grmr.symtab[child], ChoiceSymbol):
@@ -678,8 +677,10 @@ class ChoiceSymbol(_Symbol):
         self.total = 0.0
         self.values = []
         self.weights = []
+        self.plus_info = []
         self._choices_terminate = []
         self.normalized = False
+        self.length = None
 
     def append(self, value, weight, pstate):
         if weight != '+':
@@ -688,18 +689,44 @@ class ChoiceSymbol(_Symbol):
             self.total += weight
         self.values.append(value)
         self.weights.append(weight)
+        self.plus_info.append(None)
         self._choices_terminate.append(None)
 
-    def _internal_choice(self, total, used):
+    def _internal_choice(self, total, used, plus_state=None, gstate=None):
         target = random.uniform(0, total[0])
-        for i, (weight, value) in enumerate(zip(self.weights, self.values)):
-            if used[i]:
+        for i, (weight, value, plus_info) in enumerate(zip(self.weights, self.values, self.plus_info)):
+            if plus_info and plus_state is not None:
+                children = value
+                if plus_info["in_concat"]:
+                    children = gstate.grmr.symtab[value[0]]
+                choice = gstate.grmr.symtab[children[plus_info["choice_idx"]]]
+                if isinstance(used[i], bool):
+                    plus_state[i] = {"total": [choice.total], "substate": {}}
+                    used[i] = [False] * len(choice)
+                target -= plus_state[i]["total"][0]
+                if target < 0.0:
+                    pre = children[:plus_info["choice_idx"]]
+                    post = children[plus_info["choice_idx"] + 1:]
+                    # if either the concat (if any) or the choice are tracked,
+                    #   we need to force tracking instances we generate
+                    if plus_info["in_concat"] and value[0] in gstate.grmr.tracked:
+                        pre.insert(0, ("faketrack", value[0]))
+                        post.append(("untrack", value[0]))
+                    if choice.name in gstate.grmr.tracked:
+                        pre.append(("faketrack", choice.name))
+                        post.insert(0, ("untrack", choice.name))
+                    total[0] -= plus_state[i]["total"][0]
+                    value = choice._internal_choice(plus_state[i]["total"], used[i], plus_state[i]["substate"], gstate)
+                    total[0] += plus_state[i]["total"][0]
+                    return pre + value + post
+            elif used[i]:
                 continue
-            target -= weight
-            if target < 0.0:
-                used[i] = True
-                total[0] -= weight
-                return value
+            else:
+                target -= weight
+                if target < 0.0:
+                    used[i] = True
+                    total[0] -= weight
+                    return value
         raise AssertionError("Too much total weight? remainder is %.2f from %.2f total" % (target, total[0]))
 
     def choice(self, whitelist=None):
@@ -710,23 +737,26 @@ class ChoiceSymbol(_Symbol):
             blacklist = [False] * len(self)
         return self._internal_choice([self.total], blacklist)
 
-    def sample(self, k):
-        result, used, total = [], ([False] * len(self)), [self.total]
+    def sample(self, k, gstate):
+        result, used, total, plus_state = [], ([False] * len(self)), [self.total], {}
         for _ in range(k):
             if total[0] <= 0.0:
                 break
-            result.append(self._internal_choice(total, used))
+            result.append(self._internal_choice(total, used, plus_state, gstate))
         return result
 
     def normalize(self, grmr):
         if self.normalized:
             return
         self.normalized = True
+        self.length = len(self.values)
         for i, (value, weight) in enumerate(zip(self.values, self.weights)):
             if weight == '+':
                 if len(value) == 1 and isinstance(grmr.symtab[value[0]], ConcatSymbol):
+                    in_concat = True
                     children = grmr.symtab[value[0]]
                 else:
+                    in_concat = False
                     children = value
                 choice_idx = self.choice_idx(children, grmr)
                 choice = grmr.symtab[children[choice_idx]]
@@ -735,9 +765,11 @@ class ChoiceSymbol(_Symbol):
                         # recursive definition
                         raise IntegrityError("Can't resolve weight for '+' in %s, expansion of '%s' causes unbounded "
                                              "recursion" % (self.name, choice.name), self.line_no + i)
-                    choice.normalize(grmr) # resolve the child '+' first
+                choice.normalize(grmr) # resolve the child '+' first
                 self.weights[i] = choice.total
                 self.total += self.weights[i]
+                self.plus_info[i] = {"in_concat": in_concat, "choice_idx": choice_idx}
+                self.length += choice.length - 1 # -1 for the entry in self.values
 
     def generate(self, gstate):
         try:
@@ -768,7 +800,7 @@ class ChoiceSymbol(_Symbol):
         return False
 
     def __len__(self):
-        return len(self.values)
+        return self.length
 
     def __repr__(self):
         return "ChoiceSymbol(%s)" % list(zip(self.values, self.weights))
@@ -1092,7 +1124,9 @@ class RepeatSymbol(ConcatSymbol):
             log.debug('choice for %s is nested in a concat', self.name)
         if isinstance(self, RepeatSampleSymbol) or self.min_ == "*" or self.max_ == "*":
             choice_idx = self.choice_idx(children, grmr)
+            grmr.symtab[children[choice_idx]].normalize(grmr)
             choice_len = len(grmr.symtab[children[choice_idx]])
+            log.debug("repeat %s value for '*' is %d", self.name, choice_len)
             if isinstance(self, RepeatSampleSymbol):
                 self.sample_idx = choice_idx
             if self.min_ == "*":
@@ -1163,7 +1197,7 @@ class RepeatSampleSymbol(RepeatSymbol):
             pre.append(("faketrack", choice.name))
             post.insert(0, ("untrack", choice.name))
         try:
-            for selection in reversed(gstate.grmr.symtab[children[self.sample_idx]].sample(reps)):
+            for selection in reversed(gstate.grmr.symtab[children[self.sample_idx]].sample(reps, gstate)):
                 gstate.symstack.extend(reversed(pre + selection + post))
         except AssertionError as err:
             raise GenerationError(err, gstate)

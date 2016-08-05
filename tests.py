@@ -511,7 +511,7 @@ class Regexes(TestCase):
 
 class Repeats(TestCase):
 
-    def test_repeat(self):
+    def test_0(self):
         "tests for simple repeats"
         gmr = Grammar('root "A"{1,10}')
         lengths = set()
@@ -522,6 +522,9 @@ class Repeats(TestCase):
             self.assertIn(len(result), range(1, 11))
             lengths.add(len(result))
         self.assertEqual(len(lengths), 10)
+
+    def test_1(self):
+        "test for repeat of implicit concatenation"
         gmr = Grammar('root ("A" "B" ","){ 0 , 10 } "AB"')
         lengths = set()
         for _ in range(2000):
@@ -532,7 +535,7 @@ class Repeats(TestCase):
             lengths.add(len(result))
         self.assertEqual(len(lengths), 11)
 
-    def test_repeat_sample(self):
+    def test_2(self):
         "tests for repeat sample"
         with self.assertRaisesRegex(IntegrityError, r'^Expecting exactly one ChoiceSymbol'):
             Grammar('root "A" <1,10>')
@@ -562,7 +565,7 @@ class Repeats(TestCase):
         self.assertGreater(outs["AB"], outs["BA"])
         self.assertGreater(outs["A"], outs["B"])
 
-    def test_maybe(self):
+    def test_3(self):
         "tests for '?' shortcut for {0,1}"
         gmr = Grammar('root "A"?')
         lengths = set()
@@ -579,7 +582,7 @@ class Repeats(TestCase):
             lengths.add(len(result))
         self.assertEqual(len(lengths), 2)
 
-    def test_repeat_star(self):
+    def test_4(self):
         "tests for '*' as a repeat arg"
         gmr = Grammar("root a<0,*>\n"
                       "a 1 'a'\n"
@@ -602,7 +605,20 @@ class Repeats(TestCase):
         self.assertEqual(len(result), 1)
         self.assertEqual(result, "a")
 
-    def test_tracked_repeatsample(self):
+    def test_5(self):
+        "test that '*' uses all choices from a choice included with '+'"
+        gmr = Grammar("root a<*>\n"
+                      "a 1 'a'\n"
+                      "  + b\n"
+                      "b 1 'b'\n"
+                      "  1 'c'\n"
+                      "  +  c\n"
+                      "c 1 'd'\n"
+                      "  1 'e'")
+        result = gmr.generate()
+        self.assertEqual("".join(sorted(result)), "abcde")
+
+    def test_6(self):
         "test for tracked repeatsample symbols"
         gmr = Grammar("root b<*> @b\n"
                       "a 1 /[0-9]/\n"
