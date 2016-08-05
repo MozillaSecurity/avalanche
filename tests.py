@@ -634,6 +634,14 @@ class Repeats(TestCase):
             result = gmr.generate()
             self.assertEqual(len(result), 2)
             self.assertEqual(result[0], result[1])
+        gmr = Grammar("root a<*> @b @c\n"
+                      "a + b\n"
+                      "b 1 c\n"
+                      "c /[0-9]/")
+        for _ in range(100):
+            result = gmr.generate()
+            self.assertEqual(len(result), 3)
+            self.assertEqual(len(set(result)), 1)
 
 
 class References(TestCase):
