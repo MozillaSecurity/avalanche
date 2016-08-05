@@ -219,9 +219,9 @@ class Choices(TestCase):
             self.assertRegex(v, r"\nref[0-2]:[0-4]$")
             r[v[-1]] += 1
         self.assertAlmostEqual(float(r["1"])/count, 0.25, delta=0.1)
-        self.assertAlmostEqual(float(r["1"])/count, 0.25, delta=0.1)
-        self.assertAlmostEqual(float(r["1"])/count, 0.25, delta=0.1)
-        self.assertAlmostEqual(float(r["1"])/count, 0.25, delta=0.1)
+        self.assertAlmostEqual(float(r["2"])/count, 0.25, delta=0.1)
+        self.assertAlmostEqual(float(r["3"])/count, 0.25, delta=0.1)
+        self.assertAlmostEqual(float(r["4"])/count, 0.25, delta=0.1)
 
     def test_nested_choice_weight(self):
         "test that weights in a nested choice are ignored. has gone wrong before."
