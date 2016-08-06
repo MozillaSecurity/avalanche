@@ -151,6 +151,14 @@ class Choices(TestCase):
         self.assertAlmostEqual(float(result[3])/iters, 2.0/3, delta=.04)
 
     def test_2(self):
+        "tests invalid weights"
+        with self.assertRaisesRegex(IntegrityError, r'^Invalid weight value for choice.*'):
+            Grammar("root 1 '1'\n"
+                    "     2 '2'\n")
+        with self.assertRaisesRegex(IntegrityError, r'^Symbol -1 used but not defined \(*'):
+            Grammar("root -1 '1'\n")
+
+    def test_3(self):
         "test choice includes with '+'"
         self.balanced_choice("var     1 'a'\n"
                              "        1 'b'\n"
@@ -158,8 +166,6 @@ class Choices(TestCase):
                              "root    + var\n"
                              "        1 'd'",
                              ["a", "b", "c", "d"])
-        with self.assertRaisesRegex(IntegrityError, r'^Expecting exactly one ChoiceSymbol'):
-            Grammar("root + 'a'")
         self.balanced_choice("var     1 'a'\n"
                              "        1 'b'\n"
                              "        1 'c'\n"
@@ -171,7 +177,19 @@ class Choices(TestCase):
                     "a + root\n"
                     "  1 'a'")
 
-    def test_3(self):
+    def test_4(self):
+        "test that '+' raises with no choice symbols or with multiple choice symbols"
+        with self.assertRaisesRegex(IntegrityError, r'^Expecting exactly one ChoiceSymbol'):
+            Grammar("root   + ChSym1 ChSym2\n"
+                    "       1 'a'\n"
+                    "ChSym1 1 '1'\n"
+                    "       1 '2'\n"
+                    "ChSym2 1 '3'\n"
+                    "       1 '4'\n")
+        with self.assertRaisesRegex(IntegrityError, r'^Expecting exactly one ChoiceSymbol'):
+            Grammar("root + 'a'")
+
+    def test_5(self):
         "test that '+' works with text appended to the choice symbol"
         iters = 2000
         gmr = Grammar("root a\n"
@@ -185,7 +203,27 @@ class Choices(TestCase):
         for value in result.values():
             self.assertAlmostEqual(float(value)/iters, 1.0/3, delta=0.04)
 
-    def test_4(self):
+    def test_6(self):
+        "test that '+' works with tracked references"
+        g = Grammar("root     Ref '\\n' test\n"
+                    "test   + @Ref ':' ChSym\n"
+                    "       1 @Ref ':3'\n"
+                    "       1 @Ref ':4'\n"
+                    "ChSym  1 '1'\n"
+                    "       1 '2'\n"
+                    "Ref      'ref' /[0-2]{1}/")
+        r = {"1": 0, "2": 0, "3":0, "4":0}
+        count = 10000
+        for _ in range(count):
+            v = g.generate()
+            self.assertRegex(v, r"\nref[0-2]:[0-4]$")
+            r[v[-1]] += 1
+        self.assertAlmostEqual(float(r["1"])/count, 0.25, delta=0.1)
+        self.assertAlmostEqual(float(r["2"])/count, 0.25, delta=0.1)
+        self.assertAlmostEqual(float(r["3"])/count, 0.25, delta=0.1)
+        self.assertAlmostEqual(float(r["4"])/count, 0.25, delta=0.1)
+
+    def test_7(self):
         "test that weights in a nested choice are ignored. has gone wrong before."
         gmr = Grammar("root a {1000}\n"
                       "b .9 'b'\n"
@@ -196,9 +234,21 @@ class Choices(TestCase):
         b_count = len(output) - a_count
         self.assertAlmostEqual(a_count, b_count, delta=len(output) * 0.2)
 
-    def test_5(self):
+    def test_8(self):
         with self.assertRaisesRegex(IntegrityError, r'^Invalid.*weight.*0\.0'):
             Grammar("root 0 '1'")
+
+    def test_9(self):
+        "test for limit case of Choice."
+        # this will fail intermittently if self.total is used instead of total in ChoiceSymbol.choice()
+        # XXX: why intermittently??
+        gmr = Grammar("root     ('x' t 'x'){10}\n"
+                      "t    +   u\n"
+                      "     1   'x'\n"
+                      "u    1   'x'\n"
+                      "     1   'x'\n", limit=4)
+        for _ in range(100):
+            gmr.generate()
 
 
 class Concats(TestCase):
@@ -210,6 +260,8 @@ class Concats(TestCase):
         gmr = Grammar("root 'a' ('b') 'c'")
         self.assertEqual(gmr.generate(), "abc")
         gmr = Grammar("root 'a' ('b' 'c')")
+        self.assertEqual(gmr.generate(), "abc")
+        gmr = Grammar("root ('a' 'b' 'c')")
         self.assertEqual(gmr.generate(), "abc")
 
 
@@ -442,12 +494,13 @@ class Parser(TestCase):
                       "c      'C'\n"
                       "d      'D'")
         result = {"C": 0, "D": 0}
-        for _ in range(1000):
+        count = 10000
+        for _ in range(count):
             value = gmr.generate()
             self.assertRegex(value, r"^1234[a-z][CD]$")
             result[value[-1]] += 1
-        self.assertAlmostEqual(result["C"], 500, delta=50)
-        self.assertAlmostEqual(result["D"], 500, delta=50)
+        self.assertAlmostEqual(float(result["C"])/count, 0.5, delta=0.1)
+        self.assertAlmostEqual(float(result["D"])/count, 0.5, delta=0.1)
 
     def test_dashname(self):
         "test that dash is allowed in symbol names"
@@ -492,12 +545,24 @@ class Parser(TestCase):
             Grammar('root a\n'
                     'a "A"\n'
                     'b "B"')
-        with self.assertRaisesRegex(IntegrityError, r'^Symbol.*used but not defined'):
-            Grammar('root + undef')
         with self.assertRaisesRegex(IntegrityError, r'^Unused symbols:'):
             Grammar('root "A"\n'
                     'a b\n'
                     'b a')
+
+    def test_undefined_sym(self):
+        "tests use unused symbols"
+        with self.assertRaisesRegex(IntegrityError, r'^Symbol.*used but not defined'):
+            Grammar('root   undef')
+        with self.assertRaisesRegex(IntegrityError, r'^Symbol.*used but not defined'):
+            Grammar('root + undef')
+        with self.assertRaisesRegex(IntegrityError, r'^Symbol.*used but not defined'):
+            Grammar('root 1 undef'
+                    '     1 undef')
+        with self.assertRaisesRegex(IntegrityError, r'^Symbol.*used but not defined'):
+            Grammar('root   (undef){1,2}')
+        with self.assertRaisesRegex(IntegrityError, r'^Symbol.*used but not defined'):
+            Grammar('root   undef<*>')
 
 
 class Regexes(TestCase):
@@ -649,26 +714,6 @@ class Repeats(TestCase):
             result = gmr.generate()
             self.assertEqual(len(result), 3)
             self.assertEqual(len(set(result)), 1)
-
-    def test_7(self):
-        gmr = Grammar("\n\nroot     ('x' t 'x'){50,100}\n\n"
-                      "t    +   u\n"
-                      "     .5  'x'\n"
-                      "     .1  'x'\n"
-                      "u    1   'x'\n"
-                      "     1   'x'\n", limit=4)
-        gmr.generate()
-#        gmr = Grammar("""
-#
-#root            ('x' t 'x'){50,100}
-#
-#t               +       u
-#                .5      'x'
-#                .1      'x'
-#u               1       'x'
-#                1       'x'
-#""", limit=4)
-#        gmr.generate()
 
 
 class References(TestCase):
