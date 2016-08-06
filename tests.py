@@ -108,14 +108,14 @@ class Choices(TestCase):
         for value in result.values():
             self.assertAlmostEqual(float(value)/iters, 1.0/len(values), delta=0.04)
 
-    def test_repeat_star(self):
+    def test_0(self):
         "test for choice balance in a repeat sample"
         self.balanced_choice("root a<*>\n"
                              "a 1 'a'\n"
                              "  1 'b'",
                              ["ab", "ba"])
 
-    def test_wchoice(self):
+    def test_1(self):
         "tests for choices with different weights"
         iters = 2500
         self.balanced_choice("root 1 '1'\n"
@@ -150,7 +150,7 @@ class Choices(TestCase):
         self.assertAlmostEqual(float(result[2])/iters, 1.0/6, delta=.04)
         self.assertAlmostEqual(float(result[3])/iters, 2.0/3, delta=.04)
 
-    def test_plus(self):
+    def test_2(self):
         "test choice includes with '+'"
         self.balanced_choice("var     1 'a'\n"
                              "        1 'b'\n"
@@ -171,7 +171,7 @@ class Choices(TestCase):
                     "a + root\n"
                     "  1 'a'")
 
-    def test_plus_text(self):
+    def test_3(self):
         "test that '+' works with text appended to the choice symbol"
         iters = 2000
         gmr = Grammar("root a\n"
@@ -185,7 +185,7 @@ class Choices(TestCase):
         for value in result.values():
             self.assertAlmostEqual(float(value)/iters, 1.0/3, delta=0.04)
 
-    def test_nested_choice_weight(self):
+    def test_4(self):
         "test that weights in a nested choice are ignored. has gone wrong before."
         gmr = Grammar("root a {1000}\n"
                       "b .9 'b'\n"
@@ -195,6 +195,10 @@ class Choices(TestCase):
         a_count = len([c for c in output if c == 'a'])
         b_count = len(output) - a_count
         self.assertAlmostEqual(a_count, b_count, delta=len(output) * 0.2)
+
+    def test_5(self):
+        with self.assertRaisesRegex(IntegrityError, r'^Invalid.*weight.*0\.0'):
+            Grammar("root 0 '1'")
 
 
 class Concats(TestCase):
@@ -645,6 +649,26 @@ class Repeats(TestCase):
             result = gmr.generate()
             self.assertEqual(len(result), 3)
             self.assertEqual(len(set(result)), 1)
+
+    def test_7(self):
+        gmr = Grammar("\n\nroot     ('x' t 'x'){50,100}\n\n"
+                      "t    +   u\n"
+                      "     .5  'x'\n"
+                      "     .1  'x'\n"
+                      "u    1   'x'\n"
+                      "     1   'x'\n", limit=4)
+        gmr.generate()
+        gmr2 = Grammar("""
+
+root            ('x' t 'x'){50,100}
+
+t               +       u
+                .5      'x'
+                .1      'x'
+u               1       'x'
+                1       'x'
+""", limit=4)
+        gmr2.generate()
 
 
 class References(TestCase):

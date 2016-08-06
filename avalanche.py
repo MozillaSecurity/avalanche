@@ -697,8 +697,10 @@ class ChoiceSymbol(_Symbol):
         self.plus_info.append(None)
         self._choices_terminate.append(None)
 
-    def _internal_choice(self, total, used, plus_state=None, gstate=None):
+    def _internal_choice(self, total, used, plus_state, gstate):
         target = random.uniform(0, total[0])
+        log.debug("%s: looking for target %.2f from total %.2f", self.name, target, total[0])
+        log.debug("-> blacklist: %r", used)
         for i, (weight, value, plus_info) in enumerate(zip(self.weights, self.values, self.plus_info)):
             if plus_info and plus_state is not None:
                 children = value
@@ -707,9 +709,10 @@ class ChoiceSymbol(_Symbol):
                 choice = gstate.grmr.symtab[children[plus_info["choice_idx"]]]
                 if isinstance(used[i], bool):
                     plus_state[i] = {"total": [choice.total], "substate": {}}
-                    used[i] = [False] * len(choice)
+                    used[i] = [False] * len(choice.values)
                 target -= plus_state[i]["total"][0]
                 if target < 0.0:
+                    log.debug("choice is in + at %d", i)
                     pre = children[:plus_info["choice_idx"]]
                     post = children[plus_info["choice_idx"] + 1:]
                     # if either the concat (if any) or the choice are tracked,
@@ -724,26 +727,29 @@ class ChoiceSymbol(_Symbol):
                     value = choice._internal_choice(plus_state[i]["total"], used[i], plus_state[i]["substate"], gstate)
                     total[0] += plus_state[i]["total"][0]
                     return pre + value + post
-            elif used[i]:
-                continue
-            else:
+                log.debug('-> %d had weight of %.2f, not the target', i, plus_state[i]["total"][0])
+            elif not used[i]:
                 target -= weight
                 if target < 0.0:
+                    log.debug("choice is at %d", i)
                     used[i] = True
                     total[0] -= weight
                     return value
-        raise AssertionError("Too much total weight? remainder is %.2f from %.2f total" % (target, total[0]))
+                log.debug('-> %d had weight of %.2f, not the target', i, weight)
+        raise GenerationError("Too much total weight in %s? remainder is %.2f from %.2f total" % (self.name, target, total[0]), gstate)
 
-    def choice(self, whitelist=None):
+    def choice(self, whitelist, gstate):
         if whitelist is not None:
-            assert len(whitelist) == len(self)
+            assert len(whitelist) == len(self.values)
             blacklist = [not x for x in whitelist]
+            total = self.total - sum(weight for (weight, used) in zip(self.weights, blacklist) if used)
         else:
-            blacklist = [False] * len(self)
-        return self._internal_choice([self.total], blacklist)
+            blacklist = [False] * len(self.values)
+            total = self.total
+        return self._internal_choice([self.total], blacklist, None, gstate)
 
     def sample(self, k, gstate):
-        result, used, total, plus_state = [], ([False] * len(self)), [self.total], {}
+        result, used, total, plus_state = [], ([False] * len(self.values)), [self.total], {}
         for _ in range(k):
             if total[0] <= 0.0:
                 break
@@ -775,15 +781,15 @@ class ChoiceSymbol(_Symbol):
                 self.total += self.weights[i]
                 self.plus_info[i] = {"in_concat": in_concat, "choice_idx": choice_idx}
                 self.length += choice.length - 1 # -1 for the entry in self.values
+        if not self.total > 0.0:
+            raise IntegrityError("Invalid total weight for symbol %s: %r" % (self.name, self.total), self.line_no)
+
 
     def generate(self, gstate):
-        try:
-            if gstate.grmr.is_limit_exceeded(gstate.length) and self.can_terminate:
-                gstate.symstack.extend(reversed(self.choice(whitelist=self._choices_terminate)))
-            else:
-                gstate.symstack.extend(reversed(self.choice()))
-        except AssertionError as err:
-            raise GenerationError(err, gstate)
+        if gstate.grmr.is_limit_exceeded(gstate.length) and self.can_terminate:
+            gstate.symstack.extend(reversed(self.choice(self._choices_terminate, gstate)))
+        else:
+            gstate.symstack.extend(reversed(self.choice(None, gstate)))
 
     def children(self):
         children = set()
@@ -959,7 +965,7 @@ class RefSymbol(_Symbol):
             gstate.append(random.choice(gstate.instances[self.ref]))
         else:
             log.debug("No instances of %s yet, generating one instead of a reference", self.ref)
-            gstate.grmr.symtab[self.ref].generate(gstate)
+            gstate.symstack.append(self.ref)
 
     def children(self):
         return {self.ref}
@@ -1201,11 +1207,8 @@ class RepeatSampleSymbol(RepeatSymbol):
         if choice.name in gstate.grmr.tracked:
             pre.append(("faketrack", choice.name))
             post.insert(0, ("untrack", choice.name))
-        try:
-            for selection in reversed(gstate.grmr.symtab[children[self.sample_idx]].sample(reps, gstate)):
-                gstate.symstack.extend(reversed(pre + selection + post))
-        except AssertionError as err:
-            raise GenerationError(err, gstate)
+        for selection in reversed(gstate.grmr.symtab[children[self.sample_idx]].sample(reps, gstate)):
+            gstate.symstack.extend(reversed(pre + selection + post))
 
 
 class TextSymbol(_Symbol):
