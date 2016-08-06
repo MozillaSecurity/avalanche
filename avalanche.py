@@ -746,7 +746,7 @@ class ChoiceSymbol(_Symbol):
         else:
             blacklist = [False] * len(self.values)
             total = self.total
-        return self._internal_choice([self.total], blacklist, None, gstate)
+        return self._internal_choice([total], blacklist, None, gstate)
 
     def sample(self, k, gstate):
         result, used, total, plus_state = [], ([False] * len(self.values)), [self.total], {}

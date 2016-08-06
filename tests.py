@@ -658,17 +658,17 @@ class Repeats(TestCase):
                       "u    1   'x'\n"
                       "     1   'x'\n", limit=4)
         gmr.generate()
-        gmr2 = Grammar("""
-
-root            ('x' t 'x'){50,100}
-
-t               +       u
-                .5      'x'
-                .1      'x'
-u               1       'x'
-                1       'x'
-""", limit=4)
-        gmr2.generate()
+#        gmr = Grammar("""
+#
+#root            ('x' t 'x'){50,100}
+#
+#t               +       u
+#                .5      'x'
+#                .1      'x'
+#u               1       'x'
+#                1       'x'
+#""", limit=4)
+#        gmr.generate()
 
 
 class References(TestCase):
