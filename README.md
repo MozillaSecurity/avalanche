@@ -1,7 +1,7 @@
 Avalanche
 =========
 
-[![Build Status](https://api.travis-ci.org/MozillaSecurity/avalanche.svg)](https://travis-ci.org/MozillaSecurity/avalanche)
+[![Build Status](https://api.travis-ci.org/MozillaSecurity/avalanche.svg)](https://travis-ci.org/MozillaSecurity/avalanche) [![Coverage Status](https://coveralls.io/repos/github/MozillaSecurity/avalanche/badge.svg)](https://coveralls.io/github/MozillaSecurity/avalanche)
 
 Avalanche is a document generator which uses context-free grammars to generate
 randomized outputs for fuzz-testing.
