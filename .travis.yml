@@ -1,19 +1,19 @@
 language: python
 python:
-    - "2.7"
-    - "3.2"
-    - "3.3"
-    - "3.4"
-    - "3.5"
-    - "nightly"
+    - 2.7
+    - 3.2
+    - 3.3
+    - 3.4
+    - 3.5
+    - nightly
 branches:
     only:
         - master
 env:
     - DEBUG=1
 before_script:
-    - pip install pytest-cov python-coveralls
+    - if [ $TRAVIS_PYTHON_VERSION != 3.2 ]; then pip install pytest-cov python-coveralls; fi
 script:
-    - py.test tests.py -v --cov . --cov-report term-missing
+    - if [ $TRAVIS_PYTHON_VERSION != 3.2 ]; then py.test tests.py -v --cov . --cov-report term-missing; else; py.test tests.py -v; fi
 after_success:
-    - coveralls
+    - if [ $TRAVIS_PYTHON_VERSION != 3.2 ]; then coveralls; fi
