@@ -468,10 +468,11 @@ class Inputs(TestCase):
     def test_file(self):
         "test grammar with utf-8 file as input"
         with tempfile.NamedTemporaryFile('w+') as gmrfile:
-            gmrfile.write('root "a"')
-            gmrfile.seek(0)
-            gmr = Grammar(gmrfile)
-        self.assertEqual(gmr.generate(), 'a')
+            with io.open(gmrfile.name, 'w+', encoding="utf-8") as gmrutf8:
+                gmrutf8.write('root "aü"')
+                gmrutf8.seek(0)
+                gmr = Grammar(gmrutf8)
+        self.assertEqual(gmr.generate(), 'aü')
 
 
 class Parser(TestCase):

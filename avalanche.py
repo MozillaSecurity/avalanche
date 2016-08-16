@@ -197,7 +197,7 @@ class Grammar(object):
                 # need to reopen as unicode
                 grammar.seek(0)
                 try:
-                    grammar = open(grammar.name, 'r') # will fail if grammar is not a named file...
+                    grammar = io.open(grammar.name, 'r', encoding="utf-8") # will fail if grammar is not a named file
                     need_to_close = True
                 except (AttributeError, IOError):
                     # can't reopen, no choice but to read the whole input
