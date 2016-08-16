@@ -117,7 +117,7 @@ class Choices(TestCase):
 
     def test_1(self):
         "tests for choices with different weights"
-        iters = 2500
+        iters = 10000
         self.balanced_choice("root 1 '1'\n"
                              "     1 '2'\n"
                              "     1 '3'",
@@ -128,27 +128,27 @@ class Choices(TestCase):
         result = {1: 0, 2: 0, 3: 0}
         for _ in range(iters):
             result[int(gmr.generate())] += 1
-        self.assertAlmostEqual(float(result[1])/iters, 0.25, delta=.04)
-        self.assertAlmostEqual(float(result[2])/iters, 0.5, delta=.04)
-        self.assertAlmostEqual(float(result[3])/iters, 0.25, delta=.04)
+        self.assertAlmostEqual(float(result[1])/iters, 0.25, delta=0.04)
+        self.assertAlmostEqual(float(result[2])/iters, 0.5, delta=0.04)
+        self.assertAlmostEqual(float(result[3])/iters, 0.25, delta=0.04)
         gmr = Grammar("root .3 '1'\n"
                       "     .1 '2'\n"
                       "     .1 '3'")
         result = {1: 0, 2: 0, 3: 0}
         for _ in range(iters):
             result[int(gmr.generate())] += 1
-        self.assertAlmostEqual(float(result[1])/iters, 0.6, delta=.04)
-        self.assertAlmostEqual(float(result[2])/iters, 0.2, delta=.04)
-        self.assertAlmostEqual(float(result[3])/iters, 0.2, delta=.04)
+        self.assertAlmostEqual(float(result[1])/iters, 0.6, delta=0.04)
+        self.assertAlmostEqual(float(result[2])/iters, 0.2, delta=0.04)
+        self.assertAlmostEqual(float(result[3])/iters, 0.2, delta=0.04)
         gmr = Grammar("root .25 '1'\n"
                       "     .25 '2'\n"
                       "     1   '3'")
         result = {1: 0, 2: 0, 3: 0}
         for _ in range(iters):
             result[int(gmr.generate())] += 1
-        self.assertAlmostEqual(float(result[1])/iters, 1.0/6, delta=.04)
-        self.assertAlmostEqual(float(result[2])/iters, 1.0/6, delta=.04)
-        self.assertAlmostEqual(float(result[3])/iters, 2.0/3, delta=.04)
+        self.assertAlmostEqual(float(result[1])/iters, 1.0/6, delta=0.04)
+        self.assertAlmostEqual(float(result[2])/iters, 1.0/6, delta=0.04)
+        self.assertAlmostEqual(float(result[3])/iters, 2.0/3, delta=0.04)
 
     def test_2(self):
         "tests invalid weights"
@@ -191,7 +191,7 @@ class Choices(TestCase):
 
     def test_5(self):
         "test that '+' works with text appended to the choice symbol"
-        iters = 2000
+        iters = 10000
         gmr = Grammar("root a\n"
                       "a + (b 'X')\n"
                       "  1 'c'\n"
@@ -218,21 +218,21 @@ class Choices(TestCase):
             v = g.generate()
             self.assertRegex(v, r"\nref[0-2]:[0-4]$")
             r[v[-1]] += 1
-        self.assertAlmostEqual(float(r["1"])/count, 0.25, delta=0.1)
-        self.assertAlmostEqual(float(r["2"])/count, 0.25, delta=0.1)
-        self.assertAlmostEqual(float(r["3"])/count, 0.25, delta=0.1)
-        self.assertAlmostEqual(float(r["4"])/count, 0.25, delta=0.1)
+        self.assertAlmostEqual(float(r["1"])/count, 0.25, delta=0.04)
+        self.assertAlmostEqual(float(r["2"])/count, 0.25, delta=0.04)
+        self.assertAlmostEqual(float(r["3"])/count, 0.25, delta=0.04)
+        self.assertAlmostEqual(float(r["4"])/count, 0.25, delta=0.04)
 
     def test_7(self):
         "test that weights in a nested choice are ignored. has gone wrong before."
-        gmr = Grammar("root a {1000}\n"
+        gmr = Grammar("root a {10000}\n"
                       "b .9 'b'\n"
                       "a .1 'a'\n"
                       "  .1 b")
         output = gmr.generate()
-        a_count = len([c for c in output if c == 'a'])
-        b_count = len(output) - a_count
-        self.assertAlmostEqual(a_count, b_count, delta=len(output) * 0.2)
+        a_count = len([c for c in output if c == 'a'])/10000.0
+        b_count = 1.0 - a_count
+        self.assertAlmostEqual(a_count, b_count, delta=0.04)
 
     def test_8(self):
         with self.assertRaisesRegex(IntegrityError, r'^Invalid.*weight.*0\.0'):
@@ -298,45 +298,48 @@ class Functions(TestCase):
         "test the built-in rndint function"
         gmr = Grammar("root  rndint(1,10)")
         result = {i: 0 for i in range(1, 11)}
-        for _ in range(1000):
+        iters = 10000
+        for _ in range(iters):
             value = int(gmr.generate())
             result[value] += 1
         for value in result.values():
-            self.assertAlmostEqual(value, 100, delta=30)
+            self.assertAlmostEqual(float(value)/iters, 0.1, delta=0.04)
         with self.assertRaisesRegex(GenerationError, r'^ValueError'):
             Grammar('root  rndint(2,1)').generate()
 
     def test_builtin_rndflt(self):
         "test the built-in rndflt function"
+        iters = 10000
         gmr = Grammar("root  rndflt(0,10)")
         result = {(i / 2.0): 0 for i in range(0, 20)}
-        for _ in range(2000):
+        for _ in range(iters):
             value = float(gmr.generate())
             # count buckets in increments of 0.5
             result[int(value * 2) / 2.0] += 1
         for value in result.values():
-            self.assertAlmostEqual(value, 100, delta=50)
+            self.assertAlmostEqual(float(value)/iters, 0.05, delta=0.04)
         gmr = Grammar("root  rndflt(0.1,1)")
         result = {(i / 10.0): 0 for i in range(1, 10)}
-        for _ in range(1000):
+        for _ in range(iters):
             value = float(gmr.generate())
             # count buckets in increments of 0.1
             result[int(value * 10) / 10.0] += 1
         for value in result.values():
-            self.assertAlmostEqual(value, 111, delta=50)
+            self.assertAlmostEqual(float(value)/iters, 1.0/9, delta=0.04)
 
     def test_builtin_rndpow2(self):
         "test the built-in rndpow2 function"
+        iters = 10000
         gmr = Grammar("root  rndpow2(2,0)")
         result = {1: 0, 2: 0, 4: 0}
-        for _ in range(300):
+        for _ in range(iters):
             value = int(gmr.generate())
             result[value] += 1
         for value in result.values():
             self.assertGreater(value, 0)
         gmr = Grammar("root  rndpow2(2,1)")
         result = {i: 0 for i in range(0, 6)}
-        for _ in range(600):
+        for _ in range(iters):
             value = int(gmr.generate())
             result[value] += 1
         for value in result.values():
@@ -500,8 +503,8 @@ class Parser(TestCase):
             value = gmr.generate()
             self.assertRegex(value, r"^1234[a-z][CD]$")
             result[value[-1]] += 1
-        self.assertAlmostEqual(float(result["C"])/count, 0.5, delta=0.1)
-        self.assertAlmostEqual(float(result["D"])/count, 0.5, delta=0.1)
+        self.assertAlmostEqual(float(result["C"])/count, 0.5, delta=0.04)
+        self.assertAlmostEqual(float(result["D"])/count, 0.5, delta=0.04)
 
     def test_dashname(self):
         "test that dash is allowed in symbol names"
