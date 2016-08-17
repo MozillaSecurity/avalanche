@@ -781,6 +781,24 @@ class References(TestCase):
             self.assertRegex(result, r"^id[0-9]$")
             self.assertEqual(out[0], result)
 
+    def test_6(self):
+        "test that reference before definition are handled properly"
+        count = 100
+        gmr = Grammar("root     (Ref '\\n'){%d} '-' (Def '\\n'){%d}\n"
+                      "Ref      @SymName\n"
+                      "Def      SymName\n"
+                      "SymName  'sym' /[0-9A-Z]/{8}" % (count, count))
+        refs, defs = gmr.generate().split("-")
+        defs = set(defs.split())
+        refs = set(refs.split())
+        # all references should be defined in defs if gen count for both is equal
+        self.assertEqual(len(refs.difference(defs)), 0, "Defs does not contain all refs")
+        # all definitions generated should be unique
+        self.assertEqual(len(defs), count, "All defs not unique")
+        # all references used should not all be the same
+        self.assertLess(len(refs), count, "All refs are unique")
+        # more than a single reference should be used
+        self.assertGreater(len(refs), 1, "Expecting more than a single reference be used")
 
 class Strings(TestCase):
 
