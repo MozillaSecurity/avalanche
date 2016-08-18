@@ -586,7 +586,7 @@ class Regexes(TestCase):
         "test that '.' works in a regex"
         iters = 10000
         out = set(Grammar('root /./{%d}' % iters).generate())
-        self.assertEqual(out, set(string.digits + string.letters + string.punctuation + " "))
+        self.assertEqual(out, set(string.digits + string.ascii_letters + string.punctuation + " "))
 
 
 class Repeats(TestCase):

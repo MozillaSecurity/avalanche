@@ -1021,7 +1021,7 @@ class RegexSymbol(ConcatSymbol):
        syntax is *not* supported in RegexSymbol. The characters "()|" have no special meaning and do not need to be
        escaped.
     """
-    _REGEX_ALPHABET = string.digits + string.letters + string.punctuation + " "
+    _REGEX_ALPHABET = string.digits + string.ascii_letters + string.punctuation + " "
     _RE_PARSE = re.compile(r"""^((?P<repeat>\{\s*(?P<a>\d+)\s*(,\s*(?P<b>\d+)\s*)?\}|\?)
                                  |(?P<set>\[\^?)
                                  |(?P<esc>\\.)
