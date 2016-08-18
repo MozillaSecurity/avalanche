@@ -25,6 +25,7 @@ import logging as log
 import os
 import re
 import shutil
+import string
 import sys
 import tempfile
 import unittest
@@ -583,7 +584,10 @@ class Regexes(TestCase):
 
     def test_2(self):
         "test that '.' works in a regex"
-        Grammar('root /./').generate()
+        iters = 10000
+        out = set(Grammar('root /./{%d}' % iters).generate())
+        self.assertEqual(out, set(string.digits + string.letters + string.punctuation + " "))
+
 
 class Repeats(TestCase):
 

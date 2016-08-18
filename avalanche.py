@@ -30,6 +30,7 @@ import os
 import os.path
 import random
 import re
+import string
 import sys
 
 
@@ -1020,10 +1021,7 @@ class RegexSymbol(ConcatSymbol):
        syntax is *not* supported in RegexSymbol. The characters "()|" have no special meaning and do not need to be
        escaped.
     """
-    _REGEX_ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ" \
-                      "abcdefghijklmnopqrstuvwxyz" \
-                      "0123456789" \
-                      ",./<>?;':\"[]\\{}|=_+`~!@#$%^&*() -"
+    _REGEX_ALPHABET = string.digits + string.letters + string.punctuation + " "
     _RE_PARSE = re.compile(r"""^((?P<repeat>\{\s*(?P<a>\d+)\s*(,\s*(?P<b>\d+)\s*)?\}|\?)
                                  |(?P<set>\[\^?)
                                  |(?P<esc>\\.)
