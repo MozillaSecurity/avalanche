@@ -1,7 +1,9 @@
-from setuptools import setup, find_packages
+#!/usr/bin/env python
+from setuptools import setup
 
-setup(
-  name = "avalanche",
-  version = "0.1",
-  packages = ["avalanche"],
-)
+if __name__ == '__main__':
+    setup(name = "avalanche",
+          version = "0.1",
+          packages = ['avalanche'],
+          package_dir = {'avalanche': ''})
+
