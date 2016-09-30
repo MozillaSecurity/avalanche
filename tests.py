@@ -348,6 +348,36 @@ class Functions(TestCase):
         with self.assertRaisesRegex(GenerationError, r'^ValueError'):
             Grammar('root  rndpow2(-1,0)').generate()
 
+    def test_buildin_eval(self):
+        "test the built-in eval function"
+        # XXX: test eval of non-existent symbol
+        # XXX: test eval with <>
+        # XXX: test that references work within eval (ie, a-value could use an @ reference from outside the eval)
+        iters = 1000
+        gmr = Grammar("root decl unused{0}\n"
+                      "decl (name) ':' eval(@1 '-value')\n"
+                      "name 1 'a'\n"
+                      "     1 'b'\n"
+                      "a-value 'AAA'\n"
+                      "b-value 'BBB'\n"
+                      "unused a-value b-value")
+        result = {'a': 0, 'b': 0}
+        expected = {'a': 'AAA', 'b': 'BBB'}
+        for _ in range(iters):
+            name, value = gmr.generate().split(':')
+            self.assertEqual(value, expected[name])
+            result[name] += 1
+        self.assertGreater(result['a'], 0)
+        self.assertGreater(result['b'], 0)
+        # test eval with unused (will raise for now ... should fix that?)
+        with self.assertRaisesRegex(IntegrityError, r'^Unused symbols:'):
+            Grammar("root decl\n"
+                    "decl (name) ':' eval(@1 '-value')\n"
+                    "name 1 'a'\n"
+                    "     1 'b'\n"
+                    "a-value 'AAA'\n"
+                    "b-value 'BBB'")
+
 
 class Imports(TestCase):
 

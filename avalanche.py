@@ -190,6 +190,8 @@ class Grammar(object):
                                                          + random.randint(-int(b), int(b)), 0))
         if "rndflt" not in self.funcs:
             self.funcs["rndflt"] = lambda a, b: str(random.uniform(float(a), float(b)))
+        if "eval" not in self.funcs:
+            self.funcs["eval"] = None # eval is a special case in FuncSymbol.generate
         if "import" in self.funcs:
             raise IntegrityError("'import' is a reserved function name")
 
@@ -352,7 +354,7 @@ class Grammar(object):
     def sanity_check(self):
         log.debug("sanity checking symtab: %s", self.symtab)
         log.debug("tracked symbols: %s", self.tracked)
-        funcs_used = {"rndflt", "rndint", "rndpow2"}
+        funcs_used = {"rndflt", "rndint", "rndpow2", "eval"}
         for sym in self.symtab.values():
             sym.sanity_check(self)
             if isinstance(sym, FuncSymbol):
@@ -886,6 +888,7 @@ class FuncSymbol(_Symbol):
 
        The following functions are built-in::
 
+           eval(sym)        Evaluating a grammar string to a grammar symbol, and generates that symbol.
            rndflt(a,b)      A random floating-point decimal number between ``a`` and ``b`` inclusive.
            rndint(a,b)      A random integer between ``a`` and ``b`` inclusive.
            rndpow2(exponent_limit, variation)
@@ -913,7 +916,12 @@ class FuncSymbol(_Symbol):
                 gstate.symstack, gstate.output = [arg], []
                 args.append(gstate.grmr.generate(gstate))
                 gstate.symstack, gstate.output = symstack, output
-        gstate.append(gstate.grmr.funcs[self.fname](*args))
+        if self.fname == "eval" and gstate.grmr.funcs["eval"] is None:
+            if len(args) != 1:
+                raise TypeError("eval() takes exactly 1 arguments (%d given)" % len(args))
+            gstate.symstack.append(args[0]) # that was easy.
+        else:
+            gstate.append(gstate.grmr.funcs[self.fname](*args))
 
     def children(self):
         return set(a for a in self.args if not isinstance(a, numbers.Number))
