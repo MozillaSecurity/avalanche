@@ -919,7 +919,11 @@ class FuncSymbol(_Symbol):
         if self.fname == "eval" and gstate.grmr.funcs["eval"] is None:
             if len(args) != 1:
                 raise TypeError("eval() takes exactly 1 arguments (%d given)" % len(args))
-            gstate.symstack.append(args[0]) # that was easy.
+            prefix = self.name.split(".", 1)[0]
+            if prefix == self.name:
+                gstate.symstack.append(args[0])
+            else:
+                gstate.symstack.append("%s.%s" % (prefix, args[0]))
         else:
             gstate.append(gstate.grmr.funcs[self.fname](*args))
 
