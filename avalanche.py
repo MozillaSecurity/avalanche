@@ -82,6 +82,7 @@ class _GenState(object):
         self.grmr = grmr
         self.length = 0
         self.backrefs = []
+        self.choice_stack = {}
 
     def append(self, value):
         if self.output and not isinstance(value, type(self.output[0])):
@@ -273,7 +274,8 @@ class Grammar(object):
                         # import
                         if "%s.%s" % (grammar_hash, sym_name) in self.symtab:
                             raise ParseError("Redefinition of symbol %s previously declared on line %d"
-                                             % (sym_name, self.symtab["%s.%s" % (grammar_hash, sym_name)].line_no), pstate)
+                                             % (sym_name, self.symtab["%s.%s" % (grammar_hash, sym_name)].line_no),
+                                             pstate)
                         sym, defn = TextSymbol.parse(sym_def, pstate, no_add=True)
                         defn = defn.strip()
                         if not defn.startswith(")"):
@@ -422,11 +424,6 @@ class Grammar(object):
                 cmd = this[0]
                 if cmd == 'unwind':
                     continue
-                elif cmd == 'faketrack':
-                    # means that someone like RepeatSampleSymbol has expanded a tracked symbol
-                    # they will have generated the untrack tuple already, we just need to update `tracking` here.
-                    tracking.append((this[1], len(gstate.output)))
-                    continue
                 elif cmd == 'resetbackref':
                     gstate.backrefs.pop()
                     continue
@@ -443,6 +440,13 @@ class Grammar(object):
                         gstate.instance_backlog[this[1]].append(instance)
                     else:
                         gstate.instances[this[1]].append(instance)
+                    continue
+                elif cmd == "choice":
+                    sym, choice = this[1:]
+                    gstate.choice_stack.setdefault(sym, []).append(choice)
+                    assert len(gstate.choice_stack[sym]) == 1 # not sure if this is true ... only one way to find out
+                                                              # if it is true, choice_stack can be a simple lut
+                                                              # ie. not a stack at all
                     continue
                 else:
                     raise GenerationError("Unknown tuple command: %s" % cmd, gstate)
@@ -616,20 +620,6 @@ class _Symbol(object):
             raise ParseError("Unexpected token in definition: %s" % remain, pstate)
         return res
 
-    def choice_idx(self, parts, grmr):
-        # given a set of symbols, return the index of the ChoiceSymbol
-        # this will raise if parts does not contain exactly one ChoiceSymbol,
-        choice_idx = None
-        for i, child in enumerate(parts):
-            if isinstance(grmr.symtab[child], ChoiceSymbol):
-                if choice_idx is not None:
-                    raise IntegrityError("Expecting exactly one ChoiceSymbol in %s (got more than one)" % self.name,
-                                         self.line_no)
-                choice_idx = i
-        if choice_idx is None:
-            raise IntegrityError("Expecting exactly one ChoiceSymbol in %s (got none)" % self.name, self.line_no)
-        return choice_idx
-
 
 class _AbstractSymbol(_Symbol):
 
@@ -703,7 +693,7 @@ class ChoiceSymbol(_Symbol):
         self.total = 0.0
         self.values = []
         self.weights = []
-        self.plus_info = []
+        self.was_plus = []
         self._choices_terminate = []
         self.normalized = False
         self.length = None
@@ -713,41 +703,35 @@ class ChoiceSymbol(_Symbol):
             if not 0.0 <= weight <= 1.0:
                 raise IntegrityError("Invalid weight value for choice: %.2f (expecting [0,1])" % weight, pstate)
             self.total += weight
-        self.values.append(value)
+        name = "[concat (line %d #%d)]" % (pstate.line_no, pstate.implicit())
+        sym = ConcatSymbol(name, pstate)
+        sym.extend(value)
+        self.values.append(sym.name)
         self.weights.append(weight)
-        self.plus_info.append(None)
+        self.was_plus.append(None)
         self._choices_terminate.append(None)
 
-    def _internal_choice(self, total, used, plus_state, gstate):
+    def _cache_choice(self, choice, gstate):
+        gstate.choice_stack.setdefault(self.name, []).append(choice)
+
+    def _internal_choice(self, total, used, plus_state, result, gstate):
         target = random.uniform(0, total[0])
         log.debug("%s: looking for target %.2f from total %.2f", self.name, target, total[0])
         log.debug("-> blacklist: %r", used)
-        for i, (weight, value, plus_info) in enumerate(zip(self.weights, self.values, self.plus_info)):
-            if plus_info and plus_state is not None:
-                children = value
-                if plus_info["in_concat"]:
-                    children = gstate.grmr.symtab[value[0]]
-                choice = gstate.grmr.symtab[children[plus_info["choice_idx"]]]
+        for i, (weight, value, was_plus) in enumerate(zip(self.weights, self.values, self.was_plus)):
+            if was_plus and plus_state is not None:
+                choice = gstate.grmr.symtab[gstate.grmr.symtab[value].choice]
                 if isinstance(used[i], bool):
                     plus_state[i] = {"total": [choice.total], "substate": {}}
                     used[i] = [False] * len(choice.values)
                 target -= plus_state[i]["total"][0]
                 if target < 0.0:
                     log.debug("choice is in + at %d", i)
-                    pre = children[:plus_info["choice_idx"]]
-                    post = children[plus_info["choice_idx"] + 1:]
-                    # if either the concat (if any) or the choice are tracked,
-                    #   we need to force tracking instances we generate
-                    if plus_info["in_concat"] and value[0] in gstate.grmr.tracked:
-                        pre.insert(0, ("faketrack", value[0]))
-                        post.append(("untrack", value[0], False))
-                    if choice.name in gstate.grmr.tracked:
-                        pre.append(("faketrack", choice.name))
-                        post.insert(0, ("untrack", choice.name, False))
                     total[0] -= plus_state[i]["total"][0]
-                    value = choice._internal_choice(plus_state[i]["total"], used[i], plus_state[i]["substate"], gstate)
+                    choice._internal_choice(plus_state[i]["total"], used[i], plus_state[i]["substate"], result, gstate)
                     total[0] += plus_state[i]["total"][0]
-                    return pre + value + post
+                    result.append((self.name, value))
+                    return
                 log.debug('-> %d had weight of %.2f, not the target', i, plus_state[i]["total"][0])
             elif not used[i]:
                 target -= weight
@@ -755,11 +739,15 @@ class ChoiceSymbol(_Symbol):
                     log.debug("choice is at %d", i)
                     used[i] = True
                     total[0] -= weight
-                    return value
+                    result.append((self.name, value))
+                    return
                 log.debug('-> %d had weight of %.2f, not the target', i, weight)
-        raise GenerationError("Too much total weight in %s? remainder is %.2f from %.2f total" % (self.name, target, total[0]), gstate)
+        raise GenerationError("Too much total weight in %s? remainder is %.2f from %.2f total"
+                              % (self.name, target, total[0]), gstate)
 
     def choice(self, whitelist, gstate):
+        if gstate.choice_stack.get(self.name):
+            return gstate.choice_stack[self.name].pop()
         if whitelist is not None:
             assert len(whitelist) == len(self.values)
             blacklist = [not x for x in whitelist]
@@ -767,14 +755,21 @@ class ChoiceSymbol(_Symbol):
         else:
             blacklist = [False] * len(self.values)
             total = self.total
-        return self._internal_choice([total], blacklist, None, gstate)
+        result = []
+        self._internal_choice([total], blacklist, None, result, gstate)
+        assert len(result) == 1
+        assert result[0][0] == self.name
+        return result[0][1]
 
     def sample(self, k, gstate):
-        result, used, total, plus_state = [], ([False] * len(self.values)), [self.total], {}
-        for _ in range(k):
+        # should return cache results for future generate()s
+        used, total, plus_state, result = ([False] * len(self.values)), [self.total], {}, []
+        while len(result) < k:
+            this_result = []
             if total[0] <= 0.0:
                 break
-            result.append(self._internal_choice(total, used, plus_state, gstate))
+            self._internal_choice(total, used, plus_state, this_result, gstate)
+            result.append(tuple(("choice", choice[0], choice[1]) for choice in this_result))
         return result
 
     def normalize(self, grmr):
@@ -784,14 +779,10 @@ class ChoiceSymbol(_Symbol):
         self.length = len(self.values)
         for i, (value, weight) in enumerate(zip(self.values, self.weights)):
             if weight == '+':
-                if len(value) == 1 and isinstance(grmr.symtab[value[0]], ConcatSymbol):
-                    in_concat = True
-                    children = grmr.symtab[value[0]]
-                else:
-                    in_concat = False
-                    children = value
-                choice_idx = self.choice_idx(children, grmr)
-                choice = grmr.symtab[children[choice_idx]]
+                grmr.symtab[value].normalize(grmr)
+                if not grmr.symtab[value].choice:
+                    raise IntegrityError("Expecting exactly one ChoiceSymbol in %s" % self.name, self.line_no)
+                choice = grmr.symtab[grmr.symtab[value].choice]
                 if any(weight == '+' for weight in choice.weights):
                     if choice.normalized:
                         # recursive definition
@@ -800,30 +791,26 @@ class ChoiceSymbol(_Symbol):
                 choice.normalize(grmr) # resolve the child '+' first
                 self.weights[i] = choice.total
                 self.total += self.weights[i]
-                self.plus_info[i] = {"in_concat": in_concat, "choice_idx": choice_idx}
+                self.was_plus[i] = True
                 self.length += choice.length - 1 # -1 for the entry in self.values
-        if not self.total > 0.0:
+        if self.total <= 0.0:
             raise IntegrityError("Invalid total weight for symbol %s: %r" % (self.name, self.total), self.line_no)
-
 
     def generate(self, gstate):
         if gstate.grmr.is_limit_exceeded(gstate.length) and self.can_terminate:
-            gstate.symstack.extend(reversed(self.choice(self._choices_terminate, gstate)))
+            gstate.symstack.append(self.choice(self._choices_terminate, gstate))
         else:
-            gstate.symstack.extend(reversed(self.choice(None, gstate)))
+            gstate.symstack.append(self.choice(None, gstate))
 
     def children(self):
-        children = set()
-        for child in self.values:
-            children |= set(child)
-        return children
+        return set(self.values)
 
     def map(self, fcn):
-        self.values = [[fcn(i) for i in j] for j in self.values]
+        self.values = [fcn(j) for j in self.values]
 
     def update_can_terminate(self, grmr):
         for i, choice in enumerate(self.values):
-            if all(grmr.symtab[child].can_terminate for child in choice):
+            if grmr.symtab[choice].can_terminate:
                 self._choices_terminate[i] = True
         if any(self._choices_terminate):
             log.debug("%s can terminate", self.name)
@@ -858,6 +845,8 @@ class ConcatSymbol(_Symbol, list):
         name = "%s.%s" % (pstate.prefix, name) if not no_prefix else name
         _Symbol.__init__(self, name, pstate)
         list.__init__(self)
+        self.choice = None # if this concat is choosable, this will be the sym.name of the subchoice
+        self.normalized = None
 
     def children(self):
         return set(self)
@@ -867,6 +856,30 @@ class ConcatSymbol(_Symbol, list):
 
     def generate(self, gstate):
         gstate.symstack.extend(reversed(self))
+
+    def normalize(self, grmr):
+        if self.normalized:
+            return
+        if self.normalized is False:
+            raise IntegrityError("Symbol has no paths to termination", self.line_no)
+        self.normalized = False
+        choice = None
+        for child in self:
+            this_choice = None
+            if isinstance(grmr.symtab[child], ChoiceSymbol):
+                this_choice = child
+            elif isinstance(grmr.symtab[child], ConcatSymbol):
+                grmr.symtab[child].normalize(grmr)
+                if grmr.symtab[child].choice is not None:
+                    this_choice = grmr.symtab[child].choice
+            if this_choice is not None:
+                if choice is not None:
+                    choice = None
+                    break # two choices, not choosable
+                choice = this_choice
+        if choice is not None:
+            self.choice = choice
+        self.normalized = True
 
     @staticmethod
     def parse(name, defn, pstate):
@@ -1156,24 +1169,17 @@ class RepeatSymbol(ConcatSymbol):
         self.min_, self.max_ = min_, max_
 
     def normalize(self, grmr):
-        children = self
-        if len(self) == 1 and isinstance(grmr.symtab[self[0]], ConcatSymbol):
-            # must deref the concat to look for choice
-            if isinstance(self, RepeatSampleSymbol):
-                self.in_concat = True
-            children = grmr.symtab[self[0]]
-            log.debug('choice for %s is nested in a concat', self.name)
         if isinstance(self, RepeatSampleSymbol) or self.min_ == "*" or self.max_ == "*":
-            choice_idx = self.choice_idx(children, grmr)
-            grmr.symtab[children[choice_idx]].normalize(grmr)
-            choice_len = len(grmr.symtab[children[choice_idx]])
-            log.debug("repeat %s value for '*' is %d", self.name, choice_len)
-            if isinstance(self, RepeatSampleSymbol):
-                self.sample_idx = choice_idx
+            ConcatSymbol.normalize(self, grmr)
+            if not self.choice:
+                raise IntegrityError("Expecting exactly one ChoiceSymbol in %s" % self.name, self.line_no)
+            choice = grmr.symtab[self.choice]
+            choice.normalize(grmr)
+            log.debug("repeat %s value for '*' is %d", self.name, len(choice))
             if self.min_ == "*":
-                self.min_ = choice_len
+                self.min_ = len(choice)
             if self.max_ == "*":
-                self.max_ = choice_len
+                self.max_ = len(choice)
         if self.min_ > self.max_ or self.min_ < 0:
             raise IntegrityError("Invalid range for repeat in %s: [%d,%d]" % (self.name, self.min_, self.max_),
                                  self.line_no)
@@ -1224,21 +1230,11 @@ class RepeatSampleSymbol(RepeatSymbol):
             reps = self.min_
         else:
             reps = random.randint(self.min_, random.randint(self.min_, self.max_)) # roughly betavariate(0.75, 2.25)
-        children = self
-        if self.in_concat:
-            children = gstate.grmr.symtab[self[0]]
-        pre = children[:self.sample_idx]
-        post = children[self.sample_idx + 1:]
-        choice = gstate.grmr.symtab[children[self.sample_idx]]
-        # if either the concat (if any) or the choice are tracked, we need to force tracking instances we generate
-        if self.in_concat and self[0] in gstate.grmr.tracked:
-            pre.insert(0, ("faketrack", self[0]))
-            post.append(("untrack", self[0], False))
-        if choice.name in gstate.grmr.tracked:
-            pre.append(("faketrack", choice.name))
-            post.insert(0, ("untrack", choice.name, False))
-        for selection in reversed(gstate.grmr.symtab[children[self.sample_idx]].sample(reps, gstate)):
-            gstate.symstack.extend(reversed(pre + selection + post))
+        # sample the choice (which gives cache values for the symstack), then generate self that many times
+        assert self.choice is not None
+        for choices in reversed(gstate.grmr.symtab[self.choice].sample(reps, gstate)):
+            gstate.symstack.extend(reversed(self))
+            gstate.symstack.extend(choices)
 
 
 class TextSymbol(_Symbol):
