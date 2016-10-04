@@ -517,6 +517,13 @@ class Parser(TestCase):
                       "     'c'")
         self.assertEqual(gmr.generate(), "abc")
 
+    def test_comment_in_broken(self):
+        "test that you can comment out a broken line"
+        gmr = Grammar("root 'some broken ' \\\n"
+                      "# blah\n"
+                      " 'string'")
+        self.assertEqual(gmr.generate(), "some broken string")
+
     def test_basic(self):
         "test basic grammar features"
         gmr = Grammar("root    ok\n"

@@ -252,6 +252,9 @@ class Grammar(object):
                 pstate.line_no += 1
                 pstate.n_implicit = -1
                 log.debug("parsing line # %d: %s", pstate.line_no, line.rstrip())
+                # allow commented out lines anywhere, even between broken lines
+                if line.lstrip().startswith("#"):
+                    continue
                 match = Grammar._RE_LINE.match("%s%s" % (ljoin, line))
                 if match is None:
                     raise ParseError("Failed to parse definition at: %s%s" % (ljoin, line.rstrip()), pstate)
