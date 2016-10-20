@@ -1,6 +1,7 @@
-################################################################################
+#!/usr/bin/env python
 # coding=utf-8
 # pylint: disable=missing-docstring,too-many-lines
+################################################################################
 #
 # Description: Grammar based generation/fuzzer
 #
