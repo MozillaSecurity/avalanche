@@ -25,7 +25,7 @@ import argparse
 import binascii
 import hashlib
 import io
-import logging as log
+import logging
 import numbers
 import os
 import os.path
@@ -47,8 +47,8 @@ if sys.version_info.major == 2:
 
 DEFAULT_LIMIT = 100 * 1024
 
-if bool(os.getenv("DEBUG")):
-    log.getLogger().setLevel(log.DEBUG)
+
+log = logging.getLogger("avalanche") # pylint: disable=invalid-name
 
 
 class GrammarException(Exception):
@@ -1307,6 +1307,10 @@ class _TextChoiceSymbol(TextSymbol):
 
 
 def main():
+
+    logging.basicConfig(level=logging.INFO)
+    if bool(os.getenv("DEBUG")):
+        logging.getLogger().setLevel(logging.DEBUG)
 
     class _SafeFileType(argparse.FileType):
 

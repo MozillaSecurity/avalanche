@@ -32,6 +32,10 @@ import unittest
 from avalanche import Grammar, GenerationError, IntegrityError, ParseError
 
 
+if bool(os.getenv("DEBUG")):
+    log.getLogger().setLevel(log.DEBUG)
+
+
 class TestCase(unittest.TestCase):
 
     if sys.version_info.major == 2:
