@@ -23,7 +23,7 @@ import logging
 import os
 import sys
 
-from avalanche import Grammar, GenerationError, IntegrityError, ParseError
+from avalanche import Grammar
 
 
 log = logging.getLogger("linter") # pylint: disable=invalid-name
@@ -46,22 +46,42 @@ def main():
                       help="Function used in the grammar (eg. -f filter lambda x:x.replace('x','y')")
     args = argp.parse_args()
     args.function = {func: eval(defn) for (func, defn) in args.function}
-    g = Grammar(args.input, **args.function)
+    gmr = Grammar(args.input, **args.function)
 
-    for sym in g.symtab.values():
-        # check for direct recursion
+    children = {}
+    for sym in gmr.symtab.values():
+        # capture children of non-implicit symbols (which includes recursing into implicit symbols)
         if "[" not in sym.name:
-            children = set() # names of all non-implicit children
+            children[sym.name] = set()
             togo = sym.children()
             while togo:
                 child = togo.pop()
                 if "[" in child: # implicit symbol, keep going
-                    togo |= g.symtab[child].children()
-                    togo -= children
+                    togo |= gmr.symtab[child].children()
+                    togo -= children[sym.name]
                 else:
-                    children.add(child)
-            if sym.name in children:
-                log.info("%s is directly recursive", sym.name)
+                    children[sym.name].add(child)
+
+    # check for recursion
+    for sym_name, sym_children in children.items():
+        if sym_name in sym_children:
+            log.info("%s is directly recursive", sym_name)
+            continue
+        # `issue` is a map of descendents (of any degree) to shortest ancestry from this sym_name
+        issue = {child_name: [] for child_name in sym_children}
+        done = set()
+        while issue:
+            child_name = list(issue.keys())[0]
+            child_backtrace = issue.pop(child_name) + [child_name]
+            done.add(child_name)
+            for grandchild_name in children[child_name]:
+                if grandchild_name in done | set(issue):
+                    continue
+                if grandchild_name == sym_name:
+                    log.info("%s is recursive through %r (%d degree)", sym_name, child_backtrace, len(child_backtrace))
+                    issue = None
+                    break
+                issue[grandchild_name] = child_backtrace
 
 
 if __name__ == "__main__":
