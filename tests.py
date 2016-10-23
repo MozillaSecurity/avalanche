@@ -475,6 +475,20 @@ class Imports(TestCase):
             Grammar('a import("a.gmr")\n'
                     'root a.a')
 
+    def test_import_name_integrity(self):
+        "test that import names don't get overwritten"
+        with open('a.gmr', 'w') as fd:
+            fd.write('X import("b.gmr")\n')
+            fd.write('B X.B\n')
+        with open('b.gmr', 'w') as fd:
+            fd.write('B "B"\n')
+        with open('c.gmr', 'w') as fd:
+            fd.write('C "C"\n')
+        gmr = Grammar(
+          'A import("a.gmr")\n'
+          'X import("c.gmr")\n'
+          'root A.B X.C\n')
+        self.assertEqual(gmr.generate(), "BC")
 
 class Inputs(TestCase):
 
