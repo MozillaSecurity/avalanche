@@ -133,6 +133,9 @@ class _ParseState(object):
         return "%s.%s" % (symprefix, sym)
 
     def add_import(self, name, grammar_hash):
+        log.debug("%s: adding import %s -> %s to %r", self.prefix, name, grammar_hash, self.imports)
+        if name in self.imports:
+            raise ParseError("redefined import %s" % name, self)
         self.imports[name] = (grammar_hash, self.line_no)
 
     def sanity_check(self):
@@ -328,7 +331,7 @@ class Grammar(object):
             if ref:
                 prefix = prefix[1:]
             try:
-                newprefix = imports[prefix]
+                newprefix = "%s-%s" % (prefix, imports[prefix]) if imports[prefix] else ""
             except KeyError:
                 raise ParseError("Failed to reassign %s to proper namespace after parsing" % symname)
             newname = "".join((newprefix, "." if newprefix else "", name))
@@ -343,6 +346,8 @@ class Grammar(object):
             newname = get_prefixed(oldname)
             if oldname != newname:
                 sym.name = newname
+                if newname in self.symtab:
+                    raise ParseError("symbol %s would be overwritten" % newname)
                 self.symtab[newname] = sym
                 del self.symtab[oldname]
             sym.map(get_prefixed)
