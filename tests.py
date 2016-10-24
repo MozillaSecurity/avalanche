@@ -32,8 +32,8 @@ import unittest
 from avalanche import Grammar, GenerationError, IntegrityError, ParseError
 
 
-if bool(os.getenv("DEBUG")):
-    log.getLogger().setLevel(log.DEBUG)
+logging.basicConfig(level=logging.DEBUG if bool(os.getenv("DEBUG")) else logging.INFO)
+log = logging.getLogger("avalanche_test")
 
 
 class TestCase(unittest.TestCase):
