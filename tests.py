@@ -21,7 +21,7 @@
 
 from __future__ import unicode_literals
 import io
-import logging as log
+import logging
 import os
 import re
 import shutil
