@@ -244,7 +244,7 @@ class Grammar(object):
         grammar_fn = getattr(grammar, "name", None)
         if grammar_hash in imports:
             return grammar_hash
-        log.debug("parsing new grammar %r:%s", grammar_fn, grammar_hash)
+        log.debug("parsing new grammar %r:%s (%s)", grammar_fn, grammar_hash, prefix)
         imports[grammar_hash] = prefix
         grammar.seek(0)
         pstate = _ParseState(grammar_hash, self, grammar_fn)
@@ -297,7 +297,7 @@ class Grammar(object):
                         for import_fn in import_paths:
                             try:
                                 with open(import_fn) as import_fd:
-                                    pstate.add_import(sym_name, self.parse(import_fd, imports, prefix=sym_name))
+                                    pstate.add_import(sym_name, self.parse(import_fd, imports, prefix="%s.%s" % (prefix, sym_name) if prefix else sym_name))
                                 break
                             except IOError:
                                 pass
@@ -331,7 +331,7 @@ class Grammar(object):
             if ref:
                 prefix = prefix[1:]
             try:
-                newprefix = "%s-%s" % (prefix, imports[prefix]) if imports[prefix] else ""
+                newprefix = imports[prefix]
             except KeyError:
                 raise ParseError("Failed to reassign %s to proper namespace after parsing" % symname)
             newname = "".join((newprefix, "." if newprefix else "", name))
@@ -939,6 +939,7 @@ class FuncSymbol(_Symbol):
                 args.append(gstate.grmr.generate(gstate))
                 gstate.symstack, gstate.output = symstack, output
         if self.fname == "eval" and gstate.grmr.funcs["eval"] is None:
+            # TODO: this should support imports in the original grammar
             if len(args) != 1:
                 raise TypeError("eval() takes exactly 1 arguments (%d given)" % len(args))
             prefix = self.name.split(".", 1)[0]
