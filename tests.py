@@ -490,6 +490,19 @@ class Imports(TestCase):
           'root A.B X.C\n')
         self.assertEqual(gmr.generate(), "BC")
 
+    def test_import_file_containing_eval(self):
+        "test that importing files containing evals works as expected"
+        with open('a.gmr', 'w') as fd:
+            fd.write('IB import("b.gmr")\n')
+            fd.write('B  IB.X\n')
+        with open('b.gmr', 'w') as fd:
+            fd.write('X eval("Z")\n')
+            fd.write('Z "z"\n')
+        gmr = Grammar(
+          'A import("a.gmr")\n'
+          'root A.B\n')
+        self.assertEqual(gmr.generate(), 'z')
+
 class Inputs(TestCase):
 
     def test_str(self):
