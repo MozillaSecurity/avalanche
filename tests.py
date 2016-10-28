@@ -573,7 +573,7 @@ class Parser(TestCase):
         gmr = Grammar("root       foo bar\n"
                       "bar        (@foo bar) {1}\n"
                       "foo        'i0'", limit=10)
-        self.assertEqual(len(gmr.generate()), 10)
+        self.assertLessEqual(len(gmr.generate()), 10)
 
     def test_altstart(self):
         "test that starting symbols other than 'root' work"
