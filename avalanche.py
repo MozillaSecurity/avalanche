@@ -353,6 +353,11 @@ class Grammar(object):
                 self.symtab[newname] = sym
                 del self.symtab[oldname]
             sym.map(get_prefixed)
+            if isinstance(sym, FuncSymbol) and sym.fname == "eval":
+                prefix = sym.imports.prefix
+                sym.imports = {prefix: imports[hash_] for (prefix, (hash_, _)) in sym.imports.imports.items()}
+                sym.imports[""] = imports[prefix]
+                log.debug("preserving imports for eval in %s: %r", sym.name, sym.imports)
         self.tracked = {get_prefixed(t) for t in self.tracked}
 
     def normalize(self):
@@ -977,6 +982,9 @@ class FuncSymbol(_Symbol):
         _Symbol.__init__(self, sname, pstate)
         self.fname = name
         self.args = []
+        self.imports = None
+        if name == "eval":
+            self.imports = pstate # retain pstate for resolving imports later
 
     def sanity_check(self, grmr):
         if self.fname not in grmr.funcs:
@@ -996,11 +1004,15 @@ class FuncSymbol(_Symbol):
             # TODO: this should support imports in the original grammar
             if len(args) != 1:
                 raise TypeError("eval() takes exactly 1 arguments (%d given)" % len(args))
-            prefix = self.name.split(".", 1)[0]
-            if prefix == self.name:
-                gstate.symstack.append(args[0])
+            try:
+                prefix, name = args[0].rsplit(".", 1)
+            except ValueError:
+                prefix, name = "", args[0]
+            prefix = self.imports[prefix]
+            if prefix:
+                gstate.symstack.append("%s.%s" % (prefix, name))
             else:
-                gstate.symstack.append("%s.%s" % (prefix, args[0]))
+                gstate.symstack.append(name)
         else:
             gstate.append(gstate.grmr.funcs[self.fname](*args))
 
