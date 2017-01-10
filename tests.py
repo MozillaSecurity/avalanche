@@ -88,6 +88,30 @@ class Backrefs(TestCase):
                 n_same += 1
         self.assertLess(n_same, 100)
 
+    def test_4(self):
+        "test that backreferences in repeats don't get confused"
+        gmr = Grammar("choice   1   'a'\n"
+                      "         1   'b'\n"
+                      "         1   'c'\n"
+                      "root     ((choice) ':' @2 '\\n'){100}\n")
+        for out in gmr.generate().splitlines():
+            out = out.split(":")
+            self.assertEqual(out[0], out[1])
+        gmr = Grammar("choice   1   'a'\n"
+                      "         1   'b'\n"
+                      "         1   'c'\n"
+                      "         1   'd'\n"
+                      "         1   'e'\n"
+                      "         1   'f'\n"
+                      "root     ((choice) ':' @2 '\\n')<*>\n")
+        seen = set()
+        for out in gmr.generate().splitlines():
+            out = out.split(":")
+            self.assertEqual(out[0], out[1])
+            self.assertTrue(out[0] not in seen)
+            seen.add(out[0])
+        self.assertEqual(len(seen), len(gmr.symtab['choice'].children()))
+
 
 class Binary(TestCase):
 

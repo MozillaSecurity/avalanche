@@ -493,7 +493,7 @@ class Grammar(object):
                     assert this[1] == tracked[0], "Tracking mismatch: expected '%s', got '%s'" % (tracked[0], this[1])
                     instance = "".join(gstate.output[tracked[1]:])
                     if "[concat" in this[1]:
-                        gstate.backrefs[-1].setdefault(this[1], []).append(instance)
+                        gstate.backrefs[-1][this[1]] = instance
                     elif this[2]:
                         gstate.instance_backlog[this[1]].append(instance)
                     else:
@@ -1077,7 +1077,7 @@ class RefSymbol(_Symbol):
         if "[concat" in self.ref:
             backrefs = gstate.backrefs[-1]
             try:
-                gstate.append(random.choice(backrefs[self.ref]))
+                gstate.append(backrefs[self.ref])
             except KeyError:
                 raise GenerationError("No symbols generated yet for backreference", gstate)
         elif gstate.instances[self.ref]:
