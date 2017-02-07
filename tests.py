@@ -527,6 +527,14 @@ class Imports(TestCase):
           'root A.B\n')
         self.assertEqual(gmr.generate(), 'z')
 
+    def test_import_with_unicode(self):
+        "test that imports with unicode characters work"
+        with open('a.gmr', 'wb') as fd:
+            fd.write('a "ü"')
+        gmr = Grammar("b import('a.gmr')\n"
+                      "root b.a")
+        self.assertEqual(gmr.generate(), 'ü')
+
 class Inputs(TestCase):
 
     def test_str(self):
@@ -951,7 +959,29 @@ class Strings(TestCase):
 
     def test_3(self):
         "test for unicode strings"
-        gmr = Grammar("root 'ü'")
-        self.assertEqual(gmr.generate(), "ü")
+        test_strings = [
+            "ü",
+            "Ⱥ",
+            "Ω≈ç√∫˜µ≤≥÷",
+            "åß∂ƒ©˙∆˚¬…æ",
+            "œ∑´®†¥¨ˆøπ“‘",
+            "¡™£¢∞§¶•ªº–≠",
+            "¸˛Ç◊ı˜Â¯˘¿",
+            "ÅÍÎÏ˝ÓÔÒÚÆ☃",
+            "Œ„´‰ˇÁ¨ˆØ∏”’",
+            "`⁄€‹›ﬁﬂ‡°·‚—±",
+            "⅛⅜⅝⅞",
+            "ЁЂЃЄЅІЇЈЉЊтуфхцчшщъыьэюя",
+            "٠١٢٣٤٥٦٧٨٩",
+            "田中さんにあげて下さい",
+            "𠜎𠜱𠝹𠱓𠱸𠲖𠳏",
+            "ثم نفس سقطت وبالتحديد،,",
+            "בְּרֵאשִׁית, בָּרָא",
+            "ﷺ",
+            "̡͓̞ͅI̗c҉͔̫͖͓͇͖ͅh̵̤̣͚͔á̗̼͕ͅo̼̣̥s̱͈̺̖̦̻͢.̛̖̞̠̯̹̞͓G̻O̭̗̮"]
+
+        for test_str in test_strings:
+            gmr = Grammar("root '%s'" % test_str)
+            self.assertEqual(gmr.generate(), test_str)
 
 
