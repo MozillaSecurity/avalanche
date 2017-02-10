@@ -213,7 +213,6 @@ class Grammar(object):
         if "import" in self.funcs:
             raise IntegrityError("'import' is a reserved function name")
 
-        need_to_close = False
         if hasattr(grammar, "read"):
             grammar = _file_to_unicode(grammar)
         elif isinstance(grammar, bytes):
@@ -226,11 +225,7 @@ class Grammar(object):
         # friendly prefixes.
 
         imports = {} # hash -> friendly prefix
-        try:
-            self.parse(grammar, imports)
-        finally:
-            if need_to_close:
-                grammar.close()
+        self.parse(grammar, imports)
         self.reprefix(imports)
         self.sanity_check()
         self.normalize()
