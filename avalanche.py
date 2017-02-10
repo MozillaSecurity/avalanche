@@ -23,6 +23,7 @@
 from __future__ import unicode_literals
 import argparse
 import binascii
+import codecs
 import hashlib
 import io
 import logging
@@ -43,6 +44,17 @@ __all__ = ("Grammar", "GrammarException", "ParseError", "IntegrityError", "Gener
 if sys.version_info.major == 2:
     # pylint: disable=redefined-builtin,invalid-name
     str = unicode
+utf8_reader = codecs.getreader("utf-8")
+
+
+def _file_to_unicode(fd):
+    if isinstance(fd.read(1), bytes):
+        # need to reopen as unicode
+        fd.seek(0)
+        fd = utf8_reader(fd)
+    else:
+        fd.seek(0)
+    return fd
 
 
 DEFAULT_LIMIT = 100 * 1024
@@ -204,17 +216,7 @@ class Grammar(object):
 
         need_to_close = False
         if hasattr(grammar, "read"):
-            if isinstance(grammar.read(1), bytes):
-                # need to reopen as unicode
-                grammar.seek(0)
-                try:
-                    grammar = io.open(grammar.name, 'r', encoding="utf-8") # will fail if grammar is not a named file
-                    need_to_close = True
-                except (AttributeError, IOError):
-                    # can't reopen, no choice but to read the whole input
-                    grammar = io.StringIO(grammar.read().decode("utf-8"))
-            else:
-                grammar.seek(0)
+            grammar = _file_to_unicode(grammar)
         elif isinstance(grammar, bytes):
             grammar = io.StringIO(grammar.decode("utf-8"))
         else:
@@ -299,7 +301,9 @@ class Grammar(object):
                         for import_fn in import_paths:
                             try:
                                 with open(import_fn) as import_fd:
-                                    pstate.add_import(sym_name, self.parse(import_fd, imports, prefix="%s.%s" % (prefix, sym_name) if prefix else sym_name))
+                                    import_prefix = "%s.%s" % (prefix, sym_name) if prefix else sym_name
+                                    import_hash = self.parse(_file_to_unicode(import_fd), imports, prefix=import_prefix)
+                                    pstate.add_import(sym_name, import_hash)
                                 break
                             except IOError:
                                 pass

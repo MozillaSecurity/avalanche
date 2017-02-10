@@ -530,7 +530,7 @@ class Imports(TestCase):
     def test_import_with_unicode(self):
         "test that imports with unicode characters work"
         with open('a.gmr', 'wb') as fd:
-            fd.write('a "ü"')
+            fd.write('a "ü"'.encode("utf-8"))
         gmr = Grammar("b import('a.gmr')\n"
                       "root b.a")
         self.assertEqual(gmr.generate(), 'ü')
@@ -983,5 +983,3 @@ class Strings(TestCase):
         for test_str in test_strings:
             gmr = Grammar("root '%s'" % test_str)
             self.assertEqual(gmr.generate(), test_str)
-
-
