@@ -106,8 +106,7 @@ class _GenState(object):
         self.length += len(value)
 
     def backtrace(self):
-        return ", ".join(sym[1] for sym in self.symstack
-                         if isinstance(sym, tuple) and sym[0] == 'unwind')
+        return ", ".join(sym[1] for sym in self.symstack if sym[0] == 'unwind')
 
 
 class _ParseState(object):
