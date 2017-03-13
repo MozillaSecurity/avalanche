@@ -1151,6 +1151,7 @@ class RegexSymbol(ConcatSymbol):
 
     @staticmethod
     def parse(defn, pstate):
+        unichr_ = chr if sys.version_info.major == 3 else unichr
         result = RegexSymbol(pstate)
         n_implicit = [0]
         if defn[0] != "/":
@@ -1187,7 +1188,7 @@ class RegexSymbol(ConcatSymbol):
                             end = ord(alpha[-1]) + 1
                             if start >= end:
                                 raise ParseError("Empty range in regex at: %s" % defn, pstate)
-                            alpha.extend(chr(letter) for letter in range(ord(alpha[-2]), ord(alpha[-1]) + 1))
+                            alpha.extend(unichr_(letter) for letter in range(ord(alpha[-2]), ord(alpha[-1]) + 1))
                             in_range = False
                     defn = defn[match.end(0):]
                 else:
