@@ -23,6 +23,7 @@
 from __future__ import unicode_literals
 import argparse
 import binascii
+import bisect
 import codecs
 import hashlib
 import io
@@ -38,12 +39,15 @@ import sys
 
 __all__ = ("Grammar", "GrammarException", "ParseError", "IntegrityError", "GenerationError",
            "BinSymbol", "ChoiceSymbol", "ConcatSymbol", "FuncSymbol", "RefSymbol", "RepeatSymbol",
-           "RepeatSampleSymbol", "RegexSymbol", "TextSymbol")
+           "RepeatSampleSymbol", "RegexSymbol", "_SparseList", "TextSymbol")
 
 
 if sys.version_info.major == 2:
     # pylint: disable=redefined-builtin,invalid-name
     str = unicode
+    unichr_ = unichr
+else:
+    unichr_ = chr
 utf8_reader = codecs.getreader("utf-8")
 
 
@@ -154,6 +158,126 @@ class _ParseState(object):
         unused = set(self.imports) - self.imports_used
         if unused:
             raise IntegrityError("Unused import%s: %s" % ("s" if len(unused) > 1 else "", list(unused)), self)
+
+
+class _SparseList(object):
+    """List-like numeric array type which supports sparse ranges.
+       Maintains sorted order, and supports indexing within sparse ranges.
+       Ranges cannot overlap (raises ValueError).
+    """
+    def __init__(self, copy=None):
+        if copy is None:
+            self.clear()
+        else:
+            self._data = copy._data
+            self._len = copy._len
+
+    def add(self, a, b=None):
+        """
+        Add range (a,b) inclusive. If b is not specified, default to (a,a).
+        """
+        if b is None:
+            b = a
+        elif b < a:
+            raise ValueError("Only forward intervals are supported (a <= b)")
+        insert = bisect.bisect_left(self._data, [a])
+        # check before for conflict
+        if insert and a <= self._data[insert - 1][1]:
+            raise ValueError("%d is already present in the list" % a)
+        # check after for conflict
+        if insert < len(self._data) and b >= self._data[insert][0]:
+            raise ValueError("%d is already present in the list" % b)
+        # check for pre-optimize
+        pre = insert and a == self._data[insert - 1][1] + 1
+        # check for post optimize
+        post = insert < len(self._data) and b + 1 == self._data[insert][0]
+        if pre and post:
+            self._data[insert - 1][1] = self._data[insert][1]
+            self._data.pop(insert)
+        elif pre:
+            self._data[insert - 1][1] = b
+        elif post:
+            self._data[insert][0] = a
+        else:
+            self._data.insert(insert, [a, b])
+        self._len += b - a + 1
+
+    def remove(self, a, b=None):
+        """
+        Remove range (a,b) inclusive. If b is not specified, default to (a,a).
+        No error is raised if (a,b) and self hav no overlap.
+        """
+        if b is None:
+            b = a
+        if b < a:
+            raise ValueError("Only forward intervals are supported (a <= b)")
+        ia = bisect.bisect_left(self._data, [a])
+        ib = bisect.bisect_left(self._data, [b])
+        # move a if needed
+        if ia and a <= self._data[ia - 1][1]:
+            #a is actually in the range before ia
+            ia -= 1
+        elif ia != len(self._data) and a < self._data[ia][0]:
+            a = self._data[ia][0]
+        if ia == len(self._data):
+            return
+        ahead = bool(self._data[ia][0] == a)
+        # move b if needed
+        if ib and b <= self._data[ib - 1][1]:
+            #b is actually in the range before ib
+            ib -= 1
+        elif ib and b > self._data[ib - 1][1] and ib != len(self._data) and b < self._data[ib][0]:
+            b = self._data[ib - 1][1]
+            ib -= 1
+        if b < a:
+            return
+        btail = bool(self._data[ib][1] == b)
+        # do the deletions
+        if ahead and btail:
+            # delete whole range
+            self._len -= sum((j - i + 1) for (i, j) in self._data[ia:ib + 1])
+            del self._data[ia:ib + 1]
+        elif btail:
+            # modify ia
+            self._len -= self._data[ia][1] - a + 1 + sum((j - i + 1) for (i, j) in self._data[ia + 1:ib + 1])
+            self._data[ia][1] = a - 1
+            del self._data[ia + 1:ib + 1]
+        elif ahead:
+            # modify ib
+            self._len -= b - self._data[ib][0] + 1 + sum((j - i + 1) for (i, j) in self._data[ia:ib])
+            self._data[ib][0] = b + 1
+            del self._data[ia:ib]
+        elif ia == ib:
+            new = [b + 1, self._data[ib][1]]
+            self._len -= self._data[ib][1] - a + 1
+            self._data[ib][1] = a - 1
+            self.add(*new)
+        else:
+            self._len -= b - self._data[ib][0] + self._data[ia][1] - a + 2
+            self._len -= sum((j - i + 1) for (i, j) in self._data[ia + 1:ib])
+            self._data[ia][1] = a - 1
+            self._data[ib][0] = b + 1
+            del self._data[ia + 1:ib]
+
+    def clear(self):
+        self._len = 0
+        self._data = []
+
+    def __sub__(self, other):
+        for (a, b) in other._data:
+            self.remove(a, b)
+
+    def __len__(self):
+        return self._len
+
+    def __getitem__(self, key):
+        if key >= len(self) or key < 0:
+            [0][1] # raise IndexError
+        for a, b in self._data:
+            len_ = b - a + 1
+            if key < len_:
+                return a + key
+            key -= len_
 
 
 class Grammar(object):
@@ -1120,7 +1244,6 @@ class RegexSymbol(ConcatSymbol):
        syntax is *not* supported in RegexSymbol. The characters "()|" have no special meaning and do not need to be
        escaped.
     """
-    _REGEX_ALPHABET = string.digits + string.ascii_letters + string.punctuation + " "
     _RE_PARSE = re.compile(r"""^((?P<repeat>\{\s*(?P<a>\d+)\s*(,\s*(?P<b>\d+)\s*)?\}|\?)
                                  |(?P<set>\[\^?)
                                  |(?P<esc>\\.)
@@ -1141,9 +1264,6 @@ class RegexSymbol(ConcatSymbol):
     def new_text(self, value, n_implicit, pstate):
         self.append(TextSymbol(self._impl_name(n_implicit), value, pstate, no_prefix=True).name)
 
-    def new_textchoice(self, alpha, n_implicit, pstate):
-        self.append(_TextChoiceSymbol(self._impl_name(n_implicit), alpha, pstate, no_prefix=True).name)
-
     def add_repeat(self, min_, max_, n_implicit, pstate):
         rep = RepeatSymbol(self._impl_name(n_implicit), min_, max_, pstate, no_prefix=True)
         rep.append(self.pop())
@@ -1151,7 +1271,6 @@ class RegexSymbol(ConcatSymbol):
 
     @staticmethod
     def parse(defn, pstate):
-        unichr_ = chr if sys.version_info.major == 3 else unichr
         result = RegexSymbol(pstate)
         n_implicit = [0]
         if defn[0] != "/":
@@ -1163,6 +1282,7 @@ class RegexSymbol(ConcatSymbol):
                 result.new_text(defn[0], n_implicit, pstate)
                 defn = defn[1:]
             elif match.group("set"):
+                lst = _TextChoiceSymbol(result._impl_name(n_implicit), pstate, no_prefix=True)
                 inverse = len(match.group("set")) == 2
                 defn = defn[match.end(0):]
                 alpha = []
@@ -1171,7 +1291,7 @@ class RegexSymbol(ConcatSymbol):
                     match = RegexSymbol._RE_SET.match(defn)
                     if match.group(0) == "]":
                         if in_range:
-                            alpha.append('-')
+                            alpha.append(ord('-'))
                         defn = defn[match.end(0):]
                         break
                     elif match.group(0) == "-":
@@ -1180,30 +1300,35 @@ class RegexSymbol(ConcatSymbol):
                         in_range = True
                     else:
                         if match.group(0).startswith("\\"):
-                            alpha.append(TextSymbol.ESCAPES.get(match.group(0)[1], match.group(0)[1]))
+                            alpha.append(ord(TextSymbol.ESCAPES.get(match.group(0)[1], match.group(0)[1])))
                         else:
-                            alpha.append(match.group(0))
+                            alpha.append(ord(match.group(0)))
                         if in_range:
-                            start = ord(alpha[-2])
-                            end = ord(alpha[-1]) + 1
-                            if start >= end:
+                            end = alpha.pop()
+                            start = alpha.pop()
+                            if start >= end + 1:
                                 raise ParseError("Empty range in regex at: %s" % defn, pstate)
-                            alpha.extend(unichr_(letter) for letter in range(ord(alpha[-2]), ord(alpha[-1]) + 1))
+                            lst.add(start, end)
                             in_range = False
                     defn = defn[match.end(0):]
                 else:
                     raise ParseError("Unterminated set in regex", pstate)
-                alpha = set(alpha)
+                for char in alpha:
+                    lst.add(char)
                 if inverse:
-                    alpha = set(RegexSymbol._REGEX_ALPHABET) - alpha
-                result.new_textchoice("".join(alpha), n_implicit, pstate)
+                    sub = _SparseList(lst)
+                    lst.clear()
+                    lst.add(ord(" "), ord("~"))
+                    lst -= sub
+                result.append(lst.name)
             elif match.group("done"):
                 return result, defn[match.end(0):]
             elif match.group("dot"):
                 try:
                     pstate.grmr.symtab["%s.[regex alpha]" % pstate.prefix]
                 except KeyError:
-                    sym = _TextChoiceSymbol("[regex alpha]", RegexSymbol._REGEX_ALPHABET, pstate)
+                    sym = _TextChoiceSymbol("[regex alpha]", pstate)
+                    sym.add(ord(" "), ord("~"))
                     sym.line_no = 0
                 result.append(sym.name)
                 defn = defn[match.end(0):]
@@ -1371,10 +1496,18 @@ class TextSymbol(_Symbol):
         return sym, defn
 
 
-class _TextChoiceSymbol(TextSymbol):
+class _TextChoiceSymbol(_Symbol, _SparseList):
+
+    def __init__(self, name, pstate, no_prefix=False, no_add=False):
+        if name is None:
+            name = "[splist (line %d #%d)]" % (pstate.line_no, pstate.implicit() if not no_add else -1)
+        name = "%s.%s" % (pstate.prefix, name) if not no_prefix else name
+        _Symbol.__init__(self, name, pstate, no_add=no_add)
+        _SparseList.__init__(self)
+        self.can_terminate = True
 
     def generate(self, gstate):
-        gstate.append(random.choice(self.value))
+        gstate.append(unichr_(self[random.randint(0, len(self) - 1)]))
 
 
 def main():

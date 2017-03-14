@@ -29,7 +29,7 @@ import string
 import sys
 import tempfile
 import unittest
-from avalanche import Grammar, GenerationError, IntegrityError, ParseError
+from avalanche import Grammar, GenerationError, IntegrityError, ParseError, _SparseList
 
 
 logging.basicConfig(level=logging.DEBUG if bool(os.getenv("DEBUG")) else logging.INFO)
@@ -903,6 +903,175 @@ class References(TestCase):
         self.assertLess(len(refs), count, "All refs are unique")
         # more than a single reference should be used
         self.assertGreater(len(refs), 1, "Expecting more than a single reference be used")
+
+
+class SparseList(TestCase):
+
+    def test_0(self):
+        "test for basic function of sparse lists"
+        lst = _SparseList()
+        lst.add(1, 2) # 2
+        lst.add(5) # 1
+        lst.add(7, 8) # 2
+        self.assertEqual(len(lst), 5)
+        self.assertEqual(lst[0], 1)
+        self.assertEqual(lst[1], 2)
+        self.assertEqual(lst[2], 5)
+        self.assertEqual(lst[3], 7)
+        self.assertEqual(lst[4], 8)
+        self.assertEqual(len(lst._data), 3)
+
+    def test_1(self):
+        "test sorted order of sparse lists"
+        lst = _SparseList()
+        lst.add(5)
+        lst.add(3)
+        lst.add(1)
+        self.assertEqual(len(lst), 3)
+        self.assertEqual(lst[0], 1)
+        self.assertEqual(lst[1], 3)
+        self.assertEqual(lst[2], 5)
+        self.assertEqual(len(lst._data), 3)
+
+    def test_2(self):
+        "test optimization of sparse lists"
+        lst = _SparseList()
+        lst.add(6)
+        lst.add(4)
+        self.assertEqual(len(lst._data), 2)
+        lst.add(5)
+        self.assertEqual(len(lst._data), 1)
+        lst.add(3)
+        self.assertEqual(len(lst._data), 1)
+        lst.add(7)
+        self.assertEqual(len(lst._data), 1)
+        self.assertEqual(len(lst), 5)
+        self.assertEqual(lst[0], 3)
+        self.assertEqual(lst[1], 4)
+        self.assertEqual(lst[2], 5)
+        self.assertEqual(lst[3], 6)
+        self.assertEqual(lst[4], 7)
+
+    def test_3(self):
+        "test removal from sparse lists"
+        lst = _SparseList()
+        lst.add(1)
+        lst.add(3)
+        self.assertEqual(len(lst._data), 2)
+        lst.remove(2)
+        self.assertEqual(len(lst._data), 2)
+        self.assertEqual(len(lst), 2)
+        self.assertEqual(lst[0], 1)
+        self.assertEqual(lst[1], 3)
+
+        lst = _SparseList()
+        lst.add(1)
+        self.assertEqual(len(lst._data), 1)
+        lst.remove(1)
+        self.assertEqual(len(lst._data), 0)
+        self.assertEqual(len(lst), 0)
+
+        lst = _SparseList()
+        lst.add(1)
+        self.assertEqual(len(lst._data), 1)
+        lst.add(3)
+        self.assertEqual(len(lst._data), 2)
+        lst.remove(1, 3)
+        self.assertEqual(len(lst._data), 0)
+        self.assertEqual(len(lst), 0)
+
+        lst = _SparseList()
+        lst.add(1, 2)
+        self.assertEqual(len(lst._data), 1)
+        lst.remove(2)
+        self.assertEqual(len(lst._data), 1)
+        self.assertEqual(len(lst), 1)
+        self.assertEqual(lst[0], 1)
+
+        lst = _SparseList()
+        lst.add(1, 3)
+        self.assertEqual(len(lst._data), 1)
+        lst.add(5)
+        self.assertEqual(len(lst._data), 2)
+        lst.remove(2, 5)
+        self.assertEqual(len(lst._data), 1)
+        self.assertEqual(len(lst), 1)
+        self.assertEqual(lst[0], 1)
+
+        lst = _SparseList()
+        lst.add(1, 2)
+        self.assertEqual(len(lst._data), 1)
+        lst.remove(1)
+        self.assertEqual(len(lst._data), 1)
+        self.assertEqual(len(lst), 1)
+        self.assertEqual(lst[0], 2)
+
+        lst = _SparseList()
+        lst.add(1)
+        self.assertEqual(len(lst._data), 1)
+        lst.add(3, 5)
+        self.assertEqual(len(lst._data), 2)
+        lst.remove(1, 4)
+        self.assertEqual(len(lst._data), 1)
+        self.assertEqual(len(lst), 1)
+        self.assertEqual(lst[0], 5)
+
+        lst = _SparseList()
+        lst.add(1, 3)
+        self.assertEqual(len(lst._data), 1)
+        lst.remove(2)
+        self.assertEqual(len(lst._data), 2)
+        self.assertEqual(len(lst), 2)
+        self.assertEqual(lst[0], 1)
+        self.assertEqual(lst[1], 3)
+
+        lst = _SparseList()
+        lst.add(1, 3)
+        self.assertEqual(len(lst._data), 1)
+        lst.add(24, 26)
+        self.assertEqual(len(lst._data), 2)
+        lst.remove(2, 25)
+        self.assertEqual(len(lst._data), 2)
+        self.assertEqual(len(lst), 2)
+        self.assertEqual(lst[0], 1)
+        self.assertEqual(lst[1], 26)
+
+    def test_4(self):
+        "test error cases of sparse lists"
+        with self.assertRaisesRegex(ValueError, r"^1 is already present in the list$"):
+            lst = _SparseList()
+            lst.add(1)
+            lst.add(1)
+        with self.assertRaisesRegex(ValueError, r"^2 is already present in the list$"):
+            lst = _SparseList()
+            lst.add(1, 3)
+            lst.add(2)
+        with self.assertRaisesRegex(ValueError, r"^\d+ is already present in the list$"):
+            lst = _SparseList()
+            lst.add(2, 6)
+            lst.add(1, 3)
+        with self.assertRaisesRegex(ValueError, r"^\d+ is already present in the list$"):
+            lst = _SparseList()
+            lst.add(2, 6)
+            lst.add(3, 7)
+        with self.assertRaisesRegex(IndexError, r"^list index out of range$"):
+            lst = _SparseList()
+            lst[0]
+        with self.assertRaisesRegex(IndexError, r"^list index out of range$"):
+            lst = _SparseList()
+            lst.add(1)
+            lst[1]
+        with self.assertRaisesRegex(IndexError, r"^list index out of range$"):
+            lst = _SparseList()
+            lst.add(1)
+            lst[-1]
+        with self.assertRaisesRegex(ValueError, r"^Only forward intervals are supported \(a <= b\)$"):
+            lst = _SparseList()
+            lst.add(2, 1)
+        with self.assertRaisesRegex(ValueError, r"^Only forward intervals are supported \(a <= b\)$"):
+            lst = _SparseList()
+            lst.remove(2, 1)
+
 
 class Strings(TestCase):
 
