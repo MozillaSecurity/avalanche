@@ -406,6 +406,14 @@ class Functions(TestCase):
                     "a-value 'AAA'\n"
                     "b-value 'BBB'")
 
+    def test_builtin_id(self):
+        "test the built-in id function"
+        gmr = Grammar("root id() ' ' id() ' ' id()")
+        self.assertEqual(gmr.generate(), "0000 0001 0002")
+        self.assertEqual(gmr.generate(), "0000 0001 0002")
+        with self.assertRaisesRegex(GenerationError, r'^TypeError: id\(\) takes 0 arguments \(1 given\)'):
+            Grammar("root id('')").generate()
+
 
 class Imports(TestCase):
 

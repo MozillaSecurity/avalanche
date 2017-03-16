@@ -101,6 +101,7 @@ class _GenState(object):
         self.backrefs = []
         self.choice_stack = {}
         self.recursive_syms = {}
+        self.id = 0
 
     def append(self, value):
         if self.output and not isinstance(value, type(self.output[0])):
@@ -111,6 +112,11 @@ class _GenState(object):
 
     def backtrace(self):
         return ", ".join(sym[1] for sym in self.symstack if sym[0] == 'unwind')
+
+    def generate_id(self):
+        result = "%04d" % self.id
+        self.id += 1
+        self.append(result)
 
 
 class _ParseState(object):
@@ -334,6 +340,8 @@ class Grammar(object):
             self.funcs["rndflt"] = lambda a, b: str(random.uniform(float(a), float(b)))
         if "eval" not in self.funcs:
             self.funcs["eval"] = None # eval is a special case in FuncSymbol.generate
+        if "id" not in self.funcs:
+            self.funcs["id"] = None # id is a special case in FuncSymbol.generate
         if "import" in self.funcs:
             raise IntegrityError("'import' is a reserved function name")
 
@@ -494,7 +502,7 @@ class Grammar(object):
     def sanity_check(self):
         log.debug("sanity checking symtab: %s", self.symtab)
         log.debug("tracked symbols: %s", self.tracked)
-        funcs_used = {"rndflt", "rndint", "rndpow2", "eval"}
+        funcs_used = {"rndflt", "rndint", "rndpow2", "eval", "id"}
         for sym in self.symtab.values():
             sym.sanity_check(self)
             if isinstance(sym, FuncSymbol):
@@ -1135,6 +1143,10 @@ class FuncSymbol(_Symbol):
                 gstate.symstack.append("%s.%s" % (prefix, name))
             else:
                 gstate.symstack.append(name)
+        elif self.fname == "id" and gstate.grmr.funcs["id"] is None:
+            if len(args) != 0:
+                raise TypeError("id() takes 0 arguments (%d given)" % len(args))
+            gstate.generate_id()
         else:
             gstate.append(gstate.grmr.funcs[self.fname](*args))
 
