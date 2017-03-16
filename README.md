@@ -43,6 +43,7 @@ SymName         SubSym<a,b>     # repeatedly generate SubSym between [a,b] uniqu
 SymName         /[A-Za-z]{0,4}..?[^a-f]{2}/  # simple regex generator, generate from A-Za-z [0,4]
                                              # times, '.' generates printable ASCII. [^] inverts
                                              # characters. ? generates [0,1] instances, etc.
+                                             # Unicode ranges are supported.
 
 # RefSymbol
 SymName         @SymName2       # returns a previously generated instance of SymName2
@@ -50,7 +51,7 @@ SymName         ('abc') @1      # returns the value generated in a previous Conc
                                 #   same line (numbered in order of opening bracket, starting at 1)
 
 # FuncSymbol
-SymName         rndint(a,b)     # rndint, rndflt, rndpow2, eval are built-in,
+SymName         rndint(a,b)     # rndint, rndflt, rndpow2, eval, id are built-in,
                                 #   others can be passed as keyword args to the Grammar constructor
                                 #   args can be numeric literals, or symbol definitions
 
