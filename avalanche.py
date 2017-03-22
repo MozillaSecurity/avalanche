@@ -114,7 +114,7 @@ class _GenState(object):
         return ", ".join(sym[1] for sym in self.symstack if sym[0] == 'unwind')
 
     def generate_id(self):
-        result = "%04d" % self.id
+        result = "%d" % self.id
         self.id += 1
         self.append(result)
 
