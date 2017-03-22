@@ -1,5 +1,4 @@
-Avalanche
-=========
+# Avalanche
 
 [![Build Status](https://api.travis-ci.org/MozillaSecurity/avalanche.svg)](https://travis-ci.org/MozillaSecurity/avalanche) [![Coverage Status](https://coveralls.io/repos/github/MozillaSecurity/avalanche/badge.svg)](https://coveralls.io/github/MozillaSecurity/avalanche)
 
@@ -7,15 +6,60 @@ Avalanche is a document generator which uses context-free grammars to generate
 randomized outputs for fuzz-testing.
 
 
-Syntax Cheatsheet
------------------
+## Quickstart
+
+Define your grammar in a text file (UTF-8 encoding). 'root' is the default start symbol.
+
+###### Example my.gmr:
+```
+root            "<html>\n" \
+                "<body>\n" \
+                content{10} \
+                "</body>\n" \
+                "</html>"
+
+content         "<" (tagname) ' style="color:' colour ';">Hello world</' @1 ">\n"
+
+color           "#" /[a-f0-9]{3}/
+
+tagname     1   "b"
+            1   "blink"
+            1   "i"
+            1   "marquee"
+            1   "span"
+```
+
+###### How to generate:
+```
+with open('my.gmr') as fd:
+    g = Grammar(fd)
+result = g.generate()
+```
+
+###### Example value of `result` from the above grammar:
+```
+<html>
+<body>
+<i style="color:#8b2;">Hello world</i>
+<marquee style="color:#d09;">Hello world</marquee>
+<b style="color:#aa9;">Hello world</b>
+<b style="color:#93d;">Hello world</b>
+<b style="color:#ada;">Hello world</b>
+<span style="color:#464;">Hello world</span>
+<span style="color:#90f;">Hello world</span>
+<blink style="color:#ee9;">Hello world</blink>
+<marquee style="color:#661;">Hello world</marquee>
+<i style="color:#a21;">Hello world</i>
+</body>
+</html>
+```
+
+
+## Syntax Cheatsheet
 
 ```
-# BinSymbol
-SymName        x"41414141"      # generate b"AAAA" in the output (cannot be used with TextSymbol)
-
 # TextSymbol
-SymName         "text"          # generate u"text" in the output (cannot be used with BinSymbol)
+SymName         "text"          # generate u"text" in the output
 
 # ChoiceSymbol (must be named, no inline form)
 SymName   .5    Defn1           # choose between generating Defn1 (1:3 odds)
@@ -60,20 +104,6 @@ Blah            import('another.gmr')    # can use imported symnames like Blah.S
 ```
 
 
-Quickstart
-----------
-
-Define your grammar in a text file (UTF-8 encoding). 'root' is the default start symbol.
-
-```
-with open('my.gmr') as fd:
-    g = Grammar(fd)
-result = g.generate()
-```
-
-
-About the name
---------------
+## About the name
 
 Avalanche is French for "Avalanche".
-
