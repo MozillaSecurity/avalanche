@@ -696,6 +696,13 @@ class Regexes(TestCase):
         out = set(Grammar('root /./{%d}' % iters).generate())
         self.assertEqual(out, set(string.digits + string.ascii_letters + string.punctuation + " "))
 
+    def test_3(self):
+        "test for excluded char in range"
+        iters = 10000
+        out = set(Grammar('root /[^"]{%d}/' % iters).generate())
+        self.assertEqual(out - set(string.digits + string.ascii_letters + string.punctuation + " "), set())
+        self.assertEqual(set(string.digits + string.ascii_letters + string.punctuation + " ") - out, {'"'})
+
 
 class Repeats(TestCase):
 

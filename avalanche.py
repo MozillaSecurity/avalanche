@@ -269,9 +269,10 @@ class _SparseList(object):
         self._len = 0
         self._data = []
 
-    def __sub__(self, other):
+    def __isub__(self, other):
         for (a, b) in other._data:
             self.remove(a, b)
+        return self
 
     def __len__(self):
         return self._len
