@@ -38,6 +38,15 @@ log = logging.getLogger("avalanche_test")
 
 class TestCase(unittest.TestCase):
 
+    def setUp(self):
+        self.tmpd = tempfile.mkdtemp(prefix='gmrtesttmp')
+        self.cwd = os.getcwd()
+        os.chdir(self.tmpd)
+
+    def tearDown(self):
+        os.chdir(self.cwd)
+        shutil.rmtree(self.tmpd)
+
     if sys.version_info.major == 2:
 
         def assertRegex(self, *args, **kwds):
@@ -417,15 +426,6 @@ class Functions(TestCase):
 
 class Imports(TestCase):
 
-    def setUp(self):
-        self.tmpd = tempfile.mkdtemp(prefix='gmrtesttmp')
-        self.cwd = os.getcwd()
-        os.chdir(self.tmpd)
-
-    def tearDown(self):
-        os.chdir(self.cwd)
-        shutil.rmtree(self.tmpd)
-
     def test_import_reserved(self):
         "test that 'import' is not allowed to be redefined"
         with self.assertRaisesRegex(ParseError, r"^'import' is a reserved name"):
@@ -564,19 +564,18 @@ class Inputs(TestCase):
 
     def test_binfile(self):
         "test grammar with binary file as input"
-        with tempfile.NamedTemporaryFile('w+b') as gmrfile:
-            gmrfile.write(b'root "a"')
-            gmrfile.seek(0)
-            gmr = Grammar(gmrfile)
+        with open('a.gmr', 'w+b') as fd:
+            fd.write(b'root "a"')
+            fd.seek(0)
+            gmr = Grammar(fd)
         self.assertEqual(gmr.generate(), 'a')
 
     def test_file(self):
         "test grammar with utf-8 file as input"
-        with tempfile.NamedTemporaryFile('w+') as gmrfile:
-            with io.open(gmrfile.name, 'w+', encoding="utf-8") as gmrutf8:
-                gmrutf8.write('root "aü"')
-                gmrutf8.seek(0)
-                gmr = Grammar(gmrutf8)
+        with io.open('a.gmr', 'w+', encoding='utf-8') as fd:
+            fd.write('root "aü"')
+            fd.seek(0)
+            gmr = Grammar(fd)
         self.assertEqual(gmr.generate(), 'aü')
 
 

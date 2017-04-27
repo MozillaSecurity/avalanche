@@ -427,7 +427,7 @@ class Grammar(object):
                             import_paths.insert(0, os.path.join(os.path.dirname(grammar_fn), sym.value))
                         for import_fn in import_paths:
                             try:
-                                with open(import_fn) as import_fd:
+                                with io.open(import_fn, encoding='utf-8') as import_fd:
                                     import_prefix = "%s.%s" % (prefix, sym_name) if prefix else sym_name
                                     import_hash = self.parse(_file_to_unicode(import_fd), imports, prefix=import_prefix)
                                     pstate.add_import(sym_name, import_hash)
