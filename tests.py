@@ -702,6 +702,12 @@ class Regexes(TestCase):
         self.assertEqual(out - set(string.digits + string.ascii_letters + string.punctuation + " "), set())
         self.assertEqual(set(string.digits + string.ascii_letters + string.punctuation + " ") - out, {'"'})
 
+    def test_4(self):
+        "test unicode ranges"
+        out = Grammar('root /[🌀-🗿]/').generate()
+        self.assertIn(ord(out), range(ord('🌀'), ord('🗿')))
+
+
 
 class Repeats(TestCase):
 
