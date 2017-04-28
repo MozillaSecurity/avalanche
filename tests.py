@@ -29,7 +29,7 @@ import string
 import sys
 import tempfile
 import unittest
-from avalanche import Grammar, GenerationError, IntegrityError, ParseError, _SparseList
+from avalanche import Grammar, GenerationError, IntegrityError, ParseError, _SparseList, unichr_
 
 
 logging.basicConfig(level=logging.DEBUG if bool(os.getenv("DEBUG")) else logging.INFO)
@@ -704,8 +704,13 @@ class Regexes(TestCase):
 
     def test_4(self):
         "test unicode ranges"
-        out = Grammar('root /[🌀-🗿]/').generate()
-        self.assertIn(ord(out), range(ord('🌀'), ord('🗿')))
+        iters = 100000
+        out = Grammar('root /[\U0001f300-\U0001f5ff]/{%d}' % iters).generate()
+        if sys.maxunicode == 65535:
+            out = {out[i:i+2] for i in range(0, len(out), 2)}
+        else:
+            out = set(out)
+        self.assertEqual(set(out), set(unichr_(c) for c in range(0x1f300, 0x1f600)))
 
 
 

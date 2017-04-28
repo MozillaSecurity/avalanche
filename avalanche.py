@@ -39,13 +39,16 @@ import sys
 
 __all__ = ("Grammar", "GrammarException", "ParseError", "IntegrityError", "GenerationError",
            "BinSymbol", "ChoiceSymbol", "ConcatSymbol", "FuncSymbol", "RefSymbol", "RepeatSymbol",
-           "RepeatSampleSymbol", "RegexSymbol", "_SparseList", "TextSymbol")
+           "RepeatSampleSymbol", "RegexSymbol", "_SparseList", "TextSymbol", "unichr_")
 
 
 if sys.version_info.major == 2:
     # pylint: disable=redefined-builtin,invalid-name
     str = unicode
-    unichr_ = unichr
+    if sys.maxunicode == 65535:
+        unichr_ = lambda c: (br'\U%08x' % c).decode("unicode-escape")
+    else:
+        unichr_ = unichr
 else:
     unichr_ = chr
 utf8_reader = codecs.getreader("utf-8")
@@ -1262,7 +1265,7 @@ class RegexSymbol(ConcatSymbol):
                                  |(?P<esc>\\.)
                                  |(?P<dot>\.)
                                  |(?P<done>/))""", re.VERBOSE)
-    _RE_SET = re.compile(r"^(\]|-|\\?.)")
+    _RE_SET = re.compile(r"^(\]|-|[\ud800-\udbff][\udc00-\udfff]|\\?.)")
 
     def __init__(self, pstate):
         name = "%s.[regex (line %d #%d)]" % (pstate.prefix, pstate.line_no, pstate.implicit())
@@ -1314,6 +1317,9 @@ class RegexSymbol(ConcatSymbol):
                     else:
                         if match.group(0).startswith("\\"):
                             alpha.append(ord(TextSymbol.ESCAPES.get(match.group(0)[1], match.group(0)[1])))
+                        elif len(match.group(0)) == 2:
+                            # UCS-2 surrogate pair
+                            alpha.append(int(repr(match.group(0))[4:-1], 16))
                         else:
                             alpha.append(ord(match.group(0)))
                         if in_range:
