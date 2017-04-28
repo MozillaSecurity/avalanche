@@ -12,8 +12,8 @@ branches:
 env:
     - DEBUG=1
 before_script:
-    - if [ $TRAVIS_PYTHON_VERSION == 2.7 -o $TRAVIS_PYTHON_VERSION == 3.5 ]; then pip install pytest-cov python-coveralls; fi
+    - pip install pytest-cov codecov
 script:
-    - if [ $TRAVIS_PYTHON_VERSION == 2.7 -o $TRAVIS_PYTHON_VERSION == 3.5 ]; then py.test tests.py -v --cov . --cov-report term-missing; else py.test tests.py -v; fi
+    - py.test tests.py -v --cov . --cov-report term-missing
 after_success:
-    - if [ $TRAVIS_PYTHON_VERSION == 2.7 -o $TRAVIS_PYTHON_VERSION == 3.5 ]; then coveralls; fi
+    - codecov

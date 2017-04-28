@@ -2,7 +2,7 @@
 
 [![Build Status](https://api.travis-ci.org/MozillaSecurity/avalanche.svg)](https://travis-ci.org/MozillaSecurity/avalanche)
 [![Build Status](https://ci.appveyor.com/api/projects/status/s3dy0u03mya63ykh/branch/master?svg=true)](https://ci.appveyor.com/project/MozillaSecurity/avalanche/branch/master)
-[![Coverage Status](https://coveralls.io/repos/github/MozillaSecurity/avalanche/badge.svg)](https://coveralls.io/github/MozillaSecurity/avalanche)
+[![codecov](https://codecov.io/gh/MozillaSecurity/avalanche/branch/master/graph/badge.svg)](https://codecov.io/gh/MozillaSecurity/avalanche)
 
 
 Avalanche is a document generator which uses context-free grammars to generate
