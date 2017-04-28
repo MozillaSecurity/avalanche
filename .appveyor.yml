@@ -20,4 +20,4 @@ build: off
 test_script:
     - "%PYTHON%\\python.exe -m pytest tests.py -v --cov . --cov-report term-missing"
 on_success:
-    - "%PYTHON%\\python.exe -c 'from coveralls import wear;exit(wear())'"
+    - "%PYTHON%\\python.exe -c \"from coveralls import wear;exit(wear())\""
