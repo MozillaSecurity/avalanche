@@ -36,6 +36,10 @@ logging.basicConfig(level=logging.DEBUG if bool(os.getenv("DEBUG")) else logging
 log = logging.getLogger("avalanche_test")
 
 
+# delta for inexact tests
+DELTA = 0.05
+
+
 class TestCase(unittest.TestCase):
 
     def setUp(self):
@@ -144,7 +148,7 @@ class Choices(TestCase):
             result[gmr.generate()] += 1
         log.debug("balanced_choice(%s) -> %s", values, result)
         for value in result.values():
-            self.assertAlmostEqual(float(value)/iters, 1.0/len(values), delta=0.04)
+            self.assertAlmostEqual(float(value)/iters, 1.0/len(values), delta=DELTA)
 
     def test_0(self):
         "test for choice balance in a repeat sample"
@@ -166,27 +170,27 @@ class Choices(TestCase):
         result = {1: 0, 2: 0, 3: 0}
         for _ in range(iters):
             result[int(gmr.generate())] += 1
-        self.assertAlmostEqual(float(result[1])/iters, 0.25, delta=0.04)
-        self.assertAlmostEqual(float(result[2])/iters, 0.5, delta=0.04)
-        self.assertAlmostEqual(float(result[3])/iters, 0.25, delta=0.04)
+        self.assertAlmostEqual(float(result[1])/iters, 0.25, delta=DELTA)
+        self.assertAlmostEqual(float(result[2])/iters, 0.5, delta=DELTA)
+        self.assertAlmostEqual(float(result[3])/iters, 0.25, delta=DELTA)
         gmr = Grammar("root .3 '1'\n"
                       "     .1 '2'\n"
                       "     .1 '3'")
         result = {1: 0, 2: 0, 3: 0}
         for _ in range(iters):
             result[int(gmr.generate())] += 1
-        self.assertAlmostEqual(float(result[1])/iters, 0.6, delta=0.04)
-        self.assertAlmostEqual(float(result[2])/iters, 0.2, delta=0.04)
-        self.assertAlmostEqual(float(result[3])/iters, 0.2, delta=0.04)
+        self.assertAlmostEqual(float(result[1])/iters, 0.6, delta=DELTA)
+        self.assertAlmostEqual(float(result[2])/iters, 0.2, delta=DELTA)
+        self.assertAlmostEqual(float(result[3])/iters, 0.2, delta=DELTA)
         gmr = Grammar("root .25 '1'\n"
                       "     .25 '2'\n"
                       "     1   '3'")
         result = {1: 0, 2: 0, 3: 0}
         for _ in range(iters):
             result[int(gmr.generate())] += 1
-        self.assertAlmostEqual(float(result[1])/iters, 1.0/6, delta=0.04)
-        self.assertAlmostEqual(float(result[2])/iters, 1.0/6, delta=0.04)
-        self.assertAlmostEqual(float(result[3])/iters, 2.0/3, delta=0.04)
+        self.assertAlmostEqual(float(result[1])/iters, 1.0/6, delta=DELTA)
+        self.assertAlmostEqual(float(result[2])/iters, 1.0/6, delta=DELTA)
+        self.assertAlmostEqual(float(result[3])/iters, 2.0/3, delta=DELTA)
 
     def test_2(self):
         "tests invalid weights"
@@ -239,7 +243,7 @@ class Choices(TestCase):
         for _ in range(iters):
             result[gmr.generate()] += 1
         for value in result.values():
-            self.assertAlmostEqual(float(value)/iters, 1.0/3, delta=0.04)
+            self.assertAlmostEqual(float(value)/iters, 1.0/3, delta=DELTA)
 
     def test_6(self):
         "test that '+' works with tracked references"
@@ -256,10 +260,10 @@ class Choices(TestCase):
             v = g.generate()
             self.assertRegex(v, r"\nref[0-2]:[0-4]$")
             r[v[-1]] += 1
-        self.assertAlmostEqual(float(r["1"])/count, 0.25, delta=0.04)
-        self.assertAlmostEqual(float(r["2"])/count, 0.25, delta=0.04)
-        self.assertAlmostEqual(float(r["3"])/count, 0.25, delta=0.04)
-        self.assertAlmostEqual(float(r["4"])/count, 0.25, delta=0.04)
+        self.assertAlmostEqual(float(r["1"])/count, 0.25, delta=DELTA)
+        self.assertAlmostEqual(float(r["2"])/count, 0.25, delta=DELTA)
+        self.assertAlmostEqual(float(r["3"])/count, 0.25, delta=DELTA)
+        self.assertAlmostEqual(float(r["4"])/count, 0.25, delta=DELTA)
 
     def test_7(self):
         "test that weights in a nested choice are ignored. has gone wrong before."
@@ -270,7 +274,7 @@ class Choices(TestCase):
         output = gmr.generate()
         a_count = len([c for c in output if c == 'a'])/10000.0
         b_count = 1.0 - a_count
-        self.assertAlmostEqual(a_count, b_count, delta=0.04)
+        self.assertAlmostEqual(a_count, b_count, delta=DELTA)
 
     def test_8(self):
         with self.assertRaisesRegex(IntegrityError, r'^Invalid.*weight.*0\.0'):
@@ -321,6 +325,7 @@ class Functions(TestCase):
             return "%s/%s" % (rep, inp.replace("a", rep))
         gmr = Grammar(gram, zero=zero, alpha=alpha)
         for line in gmr.generate().splitlines():
+            self.assertTrue(line.startswith("zn") or line[0] in "anc")
             if line.startswith("zn"):
                 self.assertRegex(line[2:], r"^[1-9z]{6}$")
             elif line.startswith("a"):
@@ -329,8 +334,6 @@ class Functions(TestCase):
                 self.assertRegex(line[1:], r"^[0-9]{6}$")
             elif line.startswith("c"):
                 self.assertRegex(line[1:], r"^[a-z]{6}$")
-            else:
-                raise Exception("unexpected line: %s" % line)
 
     def test_builtin_rndint(self):
         "test the built-in rndint function"
@@ -341,7 +344,7 @@ class Functions(TestCase):
             value = int(gmr.generate())
             result[value] += 1
         for value in result.values():
-            self.assertAlmostEqual(float(value)/iters, 0.1, delta=0.04)
+            self.assertAlmostEqual(float(value)/iters, 0.1, delta=DELTA)
         with self.assertRaisesRegex(GenerationError, r'^ValueError'):
             Grammar('root  rndint(2,1)').generate()
 
@@ -355,7 +358,7 @@ class Functions(TestCase):
             # count buckets in increments of 0.5
             result[int(value * 2) / 2.0] += 1
         for value in result.values():
-            self.assertAlmostEqual(float(value)/iters, 0.05, delta=0.04)
+            self.assertAlmostEqual(float(value)/iters, 0.05, delta=DELTA)
         gmr = Grammar("root  rndflt(0.1,1)")
         result = {(i / 10.0): 0 for i in range(1, 10)}
         for _ in range(iters):
@@ -363,7 +366,7 @@ class Functions(TestCase):
             # count buckets in increments of 0.1
             result[int(value * 10) / 10.0] += 1
         for value in result.values():
-            self.assertAlmostEqual(float(value)/iters, 1.0/9, delta=0.04)
+            self.assertAlmostEqual(float(value)/iters, 1.0/9, delta=DELTA)
 
     def test_builtin_rndpow2(self):
         "test the built-in rndpow2 function"
@@ -611,8 +614,8 @@ class Parser(TestCase):
             value = gmr.generate()
             self.assertRegex(value, r"^1234[a-z][CD]$")
             result[value[-1]] += 1
-        self.assertAlmostEqual(float(result["C"])/count, 0.5, delta=0.04)
-        self.assertAlmostEqual(float(result["D"])/count, 0.5, delta=0.04)
+        self.assertAlmostEqual(float(result["C"])/count, 0.5, delta=DELTA)
+        self.assertAlmostEqual(float(result["D"])/count, 0.5, delta=DELTA)
 
     def test_dashname(self):
         "test that dash is allowed in symbol names"
