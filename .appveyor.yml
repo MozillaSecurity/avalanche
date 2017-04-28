@@ -1,5 +1,7 @@
 environment:
     DEBUG: "1"
+    COVERALLS_REPO_TOKEN:
+        secure: rpApc25DFT7ud1rH9MY2fxcOuRrxahJOL5hSFpeBi0OLfrZ2ProOjo4mrdVIs+XG
     matrix:
         - PYTHON: "C:\\Python27"
         - PYTHON: "C:\\Python33"
