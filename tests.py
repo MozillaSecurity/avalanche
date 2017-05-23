@@ -29,7 +29,7 @@ import string
 import sys
 import tempfile
 import unittest
-from avalanche import Grammar, GenerationError, IntegrityError, ParseError, _SparseList, unichr_
+from .avalanche import Grammar, GenerationError, IntegrityError, main, ParseError, _SparseList, unichr_
 
 
 logging.basicConfig(level=logging.DEBUG if bool(os.getenv("DEBUG")) else logging.INFO)
@@ -1180,3 +1180,19 @@ class Strings(TestCase):
         for test_str in test_strings:
             gmr = Grammar("root '%s'" % test_str)
             self.assertEqual(gmr.generate(), test_str)
+
+
+class Script(TestCase):
+    def test_01(self):
+        "test calling main with '-h'"
+        with self.assertRaisesRegex(SystemExit, "0"):
+            main(["-h"])
+
+    def test_02(self):
+        "test simple test generation"
+        with open('a.gmr', 'w') as fd:
+            fd.write('root "A"')
+        main(["a.gmr", "a.txt"])
+        self.assertTrue(os.path.isfile("a.txt"))
+        with open('a.txt', 'r') as fd:
+            self.assertEqual(fd.read(), "A")

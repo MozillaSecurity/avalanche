@@ -1529,7 +1529,7 @@ class _TextChoiceSymbol(_Symbol, _SparseList):
         gstate.append(unichr_(self[random.randint(0, len(self) - 1)]))
 
 
-def main():
+def main(argv=None):
 
     logging.basicConfig(level=logging.INFO)
     if bool(os.getenv("DEBUG")):
@@ -1548,11 +1548,11 @@ def main():
     argp.add_argument("-f", "--function", action="append", nargs=2, default=[],
                       help="Function used in the grammar (eg. -f filter lambda x:x.replace('x','y')")
     argp.add_argument("-l", "--limit", type=int, default=DEFAULT_LIMIT, help="Set a generation limit (roughly)")
-    args = argp.parse_args()
+    args = argp.parse_args(argv)
     args.function = {func: eval(defn) for (func, defn) in args.function}
     args.output.write(Grammar(args.input, limit=args.limit, **args.function).generate())
 
 
 if __name__ == "__main__":
-    main()
+    main(sys.argv)
 
