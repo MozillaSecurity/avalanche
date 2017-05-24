@@ -1175,7 +1175,8 @@ class Strings(TestCase):
             "ثم نفس سقطت وبالتحديد،,",
             "בְּרֵאשִׁית, בָּרָא",
             "ﷺ",
-            "̡͓̞ͅI̗c҉͔̫͖͓͇͖ͅh̵̤̣͚͔á̗̼͕ͅo̼̣̥s̱͈̺̖̦̻͢.̛̖̞̠̯̹̞͓G̻O̭̗̮"]
+            "̡͓̞ͅI̗c҉͔̫͖͓͇͖ͅh̵̤̣͚͔á̗̼͕ͅo̼̣̥s̱͈̺̖̦̻͢.̛̖̞̠̯̹̞͓G̻O̭̗̮",
+            "\U0001f300\U0001f5ff"]
 
         for test_str in test_strings:
             gmr = Grammar("root '%s'" % test_str)
@@ -1196,3 +1197,38 @@ class Script(TestCase):
         self.assertTrue(os.path.isfile("a.txt"))
         with open('a.txt', 'r') as fd:
             self.assertEqual(fd.read(), "A")
+
+    def test_03(self):
+        "test unicode I/O with main"
+        test_strings = [
+            "ü",
+            "Ⱥ",
+            "Ω≈ç√∫˜µ≤≥÷",
+            "åß∂ƒ©˙∆˚¬…æ",
+            "œ∑´®†¥¨ˆøπ“‘",
+            "¡™£¢∞§¶•ªº–≠",
+            "¸˛Ç◊ı˜Â¯˘¿",
+            "ÅÍÎÏ˝ÓÔÒÚÆ☃",
+            "Œ„´‰ˇÁ¨ˆØ∏”’",
+            "`⁄€‹›ﬁﬂ‡°·‚—±",
+            "⅛⅜⅝⅞",
+            "ЁЂЃЄЅІЇЈЉЊтуфхцчшщъыьэюя",
+            "٠١٢٣٤٥٦٧٨٩",
+            "田中さんにあげて下さい",
+            "𠜎𠜱𠝹𠱓𠱸𠲖𠳏",
+            "ثم نفس سقطت وبالتحديد،,",
+            "בְּרֵאשִׁית, בָּרָא",
+            "ﷺ",
+            "̡͓̞ͅI̗c҉͔̫͖͓͇͖ͅh̵̤̣͚͔á̗̼͕ͅo̼̣̥s̱͈̺̖̦̻͢.̛̖̞̠̯̹̞͓G̻O̭̗̮",
+            "\U0001f300\U0001f5ff"]
+
+        for test_str in test_strings:
+            with io.open('a.gmr', 'w', encoding='utf-8') as fd:
+                fd.write("root '%s'" % test_str)
+            main(["a.gmr", "a.txt"])
+            self.assertTrue(os.path.isfile("a.txt"))
+            with io.open('a.txt', encoding='utf-8') as fd:
+                self.assertEqual(fd.read(), test_str)
+            os.unlink("a.txt")
+
+

@@ -1538,9 +1538,14 @@ def main(argv=None):
     class _SafeFileType(argparse.FileType):
 
         def __call__(self, string):
+            if string == '-':
+                return argparse.FileType.__call__(self, string)
             if 'w' in self._mode and os.path.isfile(string):
                 raise argparse.ArgumentTypeError("output file exists, not overwriting: %s" % string)
-            return argparse.FileType.__call__(self, string)
+            try:
+                return io.open(string, mode=self._mode, encoding='utf-8')
+            except IOError as e:
+                raise argparse.ArgumentTypeError("can't open '%s': %s" % (string, e))
 
     argp = argparse.ArgumentParser(description="Generate a testcase from a grammar")
     argp.add_argument("input", type=_SafeFileType('r'), help="Input grammar definition")
