@@ -64,12 +64,15 @@ result = g.generate()
 # TextSymbol
 SymName         "text"          # generate u"text" in the output
 
-# ChoiceSymbol (must be named, no inline form)
+# ChoiceSymbol
 SymName   .5    Defn1           # choose between generating Defn1 (1:3 odds)
           1     Defn2           #                        or Defn2 (2:3 odds)
 
 SymName2  +     SymName         # '+' imports choices & weights from SymName into SymName2
           1     Defn3           #   ie. choices are Defn1 (1:5), Defn2 (2:5) or Defn3 (1:5)
+
+SymName3        (SubSym1 | SubSym2)  # inline choice, SubSym1 & SubSym2 are generated equally
+                                     # this is also a grouping and can be repeated.
 
 # ConcatSymbol
 SymName         SubSym1 SubSym2             # concat, generate SubSym1 then SubSym2

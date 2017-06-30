@@ -68,6 +68,10 @@ class Backrefs(TestCase):
         for _ in range(100):
             x1, x2 = gmr.generate()
             self.assertEqual(x1, x2)
+        gmr = Grammar("root  (/[0-9]/|/[a-z]/) @1")
+        for _ in range(100):
+            x1, x2 = gmr.generate()
+            self.assertEqual(x1, x2)
 
     def test_1(self):
         "negative tests for backreferences, check use without declaration and use before declaration"
@@ -291,6 +295,10 @@ class Choices(TestCase):
                       "     1   'x'\n", limit=4)
         for _ in range(100):
             gmr.generate()
+
+    def test_10(self):
+        "test for implicit Choice"
+        self.balanced_choice("root ('a' | 'b')", ["a", "b"])
 
 
 class Concats(TestCase):
@@ -772,6 +780,9 @@ class Repeats(TestCase):
         self.assertGreater(outs["AB"] + outs["BA"], outs["A"] + outs["B"])
         self.assertGreater(outs["AB"], outs["BA"])
         self.assertGreater(outs["A"], outs["B"])
+        gmr = Grammar('root ("A"|"A")<1,10>')
+        for _ in range(100):
+            self.assertIn(gmr.generate(), {"A", "AA"})
 
     def test_3(self):
         "tests for '?' shortcut for {0,1}"
@@ -812,6 +823,12 @@ class Repeats(TestCase):
         result = gmr.generate()
         self.assertEqual(len(result), 1)
         self.assertEqual(result, "a")
+        gmr = Grammar("root ('a'|'b')<0,*>")
+        result = {"ab": 0, "ba": 0, "a": 0, "b": 0, "": 0}
+        for _ in range(1000):
+            result[gmr.generate()] += 1
+        self.assertGreater(result["a"] + result["b"], result["ab"] + result["ba"])
+        self.assertGreater(result[""], result["a"] + result["b"])
 
     def test_5(self):
         "test that '*' uses all choices from a choice included with '+'"
@@ -850,6 +867,22 @@ class Repeats(TestCase):
             result = gmr.generate()
             self.assertEqual(len(result), 3)
             self.assertEqual(len(set(result)), 1)
+
+    def test_7(self):
+        "test for repeat of implicit choice"
+        gmr = Grammar('root ("A," | "B,"){ 0 , 10 } ("A" | "B")')
+        lengths = set()
+        for _ in range(2000):
+            result = gmr.generate().split(",")
+            self.assertIn(len(set(result)), range(1, 3))
+            if len(set(result)) == 1:
+                self.assertIn(result[0], "AB")
+            else:
+                vals = sorted(set(result))
+                self.assertEqual(vals, ["A", "B"])
+            self.assertIn(len(result), range(1, 12))
+            lengths.add(len(result))
+        self.assertEqual(len(lengths), 11)
 
 
 class References(TestCase):

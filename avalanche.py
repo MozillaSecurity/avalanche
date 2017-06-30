@@ -684,6 +684,7 @@ class _Symbol(object):
                                 |(?P<regex>/)
                                 |(?P<implconcat>\()
                                 |(?P<infunc>[,)])
+                                |(?P<implchoice>\|)
                                 |(?P<comment>\#).*
                                 |(?P<func>\w+)\(
                                 |(?P<maybe>\?)
@@ -784,13 +785,28 @@ class _Symbol(object):
                 capture = len(pstate.capture_groups)
                 pstate.capture_groups.append(None)
                 parts, defn = _Symbol._parse(defn[match.end(0):], pstate, False, True)
-                if not defn.startswith(")"):
+                if defn[0] not in ")|":
                     raise ParseError("Expecting ) at: %s" % defn, pstate)
-                name = "[concat (line %d #%d)]" % (pstate.line_no, pstate.implicit())
-                sym = ConcatSymbol(name, pstate)
+                if defn[0] == "|":
+                    # implicit choice:
+                    name = "[choice (line %d #%d)]" % (pstate.line_no, pstate.implicit())
+                    sym = ChoiceSymbol(name, pstate)
+                    sym.append(parts, 1, pstate)
+                    while defn[0] == "|":
+                        parts, defn = _Symbol._parse(defn[1:], pstate, False, True)
+                        if not defn[0] in ")|":
+                            raise ParseError("Expecting ) or | at: %s" % defn, pstate)
+                        sym.append(parts, 1, pstate)
+                else:
+                    name = "[concat (line %d #%d)]" % (pstate.line_no, pstate.implicit())
+                    sym = ConcatSymbol(name, pstate)
+                    sym.extend(parts)
                 pstate.capture_groups[capture] = sym.name
-                sym.extend(parts)
                 defn = defn[1:]
+            elif match.group("implchoice"):
+                if in_concat:
+                    break
+                raise ParseError("Unexpected token in definition: %s" % defn, pstate)
             elif match.group("maybe") or match.group("repeat"):
                 if not result:
                     raise ParseError("Unexpected token in definition: %s" % defn, pstate)
