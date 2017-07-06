@@ -34,6 +34,7 @@ import random
 import re
 import string
 import sys
+from .error import *
 from .splist import SparseList
 
 
@@ -70,28 +71,6 @@ DEFAULT_LIMIT = 100 * 1024
 log = logging.getLogger("avalanche") # pylint: disable=invalid-name
 
 
-class GrammarException(Exception):
-    def __str__(self):
-        if len(self.args) == 2:
-            msg, state = self.args
-            if isinstance(state, _ParseState):
-                return "%s (%sline %d)" % (msg, "%s " % state.name if state.name else "", state.line_no)
-            if isinstance(state, _GenState):
-                return "%s (generation backtrace: %s)" % (msg, state.backtrace())
-            if isinstance(state, _Symbol):
-                state = state.line_no
-            return "%s (line %d)" % (msg, state) # state is line_no in this case
-        if len(self.args) == 1:
-            return str(self.args[0])
-        return str(self.args)
-class ParseError(GrammarException):
-    pass
-class IntegrityError(GrammarException):
-    pass
-class GenerationError(GrammarException):
-    pass
-
-
 class _GenState(object):
 
     def __init__(self, grmr):
@@ -109,7 +88,7 @@ class _GenState(object):
     def append(self, value):
         if self.output and not isinstance(value, type(self.output[0])):
             raise GenerationError("Wrong value type generated, expecting %s, got %s" % (type(self.output[0]).__name__,
-                                                                                        type(value).__name__), self)
+                                                                                        type(value).__name__))
         self.output.append(value)
         self.length += len(value)
 
@@ -149,7 +128,7 @@ class _ParseState(object):
                 try:
                     float("%s.%s" % (symprefix, sym))
                 except ValueError:
-                    raise ParseError("Attempt to use symbol from unknown prefix: %s" % symprefix, self)
+                    raise ParseError("Attempt to use symbol from unknown prefix: %s" % symprefix)
                 # it's a float .. let it through for now
                 sym = "%s.%s" % (symprefix, sym)
                 symprefix = self.prefix
@@ -160,13 +139,13 @@ class _ParseState(object):
     def add_import(self, name, grammar_hash):
         log.debug("%s: adding import %s -> %s to %r", self.prefix, name, grammar_hash, self.imports)
         if name in self.imports:
-            raise ParseError("redefined import %s" % name, self)
+            raise ParseError("redefined import %s" % name)
         self.imports[name] = (grammar_hash, self.line_no)
 
     def sanity_check(self):
         unused = set(self.imports) - self.imports_used
         if unused:
-            raise IntegrityError("Unused import%s: %s" % ("s" if len(unused) > 1 else "", list(unused)), self)
+            raise IntegrityError("Unused import%s: %s" % ("s" if len(unused) > 1 else "", list(unused)))
 
 
 class Grammar(object):
@@ -274,7 +253,7 @@ class Grammar(object):
                     continue
                 match = Grammar._RE_LINE.match("%s%s" % (ljoin, line))
                 if match is None:
-                    raise ParseError("Failed to parse definition at: %s%s" % (ljoin, line.rstrip()), pstate)
+                    raise ParseError("Failed to parse definition at: %s%s" % (ljoin, line.rstrip()))
                 if match.group("broken") is not None:
                     ljoin = match.group("broken")
                     continue
@@ -294,15 +273,14 @@ class Grammar(object):
                         # import
                         if "%s.%s" % (grammar_hash, sym_name) in self.symtab:
                             raise ParseError("Redefinition of symbol %s previously declared on line %d"
-                                             % (sym_name, self.symtab["%s.%s" % (grammar_hash, sym_name)].line_no),
-                                             pstate)
+                                             % (sym_name, self.symtab["%s.%s" % (grammar_hash, sym_name)].line_no))
                         sym, defn = TextSymbol.parse(sym_def, pstate, no_add=True)
                         defn = defn.strip()
                         if not defn.startswith(")"):
-                            raise ParseError("Expected ')' parsing import at: %s" % defn, pstate)
+                            raise ParseError("Expected ')' parsing import at: %s" % defn)
                         defn = defn[1:].lstrip()
                         if defn.startswith("#") or defn:
-                            raise ParseError("Unexpected input following import: %s" % defn, pstate)
+                            raise ParseError("Unexpected input following import: %s" % defn)
                         # resolve sym.value from current grammar path or "."
                         import_paths = [sym.value]
                         if grammar_fn is not None:
@@ -317,14 +295,14 @@ class Grammar(object):
                             except IOError:
                                 pass
                         else:
-                            raise IntegrityError("Could not find imported grammar: %s" % sym.value, pstate)
+                            raise IntegrityError("Could not find imported grammar: %s" % sym.value)
                     else:
                         # sym def
                         sym = ConcatSymbol.parse(sym_name, sym_def, pstate)
                 else:
                     # continuation of choice
                     if sym is None or not isinstance(sym, ChoiceSymbol):
-                        raise ParseError("Unexpected continuation of choice symbol", pstate)
+                        raise ParseError("Unexpected continuation of choice symbol")
                     weight = float(match.group("contweight")) if match.group("contweight") else "+"
                     sym.append(_Symbol.parse(match.group("cont"), pstate), weight, pstate)
 
@@ -332,7 +310,7 @@ class Grammar(object):
         except (IntegrityError, ParseError):
             raise
         except Exception as err:
-            raise ParseError("%s: %s" % (type(err).__name__, str(err)), pstate)
+            raise ParseError("%s: %s" % (type(err).__name__, str(err)))
         return grammar_hash
 
     def reprefix(self, imports):
@@ -520,7 +498,7 @@ class Grammar(object):
                                                               # ie. not a stack at all
                     continue
                 else:
-                    raise GenerationError("Unknown tuple command: %s" % cmd, gstate)
+                    raise GenerationError("Unknown tuple command: %s" % cmd)
             if this in self.recursive_syms:
                 if this in gstate.recursive_syms:
                     recursive_state = gstate.recursive_syms[this]
@@ -550,7 +528,7 @@ class Grammar(object):
             except GenerationError:
                 raise
             except Exception as err:
-                raise GenerationError("%s: %s" % (type(err).__name__, str(err)), gstate)
+                raise GenerationError("%s: %s" % (type(err).__name__, str(err)))
         try:
             return "".join(gstate.output)
         except TypeError:
@@ -574,11 +552,11 @@ class _Symbol(object):
 
     def __init__(self, name, pstate, no_add=False):
         if name == '%s.import' % pstate.prefix:
-            raise ParseError("'import' is a reserved name", pstate)
+            raise ParseError("'import' is a reserved name")
         unprefixed = name.split(".", 1)[1]
         if unprefixed in pstate.imports:
             raise ParseError("Redefinition of symbol %s previously declared on line %d"
-                             % (unprefixed, pstate.imports[unprefixed][1]), pstate)
+                             % (unprefixed, pstate.imports[unprefixed][1]))
         self.name = name
         self.line_no = pstate.line_no
         log.debug('\t%s %s', type(self).__name__.lower()[:-6], name)
@@ -586,7 +564,7 @@ class _Symbol(object):
             if name in pstate.grmr.symtab and not isinstance(pstate.grmr.symtab[name], (_AbstractSymbol, RefSymbol)):
                 unprefixed = name.split(".", 1)[1]
                 raise ParseError("Redefinition of symbol %s previously declared on line %d"
-                                 % (unprefixed, pstate.grmr.symtab[name].line_no), pstate)
+                                 % (unprefixed, pstate.grmr.symtab[name].line_no))
             pstate.grmr.symtab[name] = self
         self.can_terminate = None
 
@@ -600,7 +578,7 @@ class _Symbol(object):
         pass
 
     def generate(self, gstate):
-        raise GenerationError("Can't generate symbol %s of type %s" % (self.name, type(self)), gstate)
+        raise GenerationError("Can't generate symbol %s of type %s" % (self.name, type(self)))
 
     def children(self):
         return set()
@@ -618,7 +596,7 @@ class _Symbol(object):
         while defn:
             match = _Symbol._RE_DEFN.match(defn)
             if match is None:
-                raise ParseError("Failed to parse definition at: %s" % defn, pstate)
+                raise ParseError("Failed to parse definition at: %s" % defn)
             log.debug("parsed %s from %s", {k: v for k, v in match.groupdict().items() if v is not None}, defn)
             if match.group("ws") is not None:
                 defn = defn[match.end(0):]
@@ -640,9 +618,9 @@ class _Symbol(object):
                     pass
                 else:
                     if match.group("refprefix"):
-                        raise ParseError("Invalid reference syntax at: %s" % defn, pstate)
+                        raise ParseError("Invalid reference syntax at: %s" % defn)
                     if not (1 <= backref <= len(pstate.capture_groups)) or pstate.capture_groups[backref - 1] is None:
-                        raise IntegrityError("Invalid backreference at: %s" % defn, pstate)
+                        raise IntegrityError("Invalid backreference at: %s" % defn)
                     ref = pstate.capture_groups[backref-1]
                 sym = RefSymbol(ref, pstate)
                 defn = defn[match.end(0):]
@@ -659,13 +637,13 @@ class _Symbol(object):
             elif match.group("infunc"):
                 if in_func or (in_concat and match.group("infunc") == ")"):
                     break
-                raise ParseError("Unexpected token in definition: %s" % defn, pstate)
+                raise ParseError("Unexpected token in definition: %s" % defn)
             elif match.group("implconcat"):
                 capture = len(pstate.capture_groups)
                 pstate.capture_groups.append(None)
                 parts, defn = _Symbol._parse(defn[match.end(0):], pstate, False, True)
                 if defn[0] not in ")|":
-                    raise ParseError("Expecting ) at: %s" % defn, pstate)
+                    raise ParseError("Expecting ) at: %s" % defn)
                 if defn[0] == "|":
                     # implicit choice:
                     name = "[choice (line %d #%d)]" % (pstate.line_no, pstate.implicit())
@@ -674,7 +652,7 @@ class _Symbol(object):
                     while defn[0] == "|":
                         parts, defn = _Symbol._parse(defn[1:], pstate, False, True)
                         if not defn[0] in ")|":
-                            raise ParseError("Expecting ) or | at: %s" % defn, pstate)
+                            raise ParseError("Expecting ) or | at: %s" % defn)
                         sym.append(parts, 1, pstate)
                 else:
                     name = "[concat (line %d #%d)]" % (pstate.line_no, pstate.implicit())
@@ -685,16 +663,16 @@ class _Symbol(object):
             elif match.group("implchoice"):
                 if in_concat:
                     break
-                raise ParseError("Unexpected token in definition: %s" % defn, pstate)
+                raise ParseError("Unexpected token in definition: %s" % defn)
             elif match.group("maybe") or match.group("repeat"):
                 if not result:
-                    raise ParseError("Unexpected token in definition: %s" % defn, pstate)
+                    raise ParseError("Unexpected token in definition: %s" % defn)
                 if match.group("maybe"):
                     repeat = RepeatSymbol
                     min_, max_ = 0, 1
                 else:
                     if {"{": "}", "<": ">"}[match.group(0)[0]] != match.group(0)[-1]:
-                        raise ParseError("Repeat symbol mismatch at: %s" % defn, pstate)
+                        raise ParseError("Repeat symbol mismatch at: %s" % defn)
                     repeat = {"{": RepeatSymbol, "<": RepeatSampleSymbol}[match.group(0)[0]]
                     min_ = "*" if match.group("a") == "*" else int(match.group("a"))
                     max_ = ("*" if match.group("b") == "*" else int(match.group("b"))) if match.group("b") else min_
@@ -714,7 +692,7 @@ class _Symbol(object):
     def parse(defn, pstate):
         res, remain = _Symbol._parse(defn, pstate, False, False)
         if remain:
-            raise ParseError("Unexpected token in definition: %s" % remain, pstate)
+            raise ParseError("Unexpected token in definition: %s" % remain)
         return res
 
 
@@ -724,7 +702,7 @@ class _AbstractSymbol(_Symbol):
         _Symbol.__init__(self, name, pstate)
 
     def sanity_check(self, grmr):
-        raise IntegrityError("Symbol %s used but not defined" % self.name, self.line_no)
+        raise IntegrityError("Symbol %s used but not defined" % self.name)
 
 
 class BinSymbol(_Symbol):
@@ -746,7 +724,7 @@ class BinSymbol(_Symbol):
         try:
             self.value = binascii.unhexlify(value.encode("ascii"))
         except (UnicodeEncodeError, TypeError) as err:
-            raise ParseError("Invalid hex string: %s" % err, pstate)
+            raise ParseError("Invalid hex string: %s" % err)
         self.can_terminate = True
 
     def generate(self, gstate):
@@ -756,12 +734,12 @@ class BinSymbol(_Symbol):
     def parse(defn, pstate):
         start, qchar, defn = defn[0], defn[1], defn[2:]
         if start != "x":
-            raise ParseError("Error parsing binary string at: %s%s%s" % (start, qchar, defn), pstate)
+            raise ParseError("Error parsing binary string at: %s%s%s" % (start, qchar, defn))
         if qchar not in "'\"":
-            raise ParseError("Error parsing binary string at: %s%s" % (qchar, defn), pstate)
+            raise ParseError("Error parsing binary string at: %s%s" % (qchar, defn))
         enquo = defn.find(qchar)
         if enquo == -1:
-            raise ParseError("Unterminated bin literal!", pstate)
+            raise ParseError("Unterminated bin literal!")
         value, defn = defn[:enquo], defn[enquo+1:]
         sym = BinSymbol(value, pstate)
         return sym, defn
@@ -798,7 +776,7 @@ class ChoiceSymbol(_Symbol):
     def append(self, value, weight, pstate):
         if weight != '+':
             if not 0.0 <= weight <= 1.0:
-                raise IntegrityError("Invalid weight value for choice: %.2f (expecting [0,1])" % weight, pstate)
+                raise IntegrityError("Invalid weight value for choice: %.2f (expecting [0,1])" % weight)
             self.total += weight
         name = "[concat (line %d #%d)]" % (pstate.line_no, pstate.implicit())
         sym = ConcatSymbol(name, pstate)
@@ -840,7 +818,7 @@ class ChoiceSymbol(_Symbol):
                     return
                 log.debug('-> %d had weight of %.2f, not the target', i, weight)
         raise GenerationError("Too much total weight in %s? remainder is %.2f from %.2f total"
-                              % (self.name, target, total[0]), gstate)
+                              % (self.name, target, total[0]))
 
     def choice(self, whitelist, gstate):
         if gstate.choice_stack.get(self.name):
@@ -878,7 +856,7 @@ class ChoiceSymbol(_Symbol):
             if weight == '+':
                 grmr.symtab[value].normalize(grmr)
                 if not grmr.symtab[value].choice:
-                    raise IntegrityError("Expecting exactly one ChoiceSymbol in %s" % self.name, self.line_no)
+                    raise IntegrityError("Expecting exactly one ChoiceSymbol in %s" % self.name)
                 choice = grmr.symtab[grmr.symtab[value].choice]
                 if any(weight == '+' for weight in choice.weights):
                     if choice.normalized:
@@ -891,7 +869,7 @@ class ChoiceSymbol(_Symbol):
                 self.was_plus[i] = True
                 self.length += choice.length - 1 # -1 for the entry in self.values
         if self.total <= 0.0:
-            raise IntegrityError("Invalid total weight for symbol %s: %r" % (self.name, self.total), self.line_no)
+            raise IntegrityError("Invalid total weight for symbol %s: %r" % (self.name, self.total))
 
     def generate(self, gstate):
         if gstate.grmr.is_limit_exceeded(gstate) and self.can_terminate:
@@ -958,7 +936,7 @@ class ConcatSymbol(_Symbol, list):
         if self.normalized:
             return
         if self.normalized is False:
-            raise IntegrityError("Symbol has no paths to termination", self.line_no)
+            raise IntegrityError("Symbol has no paths to termination")
         self.normalized = False
         choice = None
         for child in self:
@@ -1017,7 +995,7 @@ class FuncSymbol(_Symbol):
 
     def sanity_check(self, grmr):
         if self.fname not in grmr.funcs:
-            raise IntegrityError("Function %s used but not defined" % self.fname, self.line_no)
+            raise IntegrityError("Function %s used but not defined" % self.fname)
 
     def generate(self, gstate):
         args = []
@@ -1059,13 +1037,13 @@ class FuncSymbol(_Symbol):
     @staticmethod
     def parse(name, defn, pstate):
         if name == "import":
-            raise ParseError("'import' is a reserved function name", pstate)
+            raise ParseError("'import' is a reserved function name")
         result = FuncSymbol(name, pstate)
         done = False
         while not done:
             arg, defn = _Symbol.parse_func_arg(defn, pstate)
             if defn[0] not in ",)":
-                raise ParseError("Expected , or ) parsing function args at: %s" % defn, pstate)
+                raise ParseError("Expected , or ) parsing function args at: %s" % defn)
             done = defn[0] == ")"
             defn = defn[1:]
             if arg or not done:
@@ -1112,7 +1090,7 @@ class RefSymbol(_Symbol):
             try:
                 gstate.append(backrefs[self.ref])
             except KeyError:
-                raise GenerationError("No symbols generated yet for backreference", gstate)
+                raise GenerationError("No symbols generated yet for backreference")
         elif gstate.instances[self.ref]:
             gstate.append(random.choice(gstate.instances[self.ref]))
         elif len(gstate.instance_backlog[self.ref]) > 1 and random.random() < 0.3:
@@ -1185,7 +1163,7 @@ class RegexSymbol(ConcatSymbol):
         result = RegexSymbol(pstate)
         n_implicit = [0]
         if defn[0] != "/":
-            raise ParseError("Regex definitions must begin with /", pstate)
+            raise ParseError("Regex definitions must begin with /")
         defn = defn[1:]
         while defn:
             match = RegexSymbol._RE_PARSE.match(defn)
@@ -1207,7 +1185,7 @@ class RegexSymbol(ConcatSymbol):
                         break
                     elif match.group(0) == "-":
                         if in_range or not alpha:
-                            raise ParseError("Parse error in regex at: %s" % defn, pstate)
+                            raise ParseError("Parse error in regex at: %s" % defn)
                         in_range = True
                     else:
                         if match.group(0).startswith("\\"):
@@ -1221,12 +1199,12 @@ class RegexSymbol(ConcatSymbol):
                             end = alpha.pop()
                             start = alpha.pop()
                             if start >= end + 1:
-                                raise ParseError("Empty range in regex at: %s" % defn, pstate)
+                                raise ParseError("Empty range in regex at: %s" % defn)
                             lst.add(start, end)
                             in_range = False
                     defn = defn[match.end(0):]
                 else:
-                    raise ParseError("Unterminated set in regex", pstate)
+                    raise ParseError("Unterminated set in regex")
                 for char in alpha:
                     lst.add(char)
                 if inverse:
@@ -1251,7 +1229,7 @@ class RegexSymbol(ConcatSymbol):
                 defn = defn[match.end(0):]
             else: # repeat
                 if not len(result) or isinstance(pstate.grmr.symtab[result[-1]], RepeatSymbol):
-                    raise ParseError("Error parsing regex, unexpected repeat at: %s" % defn, pstate)
+                    raise ParseError("Error parsing regex, unexpected repeat at: %s" % defn)
                 if match.group("a"):
                     min_ = int(match.group("a"))
                     max_ = int(match.group("b")) if match.group("b") else min_
@@ -1259,7 +1237,7 @@ class RegexSymbol(ConcatSymbol):
                     min_, max_ = 0, 1
                 result.add_repeat(min_, max_, n_implicit, pstate)
                 defn = defn[match.end(0):]
-        raise ParseError("Unterminated regular expression", pstate)
+        raise ParseError("Unterminated regular expression")
 
 
 class RepeatSymbol(ConcatSymbol):
@@ -1286,7 +1264,7 @@ class RepeatSymbol(ConcatSymbol):
         if isinstance(self, RepeatSampleSymbol) or self.min_ == "*" or self.max_ == "*":
             ConcatSymbol.normalize(self, grmr)
             if not self.choice:
-                raise IntegrityError("Expecting exactly one ChoiceSymbol in %s" % self.name, self.line_no)
+                raise IntegrityError("Expecting exactly one ChoiceSymbol in %s" % self.name)
             choice = grmr.symtab[self.choice]
             choice.normalize(grmr)
             log.debug("repeat %s value for '*' is %d", self.name, len(choice))
@@ -1295,8 +1273,7 @@ class RepeatSymbol(ConcatSymbol):
             if self.max_ == "*":
                 self.max_ = len(choice)
         if self.min_ > self.max_ or self.min_ < 0:
-            raise IntegrityError("Invalid range for repeat in %s: [%d,%d]" % (self.name, self.min_, self.max_),
-                                 self.line_no)
+            raise IntegrityError("Invalid range for repeat in %s: [%d,%d]" % (self.name, self.min_, self.max_))
 
     def generate(self, gstate):
         if gstate.grmr.is_limit_exceeded(gstate):
@@ -1392,7 +1369,7 @@ class TextSymbol(_Symbol):
     def parse(defn, pstate, no_add=False):
         qchar, defn = defn[0], defn[1:]
         if qchar not in "'\"":
-            raise ParseError("Error parsing string, expected \" or ' at: %s%s" % (qchar, defn), pstate)
+            raise ParseError("Error parsing string, expected \" or ' at: %s%s" % (qchar, defn))
         out, last = [], 0
         for match in TextSymbol._RE_QUOTE.finditer(defn):
             out.append(defn[last:match.start(0)])
@@ -1404,7 +1381,7 @@ class TextSymbol(_Symbol):
             else:
                 out.append(TextSymbol.ESCAPES.get(match.group("esc"), match.group("esc")))
         else:
-            raise ParseError("Unterminated string literal!", pstate)
+            raise ParseError("Unterminated string literal!")
         defn = defn[last:]
         sym = TextSymbol(None, "".join(out), pstate, no_add=no_add)
         return sym, defn
