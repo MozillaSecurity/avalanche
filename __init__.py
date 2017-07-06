@@ -20,4 +20,3 @@ from .avalanche import *
 
 __author__ = "Jesse Schwartzentruber"
 __credits__ = ["Jesse Schwartzentruber", "Tyson Smith"]
-

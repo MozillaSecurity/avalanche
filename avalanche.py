@@ -444,13 +444,15 @@ class Grammar(object):
                         continue
                     if grandchild_name == sym_name:
                         self.recursive_syms.add(sym_name)
-                        log.debug("%s is recursive through %r (%d degree)", sym_name, child_backtrace, len(child_backtrace))
+                        log.debug("%s is recursive through %r (%d degree)",
+                                  sym_name, child_backtrace, len(child_backtrace))
                         issue = None
                         break
                     issue[grandchild_name] = child_backtrace
 
     def is_limit_exceeded(self, gstate):
-        return (self._limit is not None and gstate.length >= self._limit) or any(sym["limited"] for sym in gstate.recursive_syms.values())
+        return (self._limit is not None and gstate.length >= self._limit) \
+                or any(sym["limited"] for sym in gstate.recursive_syms.values())
 
     def generate(self, start="root"):
         if not isinstance(start, _GenState):
@@ -1416,8 +1418,8 @@ def main(argv=None):
                 raise argparse.ArgumentTypeError("output file exists, not overwriting: %s" % string)
             try:
                 return io.open(string, mode=self._mode, encoding='utf-8')
-            except IOError as e:
-                raise argparse.ArgumentTypeError("can't open '%s': %s" % (string, e))
+            except IOError as exc:
+                raise argparse.ArgumentTypeError("can't open '%s': %s" % (string, exc))
 
     argp = argparse.ArgumentParser(description="Generate a testcase from a grammar")
     argp.add_argument("input", type=_SafeFileType('r'), help="Input grammar definition")
@@ -1432,4 +1434,3 @@ def main(argv=None):
 
 if __name__ == "__main__":
     main()
-
