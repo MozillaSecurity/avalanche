@@ -16,7 +16,7 @@
 ################################################################################
 
 from __future__ import unicode_literals
-from .avalanche import *
+from .core import *
 
 __author__ = "Jesse Schwartzentruber"
 __credits__ = ["Jesse Schwartzentruber", "Tyson Smith"]

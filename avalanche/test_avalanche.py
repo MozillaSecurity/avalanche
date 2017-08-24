@@ -29,7 +29,8 @@ import string
 import sys
 import tempfile
 import unittest
-from .avalanche import Grammar, GenerationError, IntegrityError, main, ParseError, SparseList, unichr_
+
+from avalanche.core import Grammar, GenerationError, IntegrityError, main, ParseError, SparseList, unichr_
 
 
 logging.basicConfig(level=logging.DEBUG if bool(os.getenv("DEBUG")) else logging.INFO)
