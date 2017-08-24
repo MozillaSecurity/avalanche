@@ -18,6 +18,6 @@ install:
     - "%PYTHON%\\python.exe -m pip install pytest pytest-cov codecov"
 build: off
 test_script:
-    - "%PYTHON%\\python.exe -m pytest tests.py -v --cov . --cov-report term-missing"
+    - "%PYTHON%\\python.exe -m pytest -v --cov . --cov-report term-missing"
 on_success:
     - "%PYTHON%\\python.exe -m codecov"

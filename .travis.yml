@@ -14,6 +14,6 @@ env:
 before_script:
     - pip install pytest-cov codecov
 script:
-    - py.test tests.py -v --cov . --cov-report term-missing
+    - py.test -v --cov . --cov-report term-missing
 after_success:
     - codecov
