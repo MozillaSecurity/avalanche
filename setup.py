@@ -3,5 +3,5 @@ from setuptools import setup
 
 if __name__ == '__main__':
     setup(name = "avalanche",
-          version = "0.3.0",
+          version = "0.4.0",
           packages = ['avalanche'])
