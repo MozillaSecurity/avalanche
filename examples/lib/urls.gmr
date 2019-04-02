@@ -1,0 +1,63 @@
+### URL Library
+# Written by: Tyson Smith
+
+DU              import('data-urls.gmr')
+STR             import('strings-chars.gmr')
+
+root                             (TagAnchor "\n"){25} "<script>\n" JScode "\nfocusAll();\n</script>\n"
+
+JScode                          "function focusAll(){\n" \
+                                "var tags=document.getElementsByTagName('a');\n" \
+                                "  for(var i=0;i<tags.length;i++){\n" \
+                                "    tags[i].focus();\n" \
+                                "    //tags[i].parentElement.removeChild(tags[i]);\n" \
+                                "  }\n" \
+                                "  done();\n" \
+                                "}"
+
+TagAnchor                       "<a href='" Url "'>" RandChar{1,10} "</a>"
+
+
+Url                     1       "http://" /[a-z]{2,8}/ "." /[a-z]{1,3}/
+                        1       Scheme UrlParts{10}
+                        .01     Scheme UrlParts{10,100}
+                        .001    Scheme UrlParts{1000,10000}
+                        .001    "url()"
+                        .001    DU.root
+                        .001    STR.unicode
+                        .001    "about:blank"
+
+
+UrlParts                1       "/"
+                        1       "."
+                        1       "%2e"
+                        1       "%2f"
+                        .2      UrlEncChar{5,10}
+                        .2      STR.codepoint{5,10}
+                        .2      STR.entity{5,10}
+                        .2      STR.unicode{5,10}
+                        .2      RandChar{5,10}
+                        .01     "#"
+                        .01     "?"
+
+
+Scheme                  1       "http://"
+                        .1      "https://"
+                        .1      "ftp://"
+                        .1      "data:"
+                        .1      "mailto://"
+                        .1      "file://"
+                        .1      "#"
+                        .1      ""
+
+RandChar                1       STR.alpha
+                        1       STR.url_encoded
+                        .1      STR.codepoint
+                        .1      STR.entity
+                        .01     STR.Any
+                        .01     STR.punctuation
+
+UrlEncChar              1       STR.url_encoded
+                        1       "%2" /[0-9A-F]/
+                        .1      "%E2%80%" /[0-9A-F]{2}/
+                        .1      "%CB%8" /[0-9A-F]/ "%" /[0-9A-F]{2}/

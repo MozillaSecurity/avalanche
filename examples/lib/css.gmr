@@ -1,0 +1,2192 @@
+### CSS Library
+# Written by: Jesse Schwartzentruber
+
+# https://developer.mozilla.org/en-US/docs/Web/CSS/Reference
+T       import('css-types.gmr')
+HV      import('html-values.gmr')
+TN      import('html-tag-names.gmr')
+
+# WARNING: This is a library and is not meant to be run standalone
+# root is defined for testing
+root    StyleSheet
+
+AnimationProperty           +       AnyProperty
+                            1       'background'
+                            1       'background-color'
+                            1       'background-position'
+                            1       'background-position-x'
+                            1       'background-position-y'
+                            1       'background-size'
+                            1       'border'
+                            1       'border-bottom'
+                            1       'border-bottom-color'
+                            1       'border-bottom-left-radius'
+                            1       'border-bottom-right-radius'
+                            1       'border-bottom-width'
+                            1       'border-color'
+                            1       'border-left'
+                            1       'border-left-color'
+                            1       'border-left-width'
+                            1       'border-radius'
+                            1       'border-right'
+                            1       'border-right-color'
+                            1       'border-right-width'
+                            1       'border-top'
+                            1       'border-top-color'
+                            1       'border-top-left-radius'
+                            1       'border-top-right-radius'
+                            1       'border-top-width'
+                            1       'border-width'
+                            1       'bottom'
+                            1       'box-shadow'
+                            1       'clip'
+                            1       'clip-path'
+                            1       'color'
+                            1       '-moz-column-count'
+                            1       '-moz-column-gap'
+                            1       '-moz-column-rule'
+                            1       '-moz-column-rule-color'
+                            1       '-moz-column-rule-style'
+                            1       '-moz-column-rule-width'
+                            1       '-moz-column-width'
+                            1       '-moz-columns'
+                            1       'filter'
+                            1       'flex'
+                            1       'flex-basis'
+                            1       'flex-grow'
+                            1       'flex-shrink'
+                            1       'font'
+                            1       'font-size'
+                            1       'font-size-adjust'
+                            1       'font-weight'
+                            1       'height'
+                            1       'left'
+                            1       'letter-spacing'
+                            1       'line-height'
+                            1       'margin'
+                            1       'margin-bottom'
+                            1       'margin-left'
+                            1       'margin-right'
+                            1       'margin-top'
+                            1       'mask'
+                            1       'mask-position'
+                            1       'mask-size'
+                            1       'max-height'
+                            1       'max-width'
+                            1       'min-height'
+                            1       'min-width'
+                            1       'mix-blend-mode'
+                            1       'object-position'
+                            1       'opacity'
+                            1       'order'
+                            1       'outline'
+                            1       'outline-color'
+                            1       'outline-offset'
+                            1       'outline-width'
+                            1       'padding'
+                            1       'padding-bottom'
+                            1       'padding-left'
+                            1       'padding-right'
+                            1       'padding-top'
+                            1       'perspective'
+                            1       'perspective-origin'
+                            1       'right'
+                            1       'ruby-align'
+                            1       'ruby-merge'
+                            1       'scroll-snap-coordinate'
+                            1       'scroll-snap-destination'
+                            1       'shape-image-threshold'
+                            1       'shape-margin'
+                            1       'shape-outside'
+                            1       'text-align'
+                            1       'text-combine-upright'
+                            1       'text-decoration'
+                            1       'text-decoration-color'
+                            1       'text-decoration-line'
+                            1       'text-decoration-style'
+                            1       'text-emphasis'
+                            1       'text-emphasis-color'
+                            1       'text-emphasis-position'
+                            1       'text-indent'
+                            1       'text-justify'
+                            1       'text-overflow'
+                            1       'text-shadow'
+                            1       'top'
+                            1       'transform'
+                            1       'transform-origin'
+                            1       'vertical-align'
+                            1       'visibility'
+                            1       'widows'
+                            1       'width'
+                            1       'word-spacing'
+                            1       'z-index'
+
+PseudoClass                 1       ':active'
+                            1       ':any'
+                            1       ':checked'
+                            1       ':default'
+                            1       ':dir()'
+                            1       ':disabled'
+                            1       ':empty'
+                            1       ':enabled'
+                            1       ':first'
+                            1       ':first-child'
+                            1       ':first-of-type'
+                            1       ':fullscreen'
+                            1       ':focus'
+                            1       ':hover'
+                            1       ':indeterminate'
+                            1       ':in-range'
+                            1       ':invalid'
+                            1       ':lang()'
+                            1       ':last-child'
+                            1       ':last-of-type'
+                            1       ':left'
+                            1       ':link'
+                            1       ':not()'
+                            1       ':nth-child()'
+                            1       ':nth-last-child()'
+                            1       ':nth-last-of-type()'
+                            1       ':nth-of-type()'
+                            1       ':only-child'
+                            1       ':only-of-type'
+                            1       ':optional'
+                            1       ':out-of-range'
+                            1       ':read-only'
+                            1       ':read-write'
+                            1       ':required'
+                            1       ':right'
+                            1       ':root'
+                            1       ':scope'
+                            1       ':target'
+                            1       ':valid'
+                            1       ':visited'
+
+PseudoElement               1       '::after'
+                            1       '::backdrop'
+                            1       '::before'
+                            1       '::first-letter'
+                            1       '::first-line'
+                            1       '::selection'
+                            1       '::placeholder'
+                            1       '::marker'
+                            1       '::spelling-error'
+                            1       '::grammar-error'
+
+AnyProperty                 1       'align-content'
+                            1       'align-items'
+                            1       'align-self'
+                            1       'all'
+                            1       'animation'
+                            1       'animation-delay'
+                            1       'animation-direction'
+                            1       'animation-duration'
+                            1       'animation-fill-mode'
+                            1       'animation-iteration-count'
+                            1       'animation-name'
+                            1       'animation-play-state'
+                            1       'animation-timing-function'
+                            1       'backface-visibility'
+                            1       'background'
+                            1       'background-attachment'
+                            1       'background-blend-mode'
+                            1       '-webkit-background-clip'
+                            1       'background-color'
+                            1       'background-image'
+                            1       'background-origin'
+                            1       'background-position'
+                            1       'background-repeat'
+                            1       'background-size'
+                            1       'block-size'
+                            1       'border'
+                            1       'border-block-end'
+                            1       'border-block-end-color'
+                            1       'border-block-end-style'
+                            1       'border-block-end-width'
+                            1       'border-block-start'
+                            1       'border-block-start-color'
+                            1       'border-block-start-style'
+                            1       'border-block-start-width'
+                            1       'border-inline-end'
+                            1       'border-inline-end-color'
+                            1       'border-inline-end-style'
+                            1       'border-inline-end-width'
+                            1       'border-inline-start'
+                            1       'border-inline-start-color'
+                            1       'border-inline-start-style'
+                            1       'border-inline-start-width'
+                            1       'border-bottom'
+                            1       'border-bottom-color'
+                            1       'border-bottom-left-radius'
+                            1       'border-bottom-right-radius'
+                            1       'border-bottom-style'
+                            1       'border-bottom-width'
+                            1       'border-color'
+                            1       'border-image'
+                            1       'border-image-outset'
+                            1       'border-image-repeat'
+                            1       'border-image-slice'
+                            1       'border-image-source'
+                            1       'border-image-width'
+                            1       'border-left'
+                            1       'border-left-color'
+                            1       'border-left-style'
+                            1       'border-left-width'
+                            1       'border-radius'
+                            1       'border-right'
+                            1       'border-right-color'
+                            1       'border-right-style'
+                            1       'border-right-width'
+                            1       'border-style'
+                            1       'border-top'
+                            1       'border-top-color'
+                            1       'border-top-left-radius'
+                            1       'border-top-right-radius'
+                            1       'border-top-style'
+                            1       'border-top-width'
+                            1       'border-width'
+                            1       'bottom'
+                            1       'box-decoration-break'
+                            1       'box-shadow'
+                            1       'box-sizing'
+                            1       'caption-side'
+                            1       'clear'
+                            1       'clip'
+                            1       'clip-path'
+                            1       'color'
+                            1       '-moz-column-count'
+                            1       '-moz-column-fill'
+                            1       '-moz-column-gap'
+                            1       '-moz-column-rule'
+                            1       '-moz-column-rule-color'
+                            1       '-moz-column-rule-style'
+                            1       '-moz-column-rule-width'
+                            1       '-moz-column-width'
+                            1       '-moz-columns'
+                            1       'content'
+                            1       'counter-increment'
+                            1       'counter-reset'
+                            1       'cursor'
+                            1       'direction'
+                            1       'display'
+                            1       'empty-cells'
+                            1       'filter'
+                            1       'flex'
+                            1       'flex-basis'
+                            1       'flex-direction'
+                            1       'flex-flow'
+                            1       'flex-grow'
+                            1       'flex-shrink'
+                            1       'flex-wrap'
+                            1       'float'
+                            1       'font'
+                            1       'font-family'
+                            1       'font-feature-settings'
+                            1       'font-kerning'
+                            1       'font-language-override'
+                            1       'font-size'
+                            1       'font-size-adjust'
+                            1       'font-stretch'
+                            1       'font-style'
+                            1       'font-synthesis'
+                            1       'font-variant'
+                            1       'font-variant-alternates'
+                            1       'font-variant-caps'
+                            1       'font-variant-east-asian'
+                            1       'font-variant-ligatures'
+                            1       'font-variant-numeric'
+                            1       'font-variant-position'
+                            1       'font-weight'
+                            1       'grid'
+                            1       'grid-area'
+                            1       'grid-auto-columns'
+                            1       'grid-auto-flow'
+                            1       'grid-auto-rows'
+                            1       'grid-column'
+                            1       'grid-column-end'
+                            1       'grid-column-gap'
+                            1       'grid-column-start'
+                            1       'grid-gap'
+                            1       'grid-row'
+                            1       'grid-row-end'
+                            1       'grid-row-gap'
+                            1       'grid-row-start'
+                            1       'grid-template'
+                            1       'grid-template-areas'
+                            1       'grid-template-columns'
+                            1       'grid-template-rows'
+                            1       'height'
+                            1       'hyphens'
+                            1       'image-orientation'
+                            1       'image-rendering'
+                            1       'image-resolution'
+                            1       'ime-mode'
+                            1       'inline-size'
+                            1       'isolation'
+                            1       'justify-content'
+                            1       'left'
+                            1       'letter-spacing'
+                            1       'line-height'
+                            1       'list-style'
+                            1       'list-style-image'
+                            1       'list-style-position'
+                            1       'list-style-type'
+                            1       'margin'
+                            1       'margin-block-end'
+                            1       'margin-block-start'
+                            1       'margin-bottom'
+                            1       'margin-inline-end'
+                            1       'margin-inline-start'
+                            1       'margin-left'
+                            1       'margin-right'
+                            1       'margin-top'
+                            1       'mask'
+                            1       'mask-clip'
+                            1       'mask-composite'
+                            1       'mask-image'
+                            1       'mask-mode'
+                            1       'mask-origin'
+                            1       'mask-position'
+                            1       'mask-repeat'
+                            1       'mask-size'
+                            1       'mask-type'
+                            1       'max-block-size'
+                            1       'max-height'
+                            1       'max-inline-size'
+                            1       'max-width'
+                            1       'max-zoom'
+                            1       'min-block-size'
+                            1       'min-height'
+                            1       'min-inline-size'
+                            1       'min-width'
+                            1       'min-zoom'
+                            1       'mix-blend-mode'
+                            1       'object-fit'
+                            1       'object-position'
+                            1       'offset-block-end'
+                            1       'offset-block-start'
+                            1       'offset-inline-end'
+                            1       'offset-inline-start'
+                            1       'opacity'
+                            1       'order'
+                            1       'outline'
+                            1       'outline-color'
+                            1       'outline-offset'
+                            1       'outline-style'
+                            1       'outline-width'
+                            1       'overflow'
+                            1       'overflow-wrap'
+                            1       'overflow-x'
+                            1       'overflow-y'
+                            1       'pad'
+                            1       'padding'
+                            1       'padding-block-end'
+                            1       'padding-block-start'
+                            1       'padding-bottom'
+                            1       'padding-inline-end'
+                            1       'padding-inline-start'
+                            1       'padding-left'
+                            1       'padding-right'
+                            1       'padding-top'
+                            1       'page-break-after'
+                            1       'page-break-before'
+                            1       'page-break-inside'
+                            1       'perspective'
+                            1       'perspective-origin'
+                            1       'pointer-events'
+                            1       'position'
+                            1       'prefix'
+                            1       'quotes'
+                            1       'range'
+                            1       '-moz-resize'
+                            1       'right'
+                            1       'ruby-align'
+                            1       'ruby-merge'
+                            1       'ruby-position'
+                            1       'scroll-behavior'
+                            1       'scroll-snap-coordinate'
+                            1       'scroll-snap-destination'
+                            1       'scroll-snap-type'
+                            1       'shape-image-threshold'
+                            1       'shape-margin'
+                            1       'shape-outside'
+                            1       'speak-as'
+                            1       'src'
+                            1       'suffix'
+                            1       'symbols'
+                            1       'system'
+                            1       'tab-size'
+                            1       'table-layout'
+                            1       'text-align'
+                            1       'text-align-last'
+                            1       'text-combine-upright'
+                            1       'text-decoration'
+                            1       'text-decoration-color'
+                            1       'text-decoration-line'
+                            1       'text-decoration-style'
+                            1       'text-emphasis'
+                            1       'text-emphasis-color'
+                            1       'text-emphasis-position'
+                            1       'text-emphasis-style'
+                            1       'text-indent'
+                            1       'text-justify'
+                            1       'text-orientation'
+                            1       'text-overflow'
+                            1       'text-rendering'
+                            1       'text-shadow'
+                            1       'text-transform'
+                            1       'text-underline-position'
+                            1       'top'
+                            1       'touch-action'
+                            1       'transform'
+                            1       'transform-box'
+                            1       'transform-origin'
+                            1       'transform-style'
+                            1       'transition'
+                            1       'transition-delay'
+                            1       'transition-duration'
+                            1       'transition-property'
+                            1       'transition-timing-function'
+                            1       'unicode-bidi'
+                            1       'unicode-range'
+                            1       'user-zoom'
+                            1       'vertical-align'
+                            1       'visibility'
+                            1       'white-space'
+                            1       'widows'
+                            1       'width'
+                            1       'will-change'
+                            1       'word-break'
+                            1       'word-spacing'
+                            1       'word-wrap'
+                            1       'writing-mode'
+                            1       'z-index'
+                            1       'zoom'
+
+GlobalValues                1       'inherit'
+                            1       'initial'
+                            1       'unset'
+
+StyleSheet                          (Statement '\n'){10,50}
+Style                               (AnyProperty) ':' eval(@1 '-value')
+Statement                   1       Selector ' {\n' ( Style ';\n' )<10,20> '}'
+                            1       Combinator ' {\n' ( Style ';\n' )<2,5> '}'
+                            1       SelectorOrCombinator ' ' SelectorOrCombinator ' {\n' ( Style ';\n' )<10,20> '}'
+SelectorOrCombinator        1       Selector
+                            1       Combinator
+Combinator                  1       Selector ' ' Selector
+                            1       Selector ' > ' Selector
+                            1       Selector ' + ' Selector
+                            1       Selector ' ~ ' Selector
+Selector                            _SelectorPt _PseudoElementPt
+_SelectorPt                 .5      TN.All
+                            1       _PseudoClassTagNamePt PseudoClass
+                            1       '#' @HV.id
+_PseudoClassTagNamePt       .5      TN.All
+                            1       ''
+_PseudoElementPt            .5      PseudoElement
+                            1       ''
+
+###########################################################################################################
+
+additive-symbols-value              T.PosInteger ' ' T.Symbol (',' T.PosInteger ' ' T.Symbol){0,2}
+
+align-content-value         1       _align-content-ext0
+                            .05     GlobalValues
+_align-content-ext0         1       'flex-start'
+                            1       'flex-end'
+                            1       'center'
+                            1       'space-between'
+                            1       'space-around'
+                            1       'stretch' # initial
+
+align-items-value           1       _align-items-ext0
+                            .05     GlobalValues
+_align-items-ext0           1       'flex-start'
+                            1       'flex-end'
+                            1       'center'
+                            1       'baseline'
+                            1       'stretch' # initial
+
+align-self-value            1       _align-self-ext0
+                            .05     GlobalValues
+_align-self-ext0            1       'auto' # initial
+                            +       _align-items-ext0
+
+all-value                   1       _all-ext0
+                            .05     GlobalValues
+_all-ext0                   1       'revert'
+
+animation-value                     animation-duration-value (' ' _animation-value-ext0)<1,10>
+_animation-value-ext0       1       animation-name-value
+                            1       animation-timing-function-value
+                            1       animation-delay-value
+                            1       animation-iteration-count-value
+                            1       animation-direction-value
+                            1       animation-fill-mode-value
+                            1       animation-play-state-value
+
+animation-delay-value               T.Time
+
+animation-direction-value   1       _animation-direction-ext0
+                            .05     GlobalValues
+_animation-direction-ext0   1       'normal'
+                            1       'reverse'
+                            1       'alternate'
+                            1       'alternate-reverse'
+
+animation-duration-value            T.Time
+
+animation-fill-mode-value   1       'none'
+                            1       'forwards'
+                            1       'backwards'
+                            1       'both'
+
+animation-iteration-count-value     \
+                            1       'infinite'
+                            1       rndflt(0,3)
+
+animation-name-value        1       _animation-name-ext0
+                            .05     GlobalValues
+_animation-name-ext0        1       'none'
+                            1       AnimationIdent
+AnimationIdent                      'anim' /[0-9]{3}/
+
+animation-play-state-value  1       _animation-play-state-ext0
+                            .05     GlobalValues
+_animation-play-state-ext0  1       'running'
+                            1       'paused'
+
+animation-timing-function-value     T.TimingFunction
+
+backface-visibility-value   1       'visible' # initial
+                            1       'hidden'
+
+background-value                    (_background-value-ext0 ' ')<1,10>
+_background-value-ext0      1       color-value
+                            1       background-image-value
+                            1       background-position-value
+                            1       background-size-value
+                            1       background-repeat-value
+                            1       background-origin-value
+                            1       -webkit-background-clip-value
+                            1       background-attachment-value
+
+background-attachment-value 1       'scroll' # initial
+                            1       'fixed'
+                            1       'local'
+                            1       'inherit'
+
+background-blend-mode-value 1       T.BlendMode
+                            .05     GlobalValues
+
+-webkit-background-clip-value \
+                            1       'border-box'
+                            1       'padding-box'
+                            1       'content-box'
+                            1       'text'
+                            1       GlobalValues
+
+background-color-value              color-value
+
+background-image-value      1       'none'
+                            +       T.Image
+                            1       'inherit'
+
+background-origin-value     1       'border-box'
+                            1       'padding-box'
+                            1       'content-box'
+                            1       'inherit'
+
+# https://drafts.csswg.org/css-backgrounds-4/#background-position-longhands
+background-position-value   1       T.Position
+                            .05     GlobalValues
+
+background-position-x-value 1       'center'
+                            1       _bg-p-x-ext0 (' ' T.LengthOrPercent)?
+                            .1      GlobalValues
+_bg-p-x-ext0                +       T.Side
+                            1       'x-start'
+                            1       'x-end'
+
+background-position-y-value 1       'center'
+                            1       _bg-p-y-ext0 (' ' T.LengthOrPercent)?
+                            .1      GlobalValues
+_bg-p-y-ext0                +       T.TopOrBottom
+                            1       'y-start'
+                            1       'y-end'
+
+background-repeat-value     1       'repeat-' /[xy]/
+                            1       _background-repeat-value-ext0 (' ' _background-repeat-value-ext0)?
+                            .5      'inherit'
+_background-repeat-value-ext0 \
+                            1       'repeat'
+                            1       'space'
+                            1       'round'
+                            1       'no-repeat'
+
+background-size-value       1       _background-size-ext0
+                            .05     GlobalValues
+_background-size-ext0       1       T.LengthOrPercent
+                            .5      'auto'
+                            .5      'contain'
+                            .5      'cover'
+
+# pref:layout.css.vertical-text.enabled
+block-size-value                    width-value
+
+border-value                        (_border-value-ext0 ' ')<1,*>
+_border-value-ext0          1       _border-width-ext0
+                            1       _border-style-ext0
+                            1       T.Color
+
+# pref:layout.css.vertical-text.enabled
+border-block-end-value              border-value
+
+# pref:layout.css.vertical-text.enabled
+border-block-end-color-value        T.Color
+
+# pref:layout.css.vertical-text.enabled
+border-block-end-style-value        _border-style-ext0
+
+# pref:layout.css.vertical-text.enabled
+border-block-end-width-value        _border-width-ext0
+
+# pref:layout.css.vertical-text.enabled
+border-block-start-value            border-value
+
+# pref:layout.css.vertical-text.enabled
+border-block-start-color-value      T.Color
+
+# pref:layout.css.vertical-text.enabled
+border-block-start-style-value      _border-style-ext0
+
+# pref:layout.css.vertical-text.enabled
+border-block-start-width-value      _border-width-ext0
+
+# pref:layout.css.vertical-text.enabled
+border-inline-end-value             border-value
+
+# pref:layout.css.vertical-text.enabled
+border-inline-end-color-value       T.Color
+
+# pref:layout.css.vertical-text.enabled
+border-inline-end-style-value       _border-style-ext0
+
+# pref:layout.css.vertical-text.enabled
+border-inline-end-width-value       _border-width-ext0
+
+# pref:layout.css.vertical-text.enabled
+border-inline-start-value           border-value
+
+# pref:layout.css.vertical-text.enabled
+border-inline-start-color-value     T.Color
+
+# pref:layout.css.vertical-text.enabled
+border-inline-start-style-value     _border-style-ext0
+
+# pref:layout.css.vertical-text.enabled
+border-inline-start-width-value     _border-width-ext0
+
+border-bottom-value                 border-value
+
+border-bottom-color-value   1       T.Color
+                            .05     'inherit'
+
+border-bottom-left-radius-value     T.LengthOrPercent (' ' T.LengthOrPercent)?
+
+border-bottom-right-radius-value    T.LengthOrPercent (' ' T.LengthOrPercent)?
+
+border-bottom-style-value   1       _border-style-ext0
+                            .05     'inherit'
+
+border-bottom-width-value   1       _border-width-ext0
+                            .05     'inherit'
+
+border-color-value          1       T.Color (' ' T.Color){0,3}
+                            .05     'inherit'
+
+border-image-value                  (_border-image-ext0 ' ')<1,*>
+_border-image-ext0          1       _border-image-source-ext0
+                            .25     _border-image-slice-ext0
+                            .25     _border-image-slice-ext0 ' / ' _border-image-width-ext0
+                            .5      _border-image-slice-ext0 ' /' (' ' _border-image-width-ext0)? ' / ' _border-image-outset-ext0
+                            1       _border-image-repeat-ext0
+
+border-image-outset-value   1       _border-image-outset-ext0
+                            .05     'inherit'
+_border-image-outset-ext0           T.LengthOrPercent (' ' T.LengthOrPercent){0,3}
+
+border-image-repeat-value   1       _border-image-repeat-ext0
+                            .05     GlobalValues
+_border-image-repeat-ext0           _border-image-repeat-ext1 (' ' _border-image-repeat-ext1)?
+_border-image-repeat-ext1   1       'stretch'
+                            1       'repeat'
+                            1       'round'
+                            1       'space'
+
+border-image-slice-value    1       _border-image-slice-ext0
+                            .05     GlobalValues
+_border-image-slice-ext0            T.LengthOrPercent (' ' T.LengthOrPercent){0,3} (' fill')?
+
+border-image-source-value   1       _border-image-source-ext0
+                            .05     GlobalValues
+_border-image-source-ext0   +       T.Image
+                            1       'none'
+
+border-image-width-value    1       _border-image-width-ext0
+                            .05     'inherit'
+_border-image-width-ext0            _border-image-width-ext1 (' ' _border-image-width-ext1){0,3}
+_border-image-width-ext1    1       T.LengthOrPercent
+                            .5      T.PosNumber
+                            .5      'auto'
+
+border-left-value                   border-value
+
+border-left-color-value     1       T.Color
+                            .05     'inherit'
+
+border-left-style-value     1       _border-style-ext0
+                            .05     'inherit'
+
+border-left-width-value     1       _border-width-ext0
+                            .05     'inherit'
+
+border-radius-value         1       _border-radius-ext0
+                            .05     'inherit'
+_border-radius-ext0                 T.LengthOrPercent (' ' T.LengthOrPercent){0,3} (' /' (' ' T.LengthOrPercent){1,4})?
+
+border-right-value                  border-value
+
+border-right-color-value    1       T.Color
+                            .05     'inherit'
+
+border-right-style-value    1       _border-style-ext0
+                            .05     'inherit'
+
+border-right-width-value    1       _border-width-ext0
+                            .05     'inherit'
+
+border-style-value          1       _border-style-ext0 (' ' _border-style-ext0){0,3}
+                            .05     GlobalValues
+_border-style-ext0          1       'none'
+                            1       'hidden'
+                            1       'dotted'
+                            1       'dashed'
+                            1       'solid'
+                            1       'double'
+                            1       'groove'
+                            1       'ridge'
+                            1       'inset'
+                            1       'outset'
+
+border-top-value                    border-value
+
+border-top-color-value      1       T.Color
+                            .05     'inherit'
+
+border-top-left-radius-value        T.LengthOrPercent (' ' T.LengthOrPercent)?
+
+border-top-right-radius-value       T.LengthOrPercent (' ' T.LengthOrPercent)?
+
+border-top-style-value      1       _border-style-ext0
+                            .05     'inherit'
+
+border-top-width-value      1       _border-width-ext0
+                            .05     'inherit'
+
+border-width-value          1       _border-width-ext0 (' ' _border-width-ext0){0,3}
+                            .05     'inherit'
+_border-width-ext0          1       T.Length
+                            1       'thin'
+                            1       'medium'
+                            1       'thick'
+
+bottom-value                1       _bottom-ext0
+                            .05     'inherit'
+_bottom-ext0                1       T.LengthOrPercent
+                            .05     'auto'
+
+box-decoration-break-value  1       _box-decoration-break-ext0
+                            .05     GlobalValues
+_box-decoration-break-ext0  1       'slice'
+                            1       'clone'
+
+box-shadow-value            1       _box-shadow-ext0 (',' _box-shadow-ext0){0,4}
+                            1       'none'
+_box-shadow-ext0                    ('inset ')? T.Length (' ' T.Length){1,3} (' ' T.Color)?
+
+box-sizing-value            1       _box-sizing-ext0
+                            .05     GlobalValues
+_box-sizing-ext0            1       'content-box'
+                            1       'border-box'
+
+caption-side-value          1       _caption-side-ext0
+                            .05     GlobalValues
+_caption-side-ext0          1       'top'
+                            1       'bottom'
+                            1       'block-start'
+                            1       'block-end'
+                            1       'inline-start'
+                            1       'inline-end'
+
+clear-value                 1       _clear-ext0
+                            1       'inherit'
+_clear-ext0                 1       'none'
+                            1       'left'
+                            1       'right'
+                            1       'both'
+                            1       'inline-start'
+                            1       'inline-end'
+
+# deprecated .. could be removed
+clip-value                  1       T.Shape
+                            .25     'auto'
+                            .05     GlobalValues
+
+clip-path-value             1       _ClipSrc
+                            1       (' ' _ClipShape)<1,*>
+                            1       'none'
+_ClipSrc                            T.Url
+_ClipShape                  1       T.BasicShape
+                            1       _ClipGeoBox
+_ClipGeoBox                 1       'border-box'
+                            1       'padding-box'
+                            1       'content-box'
+                            1       'margin-box'
+                            1       'fill-box'
+                            1       'stroke-box'
+                            1       'view-box'
+
+color-value                 1       T.Color
+                            .05     GlobalValues
+
+-moz-column-count-value     1       _column-count-ext0
+                            .05     GlobalValues
+_column-count-ext0          1       T.PosInteger
+                            1       'auto'
+
+-moz-column-fill-value      .5      'balance'
+                            .5      'auto'
+                            .05     GlobalValues
+
+-moz-column-gap-value       1       T.Length
+                            1       'normal'
+                            .1      GlobalValues
+
+-moz-column-rule-value              (_moz-column-rule-ext0 ' ')<1,*>
+_moz-column-rule-ext0       1       _border-width-ext0 # ColumnRuleWidth
+                            1       _border-style-ext0 # ColumnRuleStyle
+                            1       T.Color # ColumnRuleColor
+
+-moz-column-rule-color-value \
+                            1       T.Color
+                            .05     GlobalValues
+
+-moz-column-rule-style-value \
+                            1       _border-style-ext0
+                            .05     GlobalValues
+
+-moz-column-rule-width-value \
+                            1       _border-width-ext0
+                            .05     GlobalValues
+
+# not supported
+#column-span-value           1       'all'
+#                            1       'none'
+#                            .05     GlobalValues
+
+-moz-column-width-value     1       _column-width-ext0
+                            .05     GlobalValues
+_column-width-ext0          1       T.Length
+                            1       'auto'
+
+-moz-columns-value                  (_moz-columns-ext0 ' ')<1,*>
+_moz-columns-ext0           1       _column-width-ext0
+                            1       _column-count-ext0
+
+content-value               1       _content-ext0
+                            .05     GlobalValues
+_content-ext0               1       'none'
+                            1       'normal'
+                            1       _content-ext1 (' ' _content-ext1){0,4}
+_content-ext1               .1       T.String
+                            .1       T.Url
+                            .2       'counter(' @T.Counter (',' T.ListStyle)? ')'
+                            .3       'counters(' @T.Counter (",'.'" (',' T.ListStyle)?)? ')'
+                            .1       'attr(' @HV.id ')'
+                            .2       'no-'? 'open-quote'
+                            .2       'no-'? 'close-quote'
+
+counter-increment-value     1       _counter-increment-ext0
+                            .05     GlobalValues
+_counter-increment-ext0     1       'none'
+                            1       (@T.Counter T.AnyInteger? ' '){1,4}
+
+counter-reset-value                 counter-increment-value
+
+cursor-value                1       _cursor-ext0
+                            .05     GlobalValues
+_cursor-ext0                        (T.Url (' ' _CursorPos ' ' _CursorPos)? ','){0,3} _CursorKwd
+_CursorPos                  1       rndint(0,32)
+                            .05     T.PosInteger
+_CursorKwd                  .1      'auto'
+                            .1      'default'
+                            .1      'none'
+                            .1      'context-menu'
+                            .1      'help'
+                            .1      'pointer'
+                            .1      'progress'
+                            .1      'wait'
+                            .1      'cell'
+                            .1      'crosshair'
+                            .1      'text'
+                            .1      'vertical-text'
+                            .1      'alias'
+                            .1      'copy'
+                            .1      'move'
+                            .1      'no-drop'
+                            .1      'not-allowed'
+                            .4      /[nsew]/ '-resize'
+                            .4      /[ns]/ /[ew]/ '-resize'
+                            .1      'ew-resize'
+                            .1      'ns-resize'
+                            .1      'nesw-resize'
+                            .1      'nwse-resize'
+                            .1      'col-resize'
+                            .1      'row-resize'
+                            .1      'all-scroll'
+                            .1      'zoom-in'
+                            .1      'zoom-out'
+                            .1      'grab'
+                            .1      'grabbing'
+
+direction-value             1       'ltr'
+                            1       'rtl'
+                            .1      GlobalValues
+
+display-value               1       _display-ext0
+                            .05     GlobalValues
+_display-ext0               1       'none'
+                            1       'inline'
+                            1       'block'
+                            1       'list-item'
+                            #1       'inline-list-item' # XXX: bug 1105868
+                            1       'inline-block'
+                            1       'inline-table'
+                            1       'table'
+                            1       'table-cell'
+                            1       'table-column'
+                            1       'table-column-group'
+                            1       'table-footer-group'
+                            1       'table-header-group'
+                            1       'table-row'
+                            1       'table-row-group'
+                            1       'flex'
+                            1       'inline-flex'
+                            #1       'grid' # no support
+                            #1       'inline-grid' # no support
+                            #1       'run-in' # no support
+                            1       'contents'
+                            1       '-webkit-box'
+                            # following values need pref: layout.css.ruby.enabled
+                            1       'ruby'
+                            1       'ruby-base'
+                            1       'ruby-text'
+                            1       'ruby-base-container'
+                            1       'ruby-text-container'
+
+empty-cells-value           1       _empty-cells-ext0
+                            .05     GlobalValues
+_empty-cells-ext0           1       'show'
+                            1       'hide'
+
+filter-value                1       _filter-ext0
+                            .05     GlobalValues
+_filter-ext0                1       T.FilterFunction (' ' T.FilterFunction){0,4}
+                            .1      'none'
+
+flex-value                  1       (_flex-ext0 ' ')<1,*>
+                            1       'none'
+                            .1      GlobalValues
+_flex-ext0                  1       _flex-grow-ext0 (' ' _flex-shrink-ext0)?
+                            1       _flex-basis-ext0
+
+flex-basis-value            1       _flex-basis-ext0
+                            .05     GlobalValues
+_flex-basis-ext0            1       _width-ext0
+                            #1       'content' # no support, bug 1105111
+
+flex-direction-value        1       _flex-direction-ext0
+                            .05     GlobalValues
+_flex-direction-ext0        1       'row'
+                            1       'row-reverse'
+                            1       'column'
+                            1       'column-reverse'
+
+flex-flow-value             1       (_flex-flow-ext0 ' ')<1,*>
+                            .05     GlobalValues
+_flex-flow-ext0             1       _flex-direction-ext0
+                            1       _flex-wrap-ext0
+
+flex-grow-value             1       _flex-grow-ext0
+                            .05     GlobalValues
+_flex-grow-ext0                     T.PosNumber
+
+flex-shrink-value           1       _flex-shrink-ext0
+                            .05     GlobalValues
+_flex-shrink-ext0                   T.PosNumber
+
+flex-wrap-value             1       _flex-wrap-ext0
+                            .05     GlobalValues
+_flex-wrap-ext0             1       'nowrap'
+                            1       'wrap'
+                            1       'wrap-reverse'
+
+float-value                 1       _float-ext0
+                            .05     GlobalValues
+_float-ext0                 1       'left'
+                            1       'right'
+                            1       'none'
+# pref:layout.css.float-logical-values.enabled = true for inline-start/inline-end
+                            1       'inline-start'
+                            1       'inline-end'
+
+font-value                  1       _font-ext0
+                            .05     GlobalValues
+_font-ext0                  1       _FontKwd
+                            1       (_font-ext1 ' ')<0,*> _font-size-ext0 (' /' _line-height-ext0)? ' ' _font-family-ext0
+_font-ext1                  1       _font-style-ext0
+                            1       _FontVariant21Pt
+                            1       _font-weight-ext0
+                            1       _font-stretch-ext0
+_FontVariant21Pt            1       'normal'
+                            1       'small-caps'
+_FontKwd                    1       'caption'
+                            1       'icon'
+                            1       'menu'
+                            1       'message-box'
+                            1       'small-caption'
+                            1       'status-bar'
+                            1       '-moz-window'
+                            1       '-moz-document'
+                            1       '-moz-desktop'
+                            1       '-moz-info'
+                            1       '-moz-dialog'
+                            1       '-moz-button'
+                            1       '-moz-pull-down-menu'
+                            1       '-moz-list'
+                            1       '-moz-field'
+
+font-family-value           1       _font-family-ext0
+                            .05     GlobalValues
+_font-family-ext0           1       'serif'
+                            1       'sans-serif'
+                            1       'cursive'
+                            1       'fantasy'
+                            1       'monospace'
+
+font-feature-settings-value 1       _font-feature-settings-ext0
+                            .05     GlobalValues
+_font-feature-settings-ext0         _font-feature-settings-ext1 (' ' _font-feature-settings-ext2)?
+_font-feature-settings-ext1         _font-feature-settings-ext2 (' ' _font-feature-settings-ext3)?
+_font-feature-settings-ext2 1       'c2sc'
+                            1       'cswh'
+                            .9      'cv0' /[0-9]/
+                            .1      'cv' /[1-9][0-9]/
+                            1       'frac'
+                            1       'hist'
+                            1       'liga'
+                            1       'nalt'
+                            1       'ornm'
+                            1       'ruby'
+                            1       'salt'
+                            1       'smpc'
+                            .9      'ss0' /[0-9]/
+                            .1      'ss' /[1-9][0-9]/
+                            1       'swsh'
+                            1       'tnum'
+                            .01     '"' /.{4}/ '"'
+_font-feature-settings-ext3 .1      T.PosInteger
+                            1       'on'
+                            1       'off'
+                            1       '2'
+                            1       '1'
+                            1       '0'
+
+font-kerning-value          1       _font-kerning-ext0
+                            .05     GlobalValues
+_font-kerning-ext0          1       'auto'
+                            1       'normal'
+                            1       'none'
+
+font-language-override-value \
+                            1       'normal'
+                            .05     GlobalValues
+
+font-size-value             1       _font-size-ext0
+                            .05     GlobalValues
+_font-size-ext0             1       T.RelativeSize
+                            1       T.AbsoluteSize
+                            1       T.Length
+                            1       T.Percentage
+
+font-size-adjust-value      1       _font-size-adjust-ext0
+                            .05     GlobalValues
+_font-size-adjust-ext0      1       T._Prob01
+                            .1      'none'
+
+font-stretch-value          1       _font-stretch-ext0
+                            .05     GlobalValues
+_font-stretch-ext0          1       'normal'
+                            1       'ultra-condensed'
+                            1       'extra-condensed'
+                            1       'condensed'
+                            1       'semi-condensed'
+                            1       'semi-expanded'
+                            1       'expanded'
+                            1       'extra-expanded'
+                            1       'ultra-expanded'
+
+font-style-value            1       _font-style-ext0
+                            .05     GlobalValues
+_font-style-ext0            1       'normal'
+                            1       'italic'
+                            1       'oblique'
+
+font-synthesis-value        1       _font-synthesis-ext0
+                            .05     GlobalValues
+_font-synthesis-ext0        1       'none'
+                            1       'weight'
+                            1       'style'
+                            1       'weight style'
+
+font-variant-value          1       _font-variant-ext0
+                            .05     GlobalValues
+_font-variant-ext0          1       'normal'
+                            1       'none'
+                            1       (_font-variant-ext1 ' ')<1,*>
+_font-variant-ext1          +       _font-variant-alternates-ext0
+                            1       _font-variant-caps-ext0
+                            +       _font-variant-east-asian-ext0
+                            +       _font-variant-ligatures-ext0
+                            +       _font-variant-numeric-ext0
+_FVFeatureValueName                 /[0-9]/
+
+font-variant-alternates-value \
+                            +       _font-variant-alternates-ext0
+                            1       'normal'
+                            .05     GlobalValues
+_font-variant-alternates-ext0 \
+                            1       'stylistic(' _FVFeatureValueName ')'
+                            1       'styleset(' _FVFeatureValueName ')' # multiple?
+                            1       'character-variant(' _FVFeatureValueName ')' # multiple?
+                            1       'swash(' _FVFeatureValueName ')'
+                            1       'ornaments(' _FVFeatureValueName ')'
+                            1       'annotation(' _FVFeatureValueName ')'
+                            1       'historical-forms'
+
+font-variant-caps-value     +       _font-variant-caps-ext0
+                            1       'normal'
+                            .05     GlobalValues
+_font-variant-caps-ext0     1       'small-caps'
+                            1       'all-small-caps'
+                            1       'petite-caps'
+                            1       'all-petite-caps'
+                            1       'unicase'
+                            1       'titling-caps'
+
+font-variant-east-asian-value \
+                            1       (_font-variant-east-asian-ext0 ' ')<1,*>
+                            1       'normal'
+                            .05     GlobalValues
+_font-variant-east-asian-ext0 \
+                            1       'ruby'
+                            1       _FVEastAsianVariantValues
+                            1       _FVEastAsianWidthValues
+_FVEastAsianVariantValues   1       'jis78'
+                            1       'jis83'
+                            1       'jis90'
+                            1       'jis04'
+                            1       'simplified'
+                            1       'traditional'
+_FVEastAsianWidthValues     1       'full-width'
+                            1       'proportional-width'
+
+font-variant-ligatures-value \
+                            1       _font-variant-ligatures-ext0
+                            1       'normal'
+                            1       'none'
+                            .05     GlobalValues
+_font-variant-ligatures-ext0 \
+                            1       _FVCommonLigValues
+                            1       _FVDiscretionaryLigValues
+                            1       _FVHistoricalLigValues
+                            1       _FVContextualAltValues
+_FVCommonLigValues          1       'common-ligatures'
+                            1       'no-common-ligatures'
+_FVDiscretionaryLigValues   1       'discretionary-ligatures'
+                            1       'no-discretionary-ligatures'
+_FVHistoricalLigValues      1       'historical-ligatures'
+                            1       'no-historical-ligatures'
+_FVContextualAltValues      1       'contextual'
+                            1       'no-contextual'
+
+font-variant-numeric-value  1       _font-variant-numeric-ext0
+                            .05     GlobalValues
+_font-variant-numeric-ext0  1       'ordinal'
+                            1       'slashed-zero'
+                            1       _FVNumericFigureValues
+                            1       _FVNumericSpacingValues
+                            1       _FVNumericFractionValues
+_FVNumericFigureValues      1       'lining-nums'
+                            1       'oldstyle-nums'
+_FVNumericSpacingValues     1       'proportional-nums'
+                            1       'tabular-nums'
+_FVNumericFractionValues    1       'diagonal-fractions'
+                            1       'stacked-fractions'
+
+font-variant-position-value 1       _font-variant-position-ext0
+                            .05     GlobalValues
+_font-variant-position-ext0 1       'normal'
+                            1       'sub'
+                            1       'super'
+
+font-weight-value           1       _font-weight-ext0
+                            .05     GlobalValues
+_font-weight-ext0           1       'normal'
+                            1       'bold'
+                            1       'bolder'
+                            1       'lighter'
+                            1       '100'
+                            1       '200'
+                            1       '300'
+                            1       '400'
+                            1       '500'
+                            1       '600'
+                            1       '700'
+                            1       '800'
+                            1       '900'
+
+grid-value                  1       _grid-ext0
+                            .05     GlobalValues
+_grid-ext0                  1       _grid-template-ext0
+                            1       _grid-auto-flow-ext0 (' ' _TrackSize (' / ' _TrackSize)?)?
+
+grid-area-value             1       _grid-area-ext0
+                            .05     GlobalValues
+_grid-area-ext0             1       _GridLine ('/' _GridLine){0,3}
+_GridLine                   1       'auto'
+                            1       'span '? T.PosInteger # (' ' ident)?
+
+grid-auto-columns-value     1       _TrackSize
+                            .05     GlobalValues
+_TrackSize                  1       _TrackBreadth
+                            1       'minmax(' _TrackBreadth ',' _TrackBreadth ')'
+_TrackBreadth               1       T.Length
+                            1       T.Percentage
+                            1       T.PosInteger 'fr'
+                            1       'min-content'
+                            1       'max-content'
+                            1       'auto'
+
+grid-auto-flow-value        1       _grid-auto-flow-ext0
+                            .05     GlobalValues
+_grid-auto-flow-ext0        1       _grid-auto-flow-ext1 ' dense'?
+                            1       'dense' (' ' _grid-auto-flow-ext1)?
+_grid-auto-flow-ext1        1       'row'
+                            1       'column'
+
+grid-auto-rows-value        1       _TrackSize
+                            .05     GlobalValues
+
+grid-column-value           1       _grid-column-ext0
+                            .05     GlobalValues
+_grid-column-ext0           1       _GridLine (' / ' _GridLine)?
+
+grid-column-end-value       1       _grid-column-end-ext0
+                            .05     GlobalValues
+_grid-column-end-ext0       1       _GridLine
+
+grid-column-gap-value       1       _grid-column-gap-ext0
+                            .05     GlobalValues
+_grid-column-gap-ext0       1       T.LengthOrPercent
+
+grid-column-start-value     1       _grid-column-start-ext0
+                            .05     GlobalValues
+_grid-column-start-ext0     1       _GridLine
+
+grid-gap-value              1       _grid-gap-ext0
+                            .05     GlobalValues
+_grid-gap-ext0              1       _grid-row-gap-ext0 (' ' _grid-column-gap-ext0)?
+
+grid-row-value              1       _grid-row-ext0
+                            .05     GlobalValues
+_grid-row-ext0              1       _GridLine (' / ' _GridLine)?
+
+grid-row-end-value          1       _grid-row-end-ext0
+                            .05     GlobalValues
+_grid-row-end-ext0          1       _GridLine
+
+grid-row-gap-value          1       _grid-row-gap-ext0
+                            .05     GlobalValues
+_grid-row-gap-ext0          1       T.LengthOrPercent
+
+grid-row-start-value        1       _grid-row-start-ext0
+                            .05     GlobalValues
+_grid-row-start-ext0        1       _GridLine
+
+grid-template-value         1       _grid-template-ext0
+                            .05     GlobalValues
+_grid-template-ext0         1       'none'
+                            1       'subgrid'
+                            1       _grid-template-rows-ext0 ' / ' _grid-template-columns-ext0
+
+grid-template-areas-value   1       _grid-template-areas-ext0
+                            .05     GlobalValues
+_grid-template-areas-ext0   1       'none'
+
+grid-template-columns-value 1       _grid-template-columns-ext0
+                            .05     GlobalValues
+_grid-template-columns-ext0 1       'none'
+
+grid-template-rows-value    1       _grid-template-rows-ext0
+                            .05     GlobalValues
+_grid-template-rows-ext0    1       'none'
+
+height-value                1       _height-ext0
+                            .05     GlobalValues
+_height-ext0                1       T.LengthOrPercent (' ' _height-ext1)?
+                            .5      'available'
+                            .5      'min-content'
+                            .5      'max-content'
+                            .5      'fit-content'
+                            .5      'auto'
+_height-ext1                1       'border-box'
+                            1       'content-box'
+
+hyphens-value               1       _hyphens-ext0
+                            .05     GlobalValues
+_hyphens-ext0               1       'none'
+                            1       'manual'
+                            1       'auto'
+
+image-orientation-value     1       _image-orientation-ext0
+                            .05     GlobalValues
+_image-orientation-ext0     1       'from-image'
+                            1       T.Angle
+                            1       (T.Angle ' ')? 'flip'
+
+image-rendering-value       1       _image-rendering-ext0
+                            .05     GlobalValues
+_image-rendering-ext0       1       'auto'
+                            1       '-moz-crisp-edges'
+                            1       'pixelated'
+
+image-resolution-value      1       _image-resolution-ext0
+                            .05     GlobalValues
+_image-resolution-ext0              _image-resolution-ext1 ' snap'?
+_image-resolution-ext1      1       'from-image'
+                            1       T.Resolution
+
+ime-mode-value              1       _ime-mode-ext0
+                            .05     GlobalValues
+_ime-mode-ext0              1       'auto'
+                            1       'normal'
+                            1       'active'
+                            1       'inactive'
+                            1       'disabled'
+
+inline-size-value           1       _inline-size-ext0
+                            .05     GlobalValues
+_inline-size-ext0                   _width-ext0
+
+isolation-value             1       _isolation-ext0
+                            .05     GlobalValues
+_isolation-ext0             1       'auto'
+                            1       'isolate'
+
+justify-content-value       1       _justify-content-ext0
+                            .05     GlobalValues
+_justify-content-ext0       1       'flex-start'
+                            1       'flex-end'
+                            1       'center'
+                            1       'space-between'
+                            1       'space-around'
+
+left-value                          bottom-value
+
+letter-spacing-value        1       _letter-spacing-ext0
+                            .05     GlobalValues
+_letter-spacing-ext0        1       'normal'
+                            1       T.LengthOrPercent
+
+#not in FF: https://bugzilla.mozilla.org/show_bug.cgi?id=1011369
+#line-break-value            1       _line-break-ext0
+#                            .05     GlobalValues
+#_line-break-ext0            1       'auto'
+#                            1       'loose'
+#                            1       'normal'
+#                            1       'strict'
+
+line-height-value           1       _line-height-ext0
+                            .05     GlobalValues
+_line-height-ext0           1       'normal'
+                            1       T.PosNumber
+                            1       T.Length
+                            1       T.Percentage
+
+list-style-value            1       (_list-style-ext0 ' ')<1,*>
+                            .05     GlobalValues
+_list-style-ext0            1       _list-style-type-ext0
+                            1       _list-style-position-ext0
+                            1       _list-style-image-ext0
+
+list-style-image-value      1       _list-style-image-ext0
+                            .05     GlobalValues
+_list-style-image-ext0      1       T.Image
+                            1       'none'
+
+list-style-position-value   1       _list-style-position-ext0
+                            .05     GlobalValues
+_list-style-position-ext0   1       'inside'
+                            1       'outside'
+
+list-style-type-value       1       _list-style-type-ext0
+                            .05     GlobalValues
+_list-style-type-ext0       1       T.String
+                            1       T.ListStyle
+                            1       'symbols(' (_SymbolsType ' ')? (T.Symbol ' '){1,4}')'
+                            1       'none'
+_SymbolsType                1       'cyclic'
+                            1       'numeric'
+                            1       'alphabetic'
+                            1       'symbolic'
+                            1       'fixed'
+
+margin-value                1       _margin-ext0 (' ' _margin-ext0){1,3}
+                            .05     GlobalValues
+_margin-ext0                1       T.LengthOrPercent
+                            1       'auto'
+
+margin-block-end-value              margin-left-value
+
+margin-block-start-value            margin-left-value
+
+margin-bottom-value         1       _margin-ext0
+                            .05     GlobalValues
+
+margin-inline-end-value             margin-left-value
+
+margin-inline-start-value           margin-left-value
+
+margin-left-value           1       _margin-ext0
+                            .05     GlobalValues
+
+margin-right-value          1       _margin-ext0
+                            .05     GlobalValues
+
+margin-top-value            1       _margin-ext0
+                            .05     GlobalValues
+
+mask-value                  1       _mask-ext0 (',' _mask-ext0){0,2}
+                            .05     GlobalValues
+_mask-ext0                          (_mask-ext1 ' ')<1,*>
+_mask-ext1                  1       _mask-image-ext0 (' ' _mask-mode-ext0)?
+                            1       T.Position (' / ' _mask-size-ext0)?
+                            1       _mask-repeat-ext0
+                            1       _ClipGeoBox
+                            1       _mask-clip-ext0
+                            1       _mask-composite-ext0
+
+mask-clip-value             1       _mask-clip-ext0 (',' _mask-clip-ext0){0,4}
+                            .05     GlobalValues
+_mask-clip-ext0             +       _ClipGeoBox
+                            1       'no-clip'
+
+mask-composite-value        1       _mask-composite-ext0 (',' _mask-composite-ext0){0,2}
+                            .05     GlobalValues
+_mask-composite-ext0        1       'add'
+                            1       'subtract'
+                            1       'intersect'
+                            1       'exclude'
+
+mask-image-value            1       _mask-image-ext0 (',' _mask-image-ext0){0,2}
+                            .05     GlobalValues
+_mask-image-ext0            .05     'none'
+                            1       T.Image
+
+mask-mode-value             1       _mask-mode-ext0 (',' _mask-mode-ext0){0,2}
+                            .05     GlobalValues
+_mask-mode-ext0             1       'alpha'
+                            1       'luminance'
+                            1       'match-source'
+
+mask-origin-value           1       _ClipGeoBox (',' _ClipGeoBox){0,2}
+                            .05     GlobalValues
+
+mask-position-value         1       T.Position (',' T.Position){0,2}
+                            .05     GlobalValues
+
+mask-repeat-value           1       _mask-repeat-ext0
+                            .05     GlobalValues
+_mask-repeat-ext0           1       'repeat-x'
+                            1       'repeat-y'
+                            1       (_mask-repeat-ext1 ' '){1,2}
+_mask-repeat-ext1           1       'repeat'
+                            1       'space'
+                            1       'round'
+                            1       'no-repeat'
+
+mask-size-value             1       _mask-size-ext0 (',' _mask-size-ext0){0,2}
+                            .05     GlobalValues
+_mask-size-ext0             1       _mask-size-ext1 (' ' _mask-size-ext1)?
+                            1       'cover'
+                            1       'contain'
+_mask-size-ext1             1       T.LengthOrPercent
+                            .1      'auto'
+
+mask-type-value             1       _mask-type-ext0
+                            .05     GlobalValues
+_mask-type-ext0             1       'luminance'
+                            1       'alpha'
+
+max-block-size-value                max-height-value
+
+max-height-value            1       _max-height-ext0
+                            .05     GlobalValues
+_max-height-ext0            1       T.LengthOrPercent
+                            .5      'none'
+                            .5      'max-content'
+                            .5      'min-content'
+                            .5      'fit-content'
+                            .5      'fill-available'
+
+max-inline-size-value               max-height-value
+
+max-width-value                     max-height-value
+
+max-zoom-value              1       _max-zoom-ext0
+                            .05     GlobalValues
+_max-zoom-ext0              1       T.PosNumber
+                            1       T.Percentage
+                            .1      'auto'
+
+min-block-size-value                max-height-value
+
+min-height-value                    max-height-value
+
+min-inline-size-value               max-height-value
+
+min-width-value                     max-height-value
+
+min-zoom-value                      max-zoom-value
+
+mix-blend-mode-value        1       T.BlendMode
+                            .05     GlobalValues
+
+negative-value              1       T.Symbol (' ' T.Symbol)?
+                            .05     GlobalValues
+
+object-fit-value            1       _object-fit-ext0
+                            .05     GlobalValues
+_object-fit-ext0            1       'fill'
+                            1       'contain'
+                            1       'cover'
+                            1       'none'
+                            1       'scale-down'
+
+object-position-value       1       T.Position
+                            .05     GlobalValues
+
+offset-block-end-value              left-value
+
+offset-block-start-value            left-value
+
+offset-inline-end-value             left-value
+
+offset-inline-start-value           left-value
+
+opacity-value               1       rndflt(0,1)
+                            .05     GlobalValues
+
+order-value                 1       T.AnyInteger
+                            .05     GlobalValues
+
+#https://bugzilla.mozilla.org/show_bug.cgi?id=747754
+#orientation-value           1       _orientation-ext0
+#                            .05     GlobalValues
+#_orientation-ext0           1       'auto'
+#                            1       'portrait'
+#                            1       'landscape'
+
+#https://bugzilla.mozilla.org/show_bug.cgi?id=137367
+#animatable
+#orphans-value               1       T.PosInteger
+#                            .05     GlobalValues
+
+outline-value               1       (_outline-ext0 ' ')<1,*>
+                            .05     GlobalValues
+_outline-ext0               1       _outline-color-ext0
+                            1       _outline-style-ext0
+                            1       _outline-width-ext0
+
+outline-color-value         1       _outline-color-ext0
+                            .05     GlobalValues
+_outline-color-ext0         1       T.Color
+                            1       'invert'
+
+outline-offset-value        1       T.Length
+                            .05     GlobalValues
+
+outline-style-value         1       _outline-style-ext0
+                            .05     GlobalValues
+_outline-style-ext0         1       'auto'
+                            +       _border-style-ext0
+
+outline-width-value         1       _outline-width-ext0
+                            .05     GlobalValues
+_outline-width-ext0                 _border-width-ext0
+
+overflow-value              1       _overflow-ext0
+                            .05     GlobalValues
+_overflow-ext0              1       'visible'
+                            1       'hidden'
+                            1       'scroll'
+                            1       'auto'
+                            1       '-moz-scrollbars-none'
+                            1       '-moz-scrollbars-horizontal'
+                            1       '-moz-scrollbars-vertical'
+                            1       '-moz-hidden-unscrollable'
+
+overflow-wrap-value         1       _overflow-wrap-ext0
+                            .05     GlobalValues
+_overflow-wrap-ext0         1       'normal'
+                            1       'break-word'
+
+overflow-x-value                    overflow-value
+
+overflow-y-value                    overflow-value
+
+pad-value                   1       T.PosInteger ' ' T.Symbol
+                            .05     GlobalValues
+
+padding-value               1       T.LengthOrPercent (' ' T.LengthOrPercent){0,3}
+                            .05     GlobalValues
+
+padding-block-end-value             padding-left-value
+
+padding-block-start-value           padding-left-value
+
+padding-bottom-value                padding-left-value
+
+padding-inline-end-value            padding-left-value
+
+padding-inline-start-value          padding-left-value
+
+padding-left-value          1       T.LengthOrPercent
+                            .05     GlobalValues
+
+padding-right-value                 padding-left-value
+
+padding-top-value                   padding-left-value
+
+page-break-after-value      1       _page-break-ext0
+                            .05     GlobalValues
+_page-break-ext0            1       'auto'
+                            1       'always'
+                            1       'avoid'
+                            1       'left'
+                            1       'right'
+                            1       'recto'
+                            1       'verso'
+
+page-break-before-value     1       _page-break-ext0
+                            .05     GlobalValues
+
+page-break-inside-value     1       _page-break-inside-ext0
+                            .05     GlobalValues
+_page-break-inside-ext0     1       'auto'
+                            1       'avoid'
+
+perspective-value           1       _perspective-ext0
+                            .05     GlobalValues
+_perspective-ext0           1       'none'
+                            1       T.Length
+
+perspective-origin-value    1       T.Position (' ' T.Position)?
+                            .05     GlobalValues
+
+pointer-events-value        1       _pointer-events-ext0
+                            .05     GlobalValues
+_pointer-events-ext0        1       'auto'
+                            1       'none'
+                            1       'visiblePainted'
+                            1       'visibleFill'
+                            1       'visibleStroke'
+                            1       'visible'
+                            1       'painted'
+                            1       'fill'
+                            1       'stroke'
+                            1       'all'
+                            1       'inherit'
+
+position-value              1       _position-ext0
+                            .05     GlobalValues
+_position-ext0              1       'static'
+                            1       'relative'
+                            1       'absolute'
+                            1       'sticky'
+                            1       'fixed'
+
+prefix-value                1       T.Symbol
+                            .05     GlobalValues
+
+quotes-value                1       _quotes-ext0
+                            .05     GlobalValues
+_quotes-ext0                1       'none'
+
+range-value                 .5      'auto'
+                            .5      _range-ext0 ' ' _range-ext0 (',' _range-ext0 ' ' _range-ext0){0,3}
+                            .05     GlobalValues
+_range-ext0                 1       T.PosInteger
+                            1       'infinite'
+
+-moz-resize-value           1       _resize-ext0
+                            .05     GlobalValues
+_resize-ext0                1       'none'
+                            1       'both'
+                            1       'horizontal'
+                            1       'vertical'
+                            1       'block'
+                            1       'inline'
+
+ruby-align-value            1       _ruby-align-ext0
+                            .05     GlobalValues
+_ruby-align-ext0            1       'start'
+                            1       'center'
+                            1       'space-between'
+                            1       'space-around'
+
+ruby-merge-value            1       _ruby-merge-ext0
+                            .05     GlobalValues
+_ruby-merge-ext0            1       'separate'
+                            1       'collapse'
+                            1       'auto '
+
+ruby-position-value         1       _ruby-position-ext0
+                            .05     GlobalValues
+_ruby-position-ext0         1       'over'
+                            1       'under'
+                            1       'inter-character'
+
+right-value                         bottom-value
+
+scroll-behavior-value       1       _scroll-behavior-ext0
+                            .05     GlobalValues
+_scroll-behavior-ext0       1       'auto'
+                            1       'smooth'
+
+scroll-snap-coordinate-value \
+                            .5      'none'
+                            .5      _scroll-snap-coordinate-ext0 (',' _scroll-snap-coordinate-ext0){0,3}
+                            .05     GlobalValues
+_scroll-snap-coordinate-ext0        T.Position (' ' T.Position)?
+
+scroll-snap-destination-value \
+                            1       _scroll-snap-coordinate-ext0
+                            .05     GlobalValues
+
+scroll-snap-points-x-value  1       _scroll-snap-points-x-ext0
+                            .05     GlobalValues
+_scroll-snap-points-x-ext0  1       'none'
+                            1       'repeat(' T.Length ')'
+
+scroll-snap-points-y-value  1       _scroll-snap-points-x-ext0
+                            .05     GlobalValues
+
+
+scroll-snap-type-value      1       _scroll-snap-type-ext0
+                            .05     GlobalValues
+_scroll-snap-type-ext0      1       'none'
+                            1       'mandatory'
+                            1       'proximity'
+
+scroll-snap-type-x-value            scroll-snap-type-value
+
+scroll-snap-type-y-value            scroll-snap-type-value
+
+shape-image-threshold-value 1       rndflt(0,1)
+                            .05     GlobalValues
+
+shape-margin-value          1       T.LengthOrPercent
+                            .05     GlobalValues
+
+shape-outside-value         1       _shape-outside-ext0
+                            .05     GlobalValues
+_shape-outside-ext0         1       'none'
+                            1       (' ' _shape-outside-ext1)<1,*>
+                            1       T.Image
+_shape-outside-ext1         1       T.BasicShape
+                            1       _shape-outside-ext2
+_shape-outside-ext2         1       'margin-box'
+                            1       'border-box'
+                            1       'padding-box'
+                            1       'content-box'
+
+speak-as-value              1       _speak-as-ext0
+                            .05     GlobalValues
+_speak-as-ext0              1       'auto'
+                            1       'bullets'
+                            1       'numbers'
+                            1       'words'
+                            1       'spell-out'
+
+src-value                   1       _src-ext0
+                            .05     GlobalValues
+_src-ext0                   1       T.Url (' format(' (' ' _src-format-ext0){1,2} ')')?
+                            1       'local(' _font-family-ext0 ')'
+_src-format-ext0            1       'woff'
+                            1       'opentype'
+                            1       'svg'
+
+suffix-value                1       T.Symbol
+                            .05     GlobalValues
+
+symbols-value               1       (T.Symbol ' '){1,4}
+                            .05     GlobalValues
+
+system-value                1       _system-ext0
+                            .05     GlobalValues
+_system-ext0                1       'cyclic'
+                            1       'numeric'
+                            1       'alphabetic'
+                            1       'symbolic'
+                            1       'additive'
+                            1       'fixed' (' ' T.PosInteger)?
+
+tab-size-value              1       _tab-size-ext0
+                            .05     GlobalValues
+_tab-size-ext0              1       T.PosInteger
+                            1       T.Length
+
+table-layout-value          1       _table-layout-ext0
+                            .05     GlobalValues
+_table-layout-ext0          1       'auto'
+                            1       'fixed'
+
+text-align-value            1       _text-align-ext0
+                            .05     GlobalValues
+_text-align-ext0            1       'start'
+                            1       'end'
+                            1       'left'
+                            1       'right'
+                            1       'center'
+                            1       'justify'
+                            1       'match-parent'
+
+text-align-last-value       1       _text-align-last-ext0
+                            .05     GlobalValues
+_text-align-last-ext0       1       'auto'
+                            1       'start'
+                            1       'end'
+                            1       'left'
+                            1       'right'
+                            1       'center'
+                            1       'justify'
+
+text-combine-upright-value  1       _text-combine-upright-ext0
+                            .05     GlobalValues
+_text-combine-upright-ext0  1       'none'
+                            1       'all'
+                            1       'digits' (' ' rndint(2,4))?
+
+text-decoration-value       1       (' ' _text-decoration-ext0)<1,*>
+                            .05     GlobalValues
+_text-decoration-ext0       1       _text-decoration-line-ext0
+                            1       _text-decoration-style-ext0
+                            1       T.Color
+
+text-decoration-color-value 1       T.Color
+                            .05     GlobalValues
+
+text-decoration-line-value  1       _text-decoration-line-ext0
+                            .05     GlobalValues
+_text-decoration-line-ext0  1       'none'
+                            1       (_text-decoration-line-ext1 ' ')<1,*>
+_text-decoration-line-ext1  1       'underline'
+                            1       'overline'
+                            1       'line-through'
+                            1       'blink'
+                            1       '-moz-anchor-decoration'
+
+text-decoration-style-value 1       _text-decoration-style-ext0
+                            .05     GlobalValues
+_text-decoration-style-ext0 1       'solid'
+                            1       'double'
+                            1       'dotted'
+                            1       'dashed'
+                            1       'wavy'
+                            1       '-moz-none'
+
+text-emphasis-value         1       (_text-emphasis-ext0 ' ')<1,*>
+                            .05     GlobalValues
+_text-emphasis-ext0         1       T.Color
+                            1       _text-emphasis-style-ext0
+
+text-emphasis-color-value   1       T.Color
+                            .05     GlobalValues
+
+text-emphasis-position-value \
+                            1       _text-emphasis-position-ext0 ' ' _text-emphasis-position-ext1
+                            .05     GlobalValues
+_text-emphasis-position-ext0 \
+                            1       'over'
+                            1       'under'
+_text-emphasis-position-ext1 \
+                            1       'right'
+                            1       'left'
+
+text-emphasis-style-value   1       _text-emphasis-style-ext0
+                            .05     GlobalValues
+_text-emphasis-style-ext0   1       'none'
+                            1       _text-emphasis-style-ext1 ' ' _text-emphasis-style-ext2
+                            1       T.String
+_text-emphasis-style-ext1   1       'filled'
+                            1       'open'
+_text-emphasis-style-ext2   1       'dot'
+                            1       'circle'
+                            1       'double-circle'
+                            1       'triangle'
+                            1       'sesame'
+
+text-indent-value           1       _text-indent-ext0
+                            .05     GlobalValues
+_text-indent-ext0           1       T.LengthOrPercent  (' ' _text-indent-ext1)<0,*>
+_text-indent-ext1           1       'hanging'
+                            1       'each-line'
+
+text-justify-value          1       'auto'
+                            1       'inter-character'
+                            1       'inter-word'
+                            1       'none'
+                            1       'distribute'
+
+text-orientation-value      1       _text-orientation-ext0
+                            .05     GlobalValues
+_text-orientation-ext0      1       'mixed'
+                            1       'upright'
+                            1       'sideways'
+                            1       'sideways-right'
+                            1       'use-glyph-orientation'
+
+text-overflow-value         1       (_text-overflow-ext0 ' '){1,2}
+                            .05     GlobalValues
+_text-overflow-ext0         1       'clip'
+                            1       'ellipsis'
+                            1       T.String
+
+text-rendering-value        1       _text-rendering-ext0
+                            .05     GlobalValues
+_text-rendering-ext0        1       'auto'
+                            1       'optimizeSpeed'
+                            1       'optimizeLegibility'
+                            1       'geometricPrecision'
+
+text-shadow-value           1       _text-shadow-ext0
+                            .05     GlobalValues
+_text-shadow-ext0           1       'none'
+                            1       (T.Length (' ' T.Length){1,2} (' ' T.Color)?){1,3}
+
+text-transform-value        1       _text-transform-ext0
+                            .05     GlobalValues
+_text-transform-ext0        1       'none'
+                            1       'capitalize'
+                            1       'uppercase'
+                            1       'lowercase'
+                            1       'full-width'
+
+text-underline-position-value \
+                            1       _text-underline-position-ext0
+                            .05     GlobalValues
+_text-underline-position-ext0 \
+                            1       'auto'
+                            .1      'auto-pos'
+                            1       (_text-underline-position-ext1 ' ')<1,*>
+_text-underline-position-ext1 \
+                            1        _text-underline-position-ext2
+                            1       _text-underline-position-ext3
+_text-underline-position-ext2 \
+                            1       'under'
+                            1       'above'
+                            1       'below'
+_text-underline-position-ext3 \
+                            1       'left'
+                            1       'right'
+
+top-value                           bottom-value
+
+touch-action-value          1       _touch-action-ext0
+                            .05     GlobalValues
+_touch-action-ext0          1       'auto'
+                            1       'none'
+                            1       (_touch-action-ext1 ' ')<1,*>
+                            1       'manipulation'
+_touch-action-ext1          1       _touch-action-ext2
+                            1       _touch-action-ext3
+_touch-action-ext2          1       'pan-x'
+                            1       'pan-left'
+                            1       'pan-right'
+_touch-action-ext3          1       'pan-y'
+                            1       'pan-up'
+                            1       'pan-down'
+
+transform-value             1       _transform-ext0
+                            .05     GlobalValues
+_transform-ext0             1       'none'
+                            1       (T.TransformFunction ' ')<1,5>
+
+transform-box-value         1       _transform-box-ext0
+                            .05     GlobalValues
+_transform-box-ext0         1       'border-box'
+                            1       'fill-box'
+                            1       'view-box'
+
+transform-origin-value      1       T.Position (' ' T.Length)?
+                            .05     GlobalValues
+
+transform-style-value       1       _transform-style-ext0
+                            .05     GlobalValues
+_transform-style-ext0       1       'flat'
+                            1       'preserve-3d'
+
+transition-value            1       (_transition-ext0 ' ')<1,*> (',' (_transition-ext0 ' ')<1,*>){0,4}
+                            .05     GlobalValues
+_transition-ext0            1       _transition-ext1
+                            1       T.Time
+                            1       T.Time
+                            1       T.TimingFunction
+_transition-ext1            1       'none'
+                            1       'all'
+
+transition-delay-value      1       T.Time (',' T.Time){0,4}
+                            .05     GlobalValues
+
+transition-duration-value           transition-delay-value
+
+transition-property-value   .5      'none'
+                            .5      _transition-property-ext0
+                            .05     GlobalValues
+_transition-property-ext0   1       'all'
+
+transition-timing-function-value \
+                            1       T.TimingFunction (',' T.TimingFunction){0,4}
+                            .05     GlobalValues
+
+unicode-bidi-value          1       _unicode-bidi-ext0
+                            .05     GlobalValues
+_unicode-bidi-ext0          1       'normal'
+                            1       'embed'
+                            1       'isolate'
+                            1       'bidi-override'
+                            1       'isolate-override'
+                            1       'plaintext'
+
+unicode-range-value         1       _unicode-range-ext0 (',' _unicode-range-ext0){0,3}
+                            .05     GlobalValues
+_unicode-range-ext0         1       'U+' /[0-9A-F]{1,4}/
+                            1       'U+' /[0-9A-F]{1,4}/ '-' /[0-9A-F]{1,4}/
+                            .33     'U+' /[0-9A-F]/ '?'{1,3}
+                            .33     'U+' /[0-9A-F]{2}/ '?'{1,2}
+                            .33     'U+' /[0-9A-F]{3}/ '?'
+
+user-zoom-value             1       _user-zoom-ext0
+                            .05     GlobalValues
+_user-zoom-ext0             1       'zoom'
+                            1       'fixed'
+
+vertical-align-value        1       _vertical-align-ext0
+                            .05     GlobalValues
+_vertical-align-ext0        1       'baseline'
+                            1       'sub'
+                            1       'super'
+                            1       'text-top'
+                            1       'text-bottom'
+                            1       'middle'
+                            1       'top'
+                            1       'bottom'
+                            1       T.Length
+                            1       T.Percentage
+                            1       '-' T.LengthOrPercent
+
+visibility-value            1       _visibility-ext0
+                            .05     GlobalValues
+_visibility-ext0            1       'visible'
+                            1       'hidden'
+                            1       'collapse'
+
+white-space-value           1       _white-space-ext0
+                            .05     GlobalValues
+_white-space-ext0           1       'normal'
+                            1       'pre'
+                            1       'nowrap'
+                            1       'pre-wrap'
+                            1       'pre-line'
+
+widows-value                1       T.PosInteger
+                            .05     GlobalValues
+
+width-value                 1       _width-ext0
+                            .05     GlobalValues
+_width-ext0                 1       T.LengthOrPercent (' ' _width-ext1)?
+                            1       'available'
+                            1       'min-content'
+                            1       'max-content'
+                            1       'fit-content'
+                            1       'auto'
+_width-ext1                 1       'border-box'
+                            1       'content-box'
+
+will-change-value           1       _will-change-ext0
+                            .05     GlobalValues
+_will-change-ext0           1       AnyProperty
+
+word-break-value            1       _word-break-ext0
+                            .05     GlobalValues
+_word-break-ext0            1       'normal'
+                            1       'break-all'
+                            1       'keep-all'
+
+word-spacing-value          1       _word-spacing-ext0
+                            .05     GlobalValues
+_word-spacing-ext0          1       'normal'
+                            1       T.LengthOrPercent
+
+word-wrap-value             1       _word-wrap-ext0
+                            .05     GlobalValues
+_word-wrap-ext0             1       'normal'
+                            1       'break-word'
+
+writing-mode-value          1       _writing-mode-ext0
+                            .05     GlobalValues
+_writing-mode-ext0          1       'horizontal-tb'
+                            1       'vertical-rl'
+                            1       'vertical-lr'
+                            1       'sideways-rl'
+                            1       'sideways-lr'
+                            1       'lr'
+                            1       'lr-tb'
+                            1       'rl'
+                            1       'tb'
+                            1       'tb-rl'
+
+z-index-value               1       _z-index-ext0
+                            .05     GlobalValues
+_z-index-ext0               1       'auto'
+                            1       T.AnyInteger
+
+zoom-value                  1       _zoom-ext0
+                            .05     GlobalValues
+_zoom-ext0                  1       'auto'
+                            1       T.PosNumber
+                            1       T.Percentage

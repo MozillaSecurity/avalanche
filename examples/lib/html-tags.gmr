@@ -1,0 +1,306 @@
+### HTML Tags Library
+# Written by: Tyson Smith
+
+HA      import('html-attributes.gmr')
+HV      import('html-values.gmr')
+TA      import('html-tag-attributes.gmr')
+TN      import('html-tag-names.gmr')
+TC      import('html-tag-children.gmr')
+
+# WARNING: This is a library and is not meant to be run standalone
+# root is defined for testing
+root    Any "\n"
+
+a                       "<a " HA.id (" " TA.Global)<0,*> (" " TA.a)<0,*> ">" ("\n" TC.a){0,5} "\n</a>"
+abbr                    "<abbr " HA.id (" " TA.Global)<0,*> (" " TA.abbr)<0,*> ">" ("\n" TC.abbr){0,5} "\n</abbr>"
+acronym                 "<acronym " HA.id (" " TA.Global)<0,*> ">" ("\n" TC.acronym){0,5} "\n</acronym>"
+address                 "<address " HA.id (" " TA.Global)<0,*> ">" ("\n" TC.address){0,5} "\n</address>"
+applet                  "<applet " HA.id (" " TA.Global)<0,*> (" " TA.applet)<0,*> ">" ("\n" TC.applet){0,5} "\n</applet>"
+area                    "<area " HA.id (" " TA.Global)<0,*> (" " TA.area)<0,*> "/>"
+article                 "<article " HA.id (" " TA.Global)<0,*> ">" ("\n" TC.article){0,5} "\n</article>"
+aside                   "<aside " HA.id (" " TA.Global)<0,*> ">" ("\n" TC.aside){0,5} "\n</aside>"
+audio                   "<audio " HA.id (" " TA.Global)<0,*> (" " TA.audio)<0,*> ">" ("\n" TC.audio){0,5} "\n</audio>"
+b                       "<b " HA.id (" " TA.Global)<0,*> ">" ("\n" TC.b){0,5} "\n</b>"
+base                    "<base " HA.id (" " TA.Global)<0,*> (" " TA.base)<0,*> "/>"
+basefont                "<basefont " HA.id (" " TA.Global)<0,*> (" " TA.basefont)<0,*> "/>"
+bdi                     "<bdi " HA.id (" " TA.Global)<0,*> ">" ("\n" TC.bdi){0,5} "\n</bdi>"
+bdo                     "<bdo " HA.id (" " TA.Global)<0,*> (" " TA.bdo)<0,*> ">" ("\n" TC.bdo){0,5} "\n</bdo>"
+bgsound                 "<bgsound " HA.id (" " TA.Global)<0,*> (" " TA.bgsound)<0,*> "/>"
+big                     "<big " HA.id (" " TA.Global)<0,*> ">" ("\n" TC.big){0,5} "\n</big>"
+blink                   "<blink " HA.id (" " TA.Global)<0,*> ">" ("\n" TC.blink){0,5} "\n</blink>"
+blockquote              "<blockquote " HA.id (" " TA.Global)<0,*> (" " TA.blockquote)<0,*> ">" ("\n" TC.blockquote){0,5} "\n</blockquote>"
+body                    "<body " HA.id (" " TA.Global)<0,*> (" " TA.body)<0,*> ">" ("\n" TC.body){0,5} "\n</body>"
+br                      "<br " HA.id (" " TA.Global)<0,*> "/>"
+button                  "<button " HA.id (" " TA.Global)<0,*> (" " TA.button)<0,*> ">" ("\n" TC.button){0,5} "\n</button>"
+canvas                  "<canvas " HA.id (" " TA.Global)<0,*> (" " TA.canvas)<0,*> ">" ("\n" TC.canvas){0,5} "\n</canvas>"
+caption                 "<caption " HA.id (" " TA.Global)<0,*> (" " TA.caption)<0,*> ">" ("\n" TC.caption){0,5} "\n</caption>"
+center                  "<center " HA.id (" " TA.Global)<0,*> ">" ("\n" TC.center){0,5} "\n</center>"
+cite                    "<cite " HA.id (" " TA.Global)<0,*> ">" ("\n" TC.cite){0,5} "\n</cite>"
+code                    "<code " HA.id (" " TA.Global)<0,*> ">" ("\n" TC.code){0,5} "\n</code>"
+col                     "<col " HA.id (" " TA.Global)<0,*> (" " TA.col)<0,*> "/>"
+colgroup                "<colgroup " HA.id (" " TA.Global)<0,*> (" " TA.colgroup)<0,*> "/>"
+command                 "<command " HA.id (" " TA.Global)<0,*> (" " TA.command)<0,*> "/>"
+content                 "<content " HA.id (" " TA.Global)<0,*> ">" ("\n" TC.content){0,5} "\n</content>"
+data                    "<data " HA.id (" " TA.Global)<0,*> (" " TA.data)<0,*> ">" ("\n" TC.data){0,5} "\n</data>"
+datalist                "<datalist " HA.id (" " TA.Global)<0,*> ">" ("\n" TC.datalist){0,5} "\n</datalist>"
+dd                      "<dd " HA.id (" " TA.Global)<0,*> (" " TA.dd)<0,*> "/>"
+del                     "<del " HA.id (" " TA.Global)<0,*> (" " TA.del)<0,*> ">" ("\n" TC.del){0,5} "\n</del>"
+details                 "<details " HA.id (" " TA.Global)<0,*> (" " TA.details)<0,*> ">" ("\n" TC.details){0,5} "\n</details>"
+dfn                     "<dfn " HA.id (" " TA.Global)<0,*> (" " TA.dfn)<0,*> ">" ("\n" TC.dfn){0,5} "\n</dfn>"
+dialog                  "<dialog " HA.id (" " TA.Global)<0,*> (" " TA.dialog)<0,*> ">" ("\n" TC.dialog){0,5} "\n</dialog>"
+dir                     "<dir " HA.id (" " TA.Global)<0,*> ">" ("\n" TC.dir){0,5} "\n</dir>"
+div                     "<div " HA.id (" " TA.Global)<0,*> (" " TA.div)<0,*> ">" ("\n" TC.div){0,5} "\n</div>"
+dl                      "<dl " HA.id (" " TA.Global)<0,*> ">" ("\n" TC.dl){0,5} "\n</dl>"
+dt                      "<dt " HA.id (" " TA.Global)<0,*> "/>"
+element                 "<element " HA.id (" " TA.Global)<0,*> ">" ("\n" TC.element){0,5} "\n</element>"
+em                      "<em " HA.id (" " TA.Global)<0,*> ">" ("\n" TC.em){0,5} "\n</em>"
+embed                   "<embed " HA.id (" " TA.Global)<0,*> (" " TA.embed)<0,*> ">"
+fieldset                "<fieldset " HA.id (" " TA.Global)<0,*> (" " TA.fieldset)<0,*> ">" ("\n" TC.fieldset){0,5} "\n</fieldset>"
+figcaption              "<figcaption " HA.id (" " TA.Global)<0,*> ">" ("\n" TC.figcaption){0,5} "\n</figcaption>"
+figure                  "<figure " HA.id (" " TA.Global)<0,*> ">" ("\n" TC.figure){0,5} "\n</figure>"
+font                    "<font " HA.id (" " TA.Global)<0,*> (" " TA.font)<0,*> ">" "\n"  HV.TagText "\n"  "</font>"
+footer                  "<footer " HA.id (" " TA.Global)<0,*> ">" ("\n" TC.footer){0,5} "\n</footer>"
+form                    "<form " HA.id (" " TA.Global)<0,*> (" " TA.form)<0,*> ">" ("\n" TC.form){0,5} "\n</form>"
+frame                   "<frame " HA.id (" " TA.Global)<0,*> (" " TA.frame)<0,*> "/>"
+frameset                "<frameset " HA.id (" " TA.Global)<0,*> (" " TA.frameset)<0,*> ">" ("\n" TC.frameset){0,5} "\n</frameset>"
+head                    "<head " HA.id (" " TA.Global)<0,*> ">" ("\n" TC.head){0,5} "\n</head>"
+header                  "<header " HA.id (" " TA.Global)<0,*> ">" ("\n" TC.header){0,5} "\n</header>"
+h1                      "<h1 " HA.id (" " TA.Global)<0,*> (" " TA.h1)<0,*> ">" ("\n" TC.h1){0,5} "\n</h1>"
+h2                      "<h2 " HA.id (" " TA.Global)<0,*> (" " TA.h2)<0,*> ">" ("\n" TC.h2){0,5} "\n</h2>"
+h3                      "<h3 " HA.id (" " TA.Global)<0,*> (" " TA.h3)<0,*> ">" ("\n" TC.h3){0,5} "\n</h3>"
+h4                      "<h4 " HA.id (" " TA.Global)<0,*> (" " TA.h4)<0,*> ">" ("\n" TC.h4){0,5} "\n</h4>"
+h5                      "<h5 " HA.id (" " TA.Global)<0,*> (" " TA.h5)<0,*> ">" ("\n" TC.h5){0,5} "\n</h5>"
+h6                      "<h6 " HA.id (" " TA.Global)<0,*> (" " TA.h6)<0,*> ">" ("\n" TC.h6){0,5} "\n</h6>"
+hgroup                  "<hgroup " HA.id (" " TA.Global)<0,*> ">" ("\n" TC.hgroup){0,5} "\n</hgroup>"
+hr                      "<hr " HA.id (" " TA.Global)<0,*> (" " TA.hr)<0,*> "/>"
+html                    "<html " HA.id (" " TA.Global)<0,*> (" " TA.html)<0,*> ">" ("\n" TC.html){0,5} "\n</html>"
+i                       "<i " HA.id (" " TA.Global)<0,*> ">" ("\n" TC.i){0,5} "\n</i>"
+iframe                  "<iframe " HA.id (" " TA.Global)<0,*> (" " TA.iframe)<0,*> ">" "</iframe>"
+#image                   "<image " HA.id (" " TA.Global)<0,*> ">" ("\n" TC.image){0,5} "\n</image>"
+img                     "<img " HA.id (" " TA.Global)<0,*> (" " TA.img)<0,*> "/>"
+input                   "<input " HA.id (" " TA.Global)<0,*> (" " TA.input)<0,*> "/>"
+ins                     "<ins " HA.id (" " TA.Global)<0,*> (" " TA.ins)<0,*> ">" ("\n" TC.ins){0,5} "\n</ins>"
+isindex                 "<isindex " HA.id (" " TA.Global)<0,*> (" " TA.isindex)<0,*> "/>"
+kbd                     "<kbd " HA.id (" " TA.Global)<0,*> ">" ("\n" TC.kbd){0,5} "\n</kbd>"
+keygen                  "<keygen " HA.id (" " TA.Global)<0,*> (" " TA.keygen)<0,*> "/>"
+label                   "<label " HA.id (" " TA.Global)<0,*> (" " TA.label)<0,*> ">" ("\n" TC.label){0,5} "\n</label>"
+legend                  "<legend " HA.id (" " TA.Global)<0,*> ">" ("\n" TC.legend){0,5} "\n</legend>"
+li                      "<li " HA.id (" " TA.Global)<0,*> (" " TA.li)<0,*> ">" ("\n" TC.li){0,5} "\n</li>"
+link                    "<link " HA.id (" " TA.Global)<0,*> (" " TA.link)<0,*> "/>"
+listing                 "<listing " HA.id (" " TA.Global)<0,*> ">" "\n"  HV.TagText "\n"  "</listing>"
+main                    "<main " HA.id (" " TA.Global)<0,*> ">" ("\n" TC.main){0,5} "\n</main>"
+map                     "<map " HA.id (" " TA.Global)<0,*> (" " TA.map)<0,*> ">" ("\n" TC.map){0,5} "\n</map>"
+mark                    "<mark " HA.id (" " TA.Global)<0,*> ">" ("\n" TC.mark){0,5} "\n</mark>"
+marquee                 "<marquee " HA.id (" " TA.Global)<0,*> (" " TA.marquee)<0,*> ">" ("\n" TC.marquee){0,5} "\n</marquee>"
+menu                    "<menu " HA.id (" " TA.Global)<0,*> (" " TA.menu)<0,*> ">" ("\n" TC.menu){0,5} "\n</menu>"
+menuitem                "<menuitem " HA.id (" " TA.Global)<0,*> (" " TA.menuitem)<0,*> "/>"
+meta                    "<meta " HA.id (" " TA.Global)<0,*> (" " TA.meta)<0,*> ">"
+meter                   "<meter " HA.id (" " TA.Global)<0,*> (" " TA.meter)<0,*> ">" ("\n" TC.meter){0,5} "\n</meter>"
+multicol                "<multicol " HA.id (" " TA.Global)<0,*> "/>"
+nav                     "<nav " HA.id (" " TA.Global)<0,*> ">" ("\n" TC.nav){0,5} "\n</nav>"
+nobr                    "<nobr " HA.id (" " TA.Global)<0,*> "/>"
+noembed                 "<noembed " HA.id (" " TA.Global)<0,*> "/>"
+noframes                "<noframes " HA.id (" " TA.Global)<0,*> ">" ("\n" TC.noframes){0,5} "\n</noframes>"
+noscript                "<noscript " HA.id (" " TA.Global)<0,*> ">" ("\n" TC.noscript){0,5} "\n</noscript>"
+object                  "<object " HA.id (" " TA.Global)<0,*> (" " TA.object)<0,*> ">" ("\n" TC.object){0,5} "\n</object>"
+ol                      "<ol " HA.id (" " TA.Global)<0,*> (" " TA.ol)<0,*> ">" ("\n" TC.ol){0,5} "\n</ol>"
+optgroup                "<optgroup " HA.id (" " TA.Global)<0,*> (" " TA.optgroup)<0,*> ">" ("\n" TC.optgroup){0,5} "\n</optgroup>"
+option                  "<option " HA.id (" " TA.Global)<0,*> (" " TA.option)<0,*> ">" "\n"  HV.TagText "\n"  "</option>"
+output                  "<output " HA.id (" " TA.Global)<0,*> (" " TA.output)<0,*> ">" ("\n" TC.output){0,5} "\n</output>"
+p                       "<p " HA.id (" " TA.Global)<0,*> (" " TA.p)<0,*> ">" ("\n" TC.p){0,5} "\n</p>"
+param                   "<param " HA.id (" " TA.Global)<0,*> (" " TA.param)<0,*> "/>"
+picture                 "<picture " HA.id (" " TA.Global)<0,*> ">" ("\n" TC.picture){0,5} "\n</picture>"
+#plaintext               "<plaintext " HA.id (" " TA.Global)<0,*> "/>"
+pre                     "<pre " HA.id (" " TA.Global)<0,*> (" " TA.pre)<0,*> ">" ("\n" TC.pre){0,5} "\n</pre>"
+progress                "<progress " HA.id (" " TA.Global)<0,*> (" " TA.progress)<0,*> ">" ("\n" TC.progress){0,5} "\n</progress>"
+q                       "<q " HA.id (" " TA.Global)<0,*> (" " TA.q)<0,*> ">" ("\n" TC.q){0,5} "\n</q>"
+rp                      "<rp " HA.id (" " TA.Global)<0,*> ">" ("\n" TC.rp){0,5} "\n</rp>"
+rt                      "<rt " HA.id (" " TA.Global)<0,*> ">" ("\n" TC.rt){0,5} "\n</rt>"
+rtc                     "<rtc " HA.id (" " TA.Global)<0,*> ">" ("\n" TC.rtc){0,5} "\n</rtc>"
+ruby                    "<ruby " HA.id (" " TA.Global)<0,*> ">" ("\n" TC.ruby){0,5} "\n</ruby>"
+s                       "<s " HA.id (" " TA.Global)<0,*> ">" "\n"  HV.TagText "\n"  "</s>"
+samp                    "<samp " HA.id (" " TA.Global)<0,*> ">" ("\n" TC.samp){0,5} "\n</samp>"
+script                  "<script " HA.id (" " TA.Global)<0,*> (" " TA.script)<0,*> ">" ("\n" TC.script){0,5} "\n</script>"
+section                 "<section " HA.id (" " TA.Global)<0,*> ">" ("\n" TC.section){0,5} "\n</section>"
+select                  "<select " HA.id (" " TA.Global)<0,*> (" " TA.select)<0,*> ">" ("\n" TC.select){0,5} "\n</select>"
+shadow                  "<shadow " HA.id (" " TA.Global)<0,*> ">" ("\n" TC.shadow){0,5} "\n</shadow>"
+small                   "<small " HA.id (" " TA.Global)<0,*> ">" ("\n" TC.small){0,5} "\n</small>"
+source                  "<source " HA.id (" " TA.Global)<0,*> "/>"
+spacer                  "<spacer " HA.id (" " TA.Global)<0,*> (" " TA.spacer)<0,*> "/>"
+span                    "<span " HA.id (" " TA.Global)<0,*> ">" ("\n" TC.span){0,5} "\n</span>"
+strike                  "<strike " HA.id (" " TA.Global)<0,*> ">" "\n"  HV.TagText "\n"  "</strike>"
+strong                  "<strong " HA.id (" " TA.Global)<0,*> ">" ("\n" TC.strong){0,5} "\n</strong>"
+style                   "<style " HA.id (" " TA.Global)<0,*> (" " TA.style)<0,*> ">" ("\n" TC.style){0,5} "\n</style>"
+sub                     "<sub " HA.id (" " TA.Global)<0,*> ">" ("\n" TC.sub){0,5} "\n</sub>"
+summary                 "<summary " HA.id (" " TA.Global)<0,*> ">" ("\n" TC.summary){0,5} "\n</summary>"
+sup                     "<sup " HA.id (" " TA.Global)<0,*> ">" ("\n" TC.sup){0,5} "\n</sup>"
+#svg                     "<svg " HA.id (" " TA.Global)<0,*> (" " TA.svg)<0,*> ">" ("\n" TC.svg){0,5} "\n</svg>"
+table                   "<table " HA.id (" " TA.Global)<0,*> (" " TA.table)<0,*> ">" ("\n" TC.table){0,5} "\n</table>"
+tbody                   "<tbody " HA.id (" " TA.Global)<0,*> (" " TA.tbody)<0,*> ">" ("\n" TC.tbody){0,5} "\n</tbody>"
+td                      "<td " HA.id (" " TA.Global)<0,*> (" " TA.td)<0,*> ">" ("\n" TC.td){0,5} "\n</td>"
+template                "<template " HA.id (" " TA.Global)<0,*> ">" ("\n" TC.template){0,5} "\n</template>"
+textarea                "<textarea " HA.id (" " TA.Global)<0,*> (" " TA.textarea)<0,*> ">" ("\n" TC.textarea){0,5} "\n</textarea>"
+tfoot                   "<tfoot " HA.id (" " TA.Global)<0,*> (" " TA.tfoot)<0,*> ">" ("\n" TC.tfoot){0,5} "\n</tfoot>"
+th                      "<th " HA.id (" " TA.Global)<0,*> (" " TA.th)<0,*> ">" ("\n" TC.th){0,5} "\n</th>"
+thead                   "<thead " HA.id (" " TA.Global)<0,*> (" " TA.thead)<0,*> ">" ("\n" TC.thead){0,5} "\n</thead>"
+time                    "<time " HA.id (" " TA.Global)<0,*> (" " TA.time)<0,*> ">" ("\n" TC.time){0,5} "\n</time>"
+title                   "<title " HA.id (" " TA.Global)<0,*> ">" ("\n" TC.title){0,5} "\n</title>"
+tr                      "<tr " HA.id (" " TA.Global)<0,*> (" " TA.tr)<0,*> ">" ("\n" TC.tr){0,5} "\n</tr>"
+track                   "<track " HA.id (" " TA.Global)<0,*> (" " TA.track)<0,*> "/>"
+tt                      "<tt " HA.id (" " TA.Global)<0,*> ">" ("\n" TC.tt){0,5} "\n</tt>"
+u                       "<u " HA.id (" " TA.Global)<0,*> ">" ("\n" TC.u){0,5} "\n</u>"
+ul                      "<ul " HA.id (" " TA.Global)<0,*> (" " TA.ul)<0,*> ">" ("\n" TC.ul){0,5} "\n</ul>"
+var                     "<var " HA.id (" " TA.Global)<0,*> ">" ("\n" TC.var){0,5} "\n</var>"
+video                   "<video " HA.id (" " TA.Global)<0,*> (" " TA.video)<0,*> ">" ("\n" TC.video){0,5} "\n</video>"
+wbr                     "<wbr " HA.id (" " TA.Global)<0,*> "/>"
+xmp                     "<xmp " HA.id (" " TA.Global)<0,*> "/>"
+
+Fuzzy           1       "<" (TN.All) " " HA.id (" " TA.Global){0,*} (" " TA.All){0,10} ">" ("\n" Any){0,2} "\n</" @1 ">"
+                .1      "<" (TN.All) " " HA.id (" " TA.Global){0,*} (" " TA.All){0,10} "/>"
+
+Any             1       All
+                .05     Fuzzy
+
+All             1       a
+                1       abbr
+                1       acronym
+                1       address
+                1       applet
+                1       area
+                1       article
+                1       aside
+                1       audio
+                1       b
+                1       base
+                1       basefont
+                1       bdi
+                1       bdo
+                1       bgsound
+                1       big
+                1       blink
+                1       blockquote
+                1       body
+                1       br
+                1       button
+                1       canvas
+                1       caption
+                1       center
+                1       cite
+                1       code
+                1       col
+                1       colgroup
+                1       command
+                1       content
+                1       data
+                1       datalist
+                1       dd
+                1       del
+                1       details
+                1       dfn
+                1       dialog
+                1       dir
+                1       div
+                1       dl
+                1       dt
+                1       element
+                1       em
+                1       embed
+                1       fieldset
+                1       figcaption
+                1       figure
+                1       font
+                1       footer
+                1       form
+                1       frame
+                1       frameset
+                1       head
+                1       header
+                .16     h1
+                .16     h2
+                .16     h3
+                .16     h4
+                .16     h5
+                .16     h6
+                1       hgroup
+                1       hr
+                1       html
+                1       i
+                1       iframe
+#                1       image
+                1       img
+                1       input
+                1       ins
+                1       isindex
+                1       kbd
+                1       keygen
+                1       label
+                1       legend
+                1       li
+                1       link
+                1       listing
+                1       main
+                1       map
+                1       mark
+                1       marquee
+                1       menu
+                1       menuitem
+                1       meta
+                1       meter
+                1       multicol
+                1       nav
+                1       nobr
+                1       noembed
+                1       noframes
+                1       noscript
+                1       object
+                1       ol
+                1       optgroup
+                1       option
+                1       output
+                1       p
+                1       param
+                1       picture
+#                1       plaintext
+                1       pre
+                1       progress
+                1       q
+                1       rp
+                1       rt
+                1       rtc
+                1       ruby
+                1       s
+                1       samp
+                1       script
+                1       section
+                1       select
+                1       shadow
+                1       small
+                1       source
+                1       spacer
+                1       span
+                1       strike
+                1       strong
+                1       style
+                1       sub
+                1       summary
+                1       sup
+#                1       svg
+                1       table
+                1       tbody
+                1       td
+                1       template
+                1       textarea
+                1       tfoot
+                1       th
+                1       thead
+                1       time
+                1       title
+                1       tr
+                1       track
+                1       tt
+                1       u
+                1       ul
+                1       var
+                1       video
+                1       wbr
+                1       xmp

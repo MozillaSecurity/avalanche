@@ -1,0 +1,327 @@
+### HTML Tag Group Library
+# Written by: Tyson Smith
+
+HV      import('html-values.gmr')
+Tag     import('html-tags.gmr')
+
+### Content categories
+# https://developer.mozilla.org/en-US/docs/Web/Guide/HTML/Content_categories
+# http://www.html-5.com/tags/element-content-models.html
+
+# WARNING: This is a library and is not meant to be run standalone
+# root is defined for testing
+root    All
+
+Metadata        1       Tag.base
+#                1       Tag.command
+                1       Tag.link
+                1       Tag.meta
+                1       Tag.noscript
+                1       Tag.script
+                1       Tag.style
+                1       Tag.title
+
+Flow            1       Tag.a
+                1       Tag.abbr
+                1       Tag.address
+                1       Tag.area    # if it is a descendant of a <map> element
+                1       Tag.article
+                1       Tag.aside
+                1       Tag.audio
+                1       Tag.b
+                1       Tag.bdo
+                1       Tag.bdi
+                1       Tag.blockquote
+                1       Tag.br
+                1       Tag.button
+                1       Tag.canvas
+                1       Tag.cite
+                1       Tag.code
+#                1       Tag.command
+                1       Tag.data
+                1       Tag.datalist
+                1       Tag.del
+                1       Tag.details
+                1       Tag.dfn
+                1       Tag.div
+                1       Tag.dl
+                1       Tag.em
+                1       Tag.embed
+                1       Tag.fieldset
+                1       Tag.figure
+                1       Tag.footer
+                1       Tag.form
+                1       Tag.header
+                .16     Tag.h1
+                .16     Tag.h2
+                .16     Tag.h3
+                .16     Tag.h4
+                .16     Tag.h5
+                .16     Tag.h6
+                1       Tag.hgroup
+                1       Tag.hr
+                1       Tag.i
+                1       Tag.iframe
+                1       Tag.img
+                1       Tag.input
+                1       Tag.ins
+                1       Tag.kbd
+                1       Tag.keygen
+                1       Tag.label
+                1       Tag.link    # if the itemprop attribute is present
+                1       Tag.main
+                1       Tag.map
+                1       Tag.mark
+#                1       Tag.math
+                1       Tag.menu
+                1       Tag.meta    # if the itemprop attribute is present
+                1       Tag.meter
+                1       Tag.nav
+                1       Tag.noscript
+                1       Tag.object
+                1       Tag.ol
+                1       Tag.output
+                1       Tag.p
+                1       Tag.pre
+                1       Tag.progress
+                1       Tag.q
+                1       Tag.ruby
+                1       Tag.s
+                1       Tag.samp
+                1       Tag.script
+                1       Tag.section
+                1       Tag.select
+                1       Tag.small
+                1       Tag.span
+                1       Tag.strong
+                1       Tag.style   # if the scoped attribute is present
+                1       Tag.sub
+                1       Tag.sup
+#                1       Tag.svg
+                1       Tag.table
+                1       Tag.template
+                1       Tag.textarea
+                1       Tag.time
+                1       Tag.ul
+                1       Tag.var
+                1       Tag.video
+                1       Tag.wbr
+                1       HV.TagText
+
+Heading         .16     Tag.h1
+                .16     Tag.h2
+                .16     Tag.h3
+                .16     Tag.h4
+                .16     Tag.h5
+                .16     Tag.h6
+                1       Tag.hgroup
+
+Phrasing        1       Tag.a  # if it contains only phrasing content
+                1       Tag.abbr
+                1       Tag.area    # if it is a descendant of a <map> element
+                1       Tag.audio
+                1       Tag.b
+                1       Tag.bdo
+                1       Tag.br
+                1       Tag.button
+                1       Tag.canvas
+                1       Tag.cite
+                1       Tag.code
+#                1       Tag.command
+                1       Tag.datalist
+                1       Tag.del     # if it contains only phrasing content
+                1       Tag.dfn
+                1       Tag.em
+                1       Tag.embed
+                1       Tag.i
+                1       Tag.iframe
+                1       Tag.img
+                1       Tag.input
+                1       Tag.ins     # if it contains only phrasing content
+                1       Tag.kbd
+                1       Tag.keygen
+                1       Tag.label
+                1       Tag.link    # if the itemprop attribute is present
+                1       Tag.map     # if it contains only phrasing content
+                1       Tag.mark
+#                1       Tag.math
+                1       Tag.meta    # if the itemprop attribute is present
+                1       Tag.meter
+                1       Tag.noscript
+                1       Tag.object
+                1       Tag.output
+                1       Tag.progress
+                1       Tag.q
+                1       Tag.ruby
+                1       Tag.samp
+                1       Tag.script
+                1       Tag.select
+                1       Tag.small
+                1       Tag.span
+                1       Tag.strong
+                1       Tag.sub
+                1       Tag.sup
+#                1       Tag.svg
+                1       Tag.textarea
+                1       Tag.time
+                1       Tag.var
+                1       Tag.video
+                1       Tag.wbr
+                1       HV.TagText
+
+Embedded        1       Tag.audio
+                1       Tag.canvas
+                1       Tag.embed
+                1       Tag.iframe
+                1       Tag.img
+#                1       Tag.math
+                1       Tag.object
+ #               1       Tag.svg
+                1       Tag.video
+
+Interactive     1       Tag.a
+                1       Tag.audio   # if the controls attribute is present
+                1       Tag.button
+                1       Tag.details
+                1       Tag.embed
+                1       Tag.iframe
+                1       Tag.img     # if the usemap attribute is present
+                1       Tag.input   # if the type attribute is not in the hidden state
+                1       Tag.keygen
+                1       Tag.label
+                1       Tag.menu    # if the type attribute is in the toolbar state
+                1       Tag.object  # if the usemap attribute is present
+                1       Tag.select
+                1       Tag.textarea
+                1       Tag.video   # if the controls attribute is present
+
+Palpable        1       Tag.a
+                1       Tag.abbr
+                1       Tag.address
+                1       Tag.audio
+                1       Tag.b
+                1       Tag.bdi
+                1       Tag.bdo
+                1       Tag.blockquote
+                1       Tag.button
+                1       Tag.canvas
+                1       Tag.cite
+                1       Tag.code
+                1       Tag.data
+                1       Tag.details
+                1       Tag.dfn
+                1       Tag.div
+                1       Tag.dl
+                1       Tag.embed
+                1       Tag.em
+                1       Tag.fieldset
+                1       Tag.figure
+                1       Tag.footer
+                1       Tag.form
+                1       Tag.header
+                .16     Tag.h1
+                .16     Tag.h2
+                .16     Tag.h3
+                .16     Tag.h4
+                .16     Tag.h5
+                .16     Tag.h6
+                1       Tag.hgroup
+                1       Tag.i
+                1       Tag.iframe
+                1       Tag.kbd
+                1       Tag.keygen
+                1       Tag.label
+                1       Tag.link
+                1       Tag.main
+                1       Tag.map
+                1       Tag.mark
+                1       Tag.menu
+                1       Tag.meter
+                1       Tag.nav
+                1       Tag.object
+                1       Tag.ol
+                1       Tag.output
+                1       Tag.p
+                1       Tag.pre
+                1       Tag.progress
+                1       Tag.q
+                1       Tag.ruby
+                1       Tag.samp
+                1       Tag.section
+                1       Tag.time
+                1       Tag.u
+
+SectioningRoot  1       Tag.blockquote
+                1       Tag.body
+                1       Tag.details
+                1       Tag.fieldset
+                1       Tag.figure
+                1       Tag.td
+
+Sectioning      1       Tag.article
+                1       Tag.aside
+                1       Tag.nav
+                1       Tag.select
+
+FormAssociated  +       FormListed
+                +       FormLabelable
+                +       FormSubmittable
+                +       FormResettable
+                1       Tag.label
+
+FormListed      1       Tag.button
+                1       Tag.fieldset
+                1       Tag.input
+                1       Tag.keygen  # Deprecated
+                1       Tag.object
+                1       Tag.output
+                1       Tag.select
+                1       Tag.textarea
+
+FormLabelable   1       Tag.button
+                1       Tag.input
+                1       Tag.keygen  # Deprecated
+                1       Tag.meter
+                1       Tag.output
+                1       Tag.progress
+                1       Tag.select
+                1       Tag.textarea
+
+FormSubmittable 1       Tag.button
+                1       Tag.input
+                1       Tag.keygen  # Deprecated
+                1       Tag.object
+                1       Tag.select
+                1       Tag.textarea
+
+FormResettable  1       Tag.input
+                1       Tag.keygen  # Deprecated
+                1       Tag.output
+                1       Tag.select
+                1       Tag.textarea
+
+Transparent     1       Tag.a
+                1       Tag.audio
+                1       Tag.canvas
+                1       Tag.del
+                1       Tag.ins
+                1       Tag.map
+                1       Tag.noscript
+                1       Tag.object
+                1       Tag.video
+
+All             1       Metadata
+                1       Flow
+                1       Heading
+                1       Phrasing
+                1       Embedded
+                1       Interactive
+                1       Palpable
+                1       SectioningRoot
+                1       Sectioning
+                1       FormAssociated
+                1       FormListed
+                1       FormLabelable
+                1       FormSubmittable
+                1       FormResettable
+                1       Transparent

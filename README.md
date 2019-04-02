@@ -6,7 +6,8 @@
 
 
 Avalanche is a document generator which uses context-free grammars to generate
-randomized outputs for fuzz-testing.
+randomized outputs for fuzz-testing.  See the examples folder for some working
+grammars.
 
 
 ## Quickstart

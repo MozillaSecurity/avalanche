@@ -1,0 +1,101 @@
+### CSS fuzzer
+# Written by: Tyson Smith
+
+CSS         import('lib/css.gmr')
+HV          import('lib/html-values.gmr')
+TC          import('lib/html-tag-children.gmr')
+STR         import('lib/strings-chars.gmr')
+
+root        push("<body id='" HV.id "'>" ("\n" TC.body){20} "\n</body>") \
+            "<html>\n" \
+            "<meta charset=\"UTF-8\">\n" \
+            "<script>\n" \
+            "var gc = (\"FuzzingFunctions\" in window) ? () => { FuzzingFunctions.garbageCollect(); FuzzingFunctions.cycleCollect() } : window.gc\n" \
+            "var dump = (\"dump\" in window) ? (s) => window.dump(`${s}\\n`) : console.log\n" \
+            "var finCallback = (\"requestIdleCallback\" in window) ? (f, t) => window.requestIdleCallback(f, {timeout: t}) : setTimeout\n" \
+            "function done(){\n" \
+            "  try { gc() } catch(err) { dump(`${err.message}`) }\n" \
+            "  try { force_relayout() } catch (err) { dump(`${err.message}`) }\n" \
+            "  try { gc() } catch(err) { dump(`${err.message}`) }\n" \
+            "  dump('[cssfuzz] Done, waiting " (Delay) "ms...')\n" \
+            "  setTimeout(window.close, " @1 ")\n" \
+            "}\n" \
+            "function go(){\n" \
+            "  try { fuzz() } catch(e) {}\n" \
+            "  finCallback(done, 10000)\n" \
+            "}\n" \
+            "window.onload=go\n" \
+            "</script>\n" \
+            "<!-- //DDBEGIN -->\n" \
+            "<script>\n" \
+            "function force_relayout(){\n" \
+            "  document.documentElement.style.display=\"none\"\n" \
+            "  document.documentElement.getBoundingClientRect()\n" \
+            "  document.documentElement.style.display=\"\"\n" \
+            "  document.documentElement.getBoundingClientRect()\n" \
+            "  try{ document.documentElement.offsetHeight }catch(e){}\n" \
+            "}\n" \
+            # js fuzzing functions
+            CSSFunc \
+            "</script>\n" \
+            # generated style tag
+            "<style>\n" Statements{10,50} "</style>\n" \
+            "</head>\n" \
+            # generated body tag & children, pre-generated above
+            pop() \
+            "<!-- //DDEND -->\n" \
+            "</html>\n"
+
+Delay       .75 '100'
+            .25 '1000'
+
+CSSOp       1   GroupOp
+
+GroupOp         "try{ " _target " }catch(e){}\n" \
+                ("try{ " _op " }catch(e){}\n" \
+                  ("try{ o.offsetHeight }catch(e){}\n")? \
+                  ("try{ o.scrollIntoView() }catch(e){}\n")? \
+                  ("try{ window.getComputedStyle(o)." _styleProp " }catch(e){}\n")? \
+                ){5,10}
+
+_styleProp  1   "display"
+            1   "length"
+            1   "width"
+
+_target     1   "o=document.getElementById('" @HV.id "')"
+
+_op         1   "o.setAttribute('style', \"" (CSS.Style ";"){1,10} "\")"
+            1   "o.style.cssText" ("+")? "=\"" (CSS.Style ";"){1,10} "\""
+            .1  "force_relayout()"
+            .1  "o.style=\"" (CSS.Style ";"){1,10} "\""
+            .1  "o.textContent" ("+")? "=\"" _fuzzyStr "\""
+            .1  "o.textContent=\"\""
+            .1  "o.style.cssText=document.getElementById('" @HV.id "').style.cssText"
+            .1  "o.style.setProperty(\"" (CSS.AnyProperty) "\", \"" eval("CSS." @1 '-value') "\", \"" ("important")? "\")"
+            .1  "o.style.setProperty(\"" (CSS.AnyProperty) "\", " _fuzzyJS ")"
+            .01 "o.style.setProperty(\"" (CSS.AnyProperty) "\", \"""\")"
+            .01 "o.setAttribute('style','')"
+            .01 "o.style=''"
+            .01 "document.styleSheets[" /[1-9]{1,2}/ "%document.styleSheets.length].disabled=" _bool
+
+_bool       1   "true"
+            1   "false"
+
+_fuzzyJS    1   "\"" /[01]/ "\""
+            1   "\"" rndpow2(16,2) "\""
+            .1  "\"A\"*1000"
+            .1  "\"1e" ("-")? /[1-9]{1,2}/ "\""
+            .1  "\"" _fuzzyStr "\""
+            .1  "undefined"
+
+_fuzzyStr   1   STR.unicode_string
+            1   STR.entity
+            1   /[A-Z]{1,10}/
+            .1   STR.unicode
+
+CSSFunc         "function fuzz(){\n" \
+                "var o=undefined\n" \
+                ("try{ document.documentElement.setAttribute('id','" HV.id "') }catch(e){}\n")? \
+                (CSSOp "\n"){70} "}"
+
+Statements      (CSS.Statement "\n"){1,5}

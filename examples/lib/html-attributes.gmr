@@ -1,0 +1,363 @@
+### HTML Attributes Library
+# Written by: Tyson Smith
+
+CSS     import('css.gmr')
+CC      import('css-colors.gmr')
+DU      import('data-urls.gmr')
+V       import('html-values.gmr')
+
+# WARNING: This is a library and is not meant to be run standalone
+# root is defined for testing
+root    All
+
+abbr                        "abbr='" V.string "'" #XXX: make this a fuzzy string
+accept                      "accept='" V.MediaType "'"
+acceptCharset               "accept-charset='" V.CharSet ("," V.CharSet){0,5} "'"
+accesskey                   "accesskey='" V.Character ("," V.Character){0,10} "'"
+action                      "action='" V.URI "'"
+align                       "align='" V.Align "'"
+allowfullscreen             "allowfullscreen='" V.Bool "'"
+alt                         "alt='" V.string "'"
+archive                     "archive='" V.URI "'"
+async                       "async='" V.Bool "'"
+autobuffer                  "autobuffer='" V.Bool "'"
+autocapitalize              "autocapitalize='" V.Capitalize "'"
+autocomplete                "autocomplete='" V.Autocomplete "'"
+autocorrect             1   "autocorrect='on'" # experimental
+                        1   "autocorrect='off'"
+autofocus                   "autofocus='" V.Bool "'"
+autoplay                    "autoplay='" V.Bool "'"
+#autosave                    "autosave='" "'"
+behavior                    "behavior='" V.Behavior "'"
+balance                 1   "balance='" V.number "'"
+                        1   "balance='" ("-")? "10000'"
+bgcolor                     "bgcolor='" CC.Color "'" # obsolete
+border                      "border='" /[0-1]/ "'" # obsolete
+#buffered                    "buffered='" "'" #XXX: read-only?
+challenge                   "challenge='" V.string "'" # Deprecated
+capture                     "capture='" V.Bool "'"
+cellpadding                 "cellpadding='" V.number "'"
+cellspacing                 "cellspacing='" V.number "'"
+char                        "char='" V.Character "'" # XXX: see https://developer.mozilla.org/en-US/docs/Web/HTML/Element/col
+charoff                     "charoff='" V.number "'"
+charset                     "charset='" V.CharSet "'"
+checked                     "checked='" V.Bool "'"
+cite                        "cite='" V.URI "'"
+class                       "class='" @V.ClassName (" " @V.ClassName){0,5}? "'"
+code                        "code='" V.URI "'" # URL of Java applet
+codebase                    "codebase='" V.URI "'"
+color                       "color='" CC.Color "'"
+cols                        "cols='" V.number "'" # XXX: needs review
+colspan                     "colspan='" V.number "'"
+contenteditable             "contenteditable='" V.Bool "'"
+contextmenu                 "contextmenu='" @V.id "'" # XXX: id of a menu
+controls                    "controls"
+coords                      "coords='" V.Coords "'"
+crossorigin             1   "crossorigin='anonymous'"
+                        1   "crossorigin='use-credentials'"
+#data-*
+data                        "data='" V.URI "'"
+datetime                    "datetime='" V.DateTime "'"
+declare                     "declare='" V.Bool "'"
+default                     "default"
+defer                       "defer"
+dir                         "dir='" V.Dir "'"
+direction                   "direction='" V.Direction "'"
+dirname                     "dirname='" V.Dir "'"
+disabled                    "disabled"
+download                    "download='" V.string "'"
+draggable                   "draggable='" V.Bool "'"
+dropzone                    "dropzone='" V.DropzoneValue "'"
+enctype                     "enctype='" V.Formenctype "'"
+frame                       "frame='" V.Frame "'"
+frameborder                 "frameborder='" /[0-1]/ "'"
+#for                         "for='" "'"
+form                        "form='" V.id "'" # XXX: this needs to be a tracked form ID
+formaction                  "formaction='" V.URI "'"
+formenctype                 "formenctype='" V.Formenctype "'"
+formmethod              1   "formmethod='get'"
+                        1   "formmethod='post'"
+formnovalidate              "formnovalidate='" V.Bool "'"
+formtarget                  "formtarget='" V.Target "'"
+#formaction                  "formaction='" "'"
+#headers                     "headers='" "'"
+height                      "height='" V.number "'"
+hidden                      "hidden"
+high                        "high='" V.number "'"
+href                        "href='" V.URI "'"
+#hreflang                    "hreflang='" "'"
+hspace                      "hspace='" V.number "'"
+httpequiv                   "http-equiv='" V.Httpequiv "'"
+#icon                        "icon='" "'"
+id                          "id='" V.id "'"
+inputmode                   "inputmode='" V.Inputmode "'"
+ismap                       "ismap='" V.Bool "'"
+itemid                      "itemid='" (V.Character){0,10} "'" #XXX: make this a fuzzy string
+#itemprop                    "itemprop='" "'" # XXX: https://developer.mozilla.org/en-US/docs/Web/HTML/Global_attributes/itemref
+#itemref                     "itemref'" "'" # XXX: https://html.spec.whatwg.org/multipage/microdata.html#names:-the-itemprop-attribute
+itemscope                   "itemscope"
+keytype                     "keytype='" V.Keytype "'"
+kind                        "kind='" V.Kind "'"
+label                       "label='" V.string "'"
+lang                        "lang='en'" # XXX: add from https://www.ietf.org/rfc/bcp/bcp47.txt
+#language                    "language='" "'" # deprecated
+list                        "list='" (V.Character){0,10} "'" #XXX: make this a fuzzy string
+longdesc                    "longdesc='" V.URI "'"
+loop                        "loop"
+low                         "low='" V.number "'"
+manifest                    "manifest='" "'" # XXX: fill out
+marginheight                "marginheight='" V.number "'"
+marginwidth                 "marginwidth='" V.number "'"
+max                         "max='" V.number "'"
+maxlength                   "maxlength='" V.number "'"
+media                       "media='" V.Media "'"
+method                  1   "method='get'"
+                        1   "method='post'"
+min                         "min='" V.number "'"
+minlength                   "minlength='" V.number "'"
+mozopaque                   "moz-opaque"
+#mozallowfullscreen # depricated, non standard
+multiple                    "multiple='" V.Bool "'"
+muted                       "muted='" V.Bool "'"
+name                        "name='" V.string "'"
+nameMeta                    "name='" V.MetaName "'"
+nohref                      "nohref"
+noresize                    "noresize='noresize'"
+novalidate                  "novalidate='" V.Bool "'"
+nowrap                  1   "nowrap='no'"
+                        1   "nowrap='yes'"
+# XXX: on* events
+object                      "object='" V.URI "'"
+open                        "open='" V.Bool "'"
+optimum                     "optimum='" V.number "'"
+#pattern                     "pattern='" "'"
+ping                        "ping='" V.URI "'"
+placeholder                 "placeholder='" V.string "'"
+poster                      "poster='" V.URI "'"
+preload                 1   "preload='auto'"
+                        1   "preload='metadata'"
+                        1   "preload='none'"
+radiogroup                  "radiogroup='" (V.Character){0,10} "'" #XXX: make this a fuzzy string
+readonly                    "readonly"
+referrerpolicy              "referrerpolicy='" V.RefPolicy "'"
+rel                         "rel='" V.Relationship "'"
+required                    "required"
+reversed                    "reversed"
+rows                        "rows='" V.number "'" # XXX: needs review
+rowspan                     "rowspan='" V.number "'"
+rules                   1   "rules='" V.Rules "'"
+sandbox                 1   "sandbox='" V.SandboxToken (" " V.SandboxToken<0,*>) "'"
+                        1   "sandbox='" V.SandboxToken (" " V.SandboxToken{1,10}) "'"
+                        1   "sandbox=''"
+scope                       "scope='" V.Scope "'"
+scoped                      "scoped" # experimental/deprecated
+scrollamount                "scrollamount='" V.number "'"
+scrolldelay                 "scrolldelay='" V.number "'"
+scrolling               1   "scrolling='auto'"
+                        1   "scrolling='no'"
+                        1   "scrolling='yes'"
+seamless                    "seamless"
+selected                    "selected"
+selectionDirection      1   "selectionDirection='forward'"
+                        1   "selectionDirection='backward'"
+                        1   "selectionDirection='none'"
+shape                       "shape='" V.Shape "'"
+size                        "size='" V.number "'"
+sizes                   1   "sizes='" V.number "x" V.number "'"
+                        1   "sizes='16x16'"
+span                        "span='" V.number "'"
+spellcheck                  "spellcheck='" V.Bool "'" # experimental
+src                         "src='" V.URI "'"
+srcAudio                1   "src='" DU.Audio "'"
+                        .1  src
+srcImage                1   "src='" DU.Image "'"
+                        .1  src
+srcVideo                1   "src='" DU.Video "'"
+                        .1  src
+#srcdoc                      "srcdoc='" "'" # XXX: more html
+srclang                     "srclang='en'" # XXX: more langs
+#srcset                      "srcset='" "'"
+standby                     "standby='" V.string "'" # deprecated
+start                       "start='" V.number "'" # XXX: Add Roman numerals
+step                        "step='" V.number "'"
+style                       "style=\"" ((CSS.AnyProperty) ":" eval("CSS." @2 "-value")) "\""
+summary                     "summary='" V.string "'" # deprecated
+tabindex                    "tabindex='" V.number "'"
+target                      "target='" V.Target "'"
+text                        "text='" V.string "'"
+title                       "title='" V.string "'"
+translate               1   "translate='no'"
+                        1   "translate='yes'"
+typeButton                  "type='" V.ButtonType "'"
+typeCommand                 "type='" V.CommandType "'"
+typeInput                   "type='" V.InputType "'"
+typeMenu                    "type='" V.MenuType "'"
+typeMenuitem                "type='" V.MenuitemType "'"
+typeMime                    "type='" V.MediaType "'"
+typemustmatch               "typemustmatch='" V.Bool "'"
+typeNumbering               "type='" V.NumberingType "'"
+typeScript                  "type='text/javascript'" # XXX: fill this out
+typeSpacer                  "type='" V.SpacerType "'"
+typeUl                      "type='" V.UlType "'"
+#usemap                      "usemap='" "'"
+value                       "value='" V.number "'" # XXX: this needs to be split up like Type
+valign                      "valign='" V.Valign "'"
+valuetype                   "valuetype='" V.Valuetype "'"
+volume                      "volume='" V.number "'"
+vspace                      "space='" V.number "'"
+# Webkitallowfullscreen #deprecated, non standard
+width                       "width='" V.number "'"
+wrap                    1   "wrap='hard'"
+                        1   "wrap='soft'"
+
+All                     1   accept
+                        1   acceptCharset
+                        1   accesskey
+                        1   action
+                        1   align
+                        1   allowfullscreen
+                        1   alt
+                        1   async
+                        1   autobuffer
+                        1   autocapitalize
+                        1   autocomplete
+                        1   autocorrect
+                        1   autofocus
+                        1   autoplay
+                        1   behavior
+                        1   balance
+                        1   bgcolor
+                        1   border
+                        1   capture
+                        1   cellpadding
+                        1   cellspacing
+                        1   challenge
+                        1   char
+                        1   charoff
+                        1   charset
+                        1   checked
+                        1   cite
+                        1   class
+                        1   code
+                        1   codebase
+                        1   color
+                        1   cols
+                        1   colspan
+                        1   contenteditable
+                        1   controls
+                        1   crossorigin
+                        1   data
+                        1   datetime
+                        1   declare
+                        1   default
+                        1   defer
+                        1   dir
+                        1   direction
+                        1   dirname
+                        1   disabled
+                        1   download
+                        1   draggable
+                        1   dropzone
+                        1   enctype
+                        1   frame
+                        1   frameborder
+                        1   form
+                        1   formaction
+                        1   formenctype
+                        1   formmethod
+                        1   formtarget
+                        1   formnovalidate
+                        1   height
+                        1   hidden
+                        1   high
+                        1   href
+                        1   hspace
+                        1   httpequiv
+                        1   id
+                        1   inputmode
+                        1   ismap
+                        1   keytype
+                        1   kind
+                        1   label
+                        1   list
+                        1   longdesc
+                        1   loop
+                        1   low
+                        1   manifest
+                        1   marginheight
+                        1   marginwidth
+                        1   max
+                        1   maxlength
+                        1   media
+                        1   method
+                        1   min
+                        1   minlength
+                        1   mozopaque
+                        1   multiple
+                        1   muted
+                        1   name
+                        1   nameMeta
+                        1   nohref
+                        1   noresize
+                        1   novalidate
+                        1   nowrap
+                        1   open
+                        1   optimum
+                        1   ping
+                        1   placeholder
+                        1   poster
+                        1   preload
+                        1   radiogroup
+                        1   readonly
+                        1   referrerpolicy
+                        1   rel
+                        1   required
+                        1   reversed
+                        1   rows
+                        1   rowspan
+                        1   rules
+                        1   sandbox
+                        1   scope
+                        1   scoped
+                        1   scrollamount
+                        1   scrolldelay
+                        1   scrolling
+                        1   seamless
+                        1   selected
+                        1   selectionDirection
+                        1   shape
+                        1   size
+                        1   sizes
+                        1   span
+                        1   spellcheck
+                        1   src
+                        1   srcAudio
+                        1   srcImage
+                        1   srcVideo
+                        1   srclang
+                        1   standby
+                        1   start
+                        1   step
+                        1   style
+                        1   summary
+                        1   tabindex
+                        1   target
+                        1   text
+                        1   title
+                        1   typeButton
+                        1   typeInput
+                        1   typeMenu
+                        1   typeMenuitem
+                        1   typeMime
+                        1   typemustmatch
+                        1   typeNumbering
+                        1   typeScript
+                        1   typeSpacer
+                        1   typeUl
+                        1   value
+                        1   valign
+                        1   valuetype
+                        1   volume
+                        1   vspace
+                        1   width
+                        1   wrap

@@ -1,0 +1,51 @@
+### Data URLs Library
+# Written by: Tyson Smith & Jesse Schwartzentruber
+
+# WARNING: This is a library and is not meant to be run standalone
+# root is defined for testing
+root                1       Document
+                    1       Media
+
+Document            1       CSS
+                    1       HTML
+                    1       JSON
+                    1       XML
+
+Media               1       Audio
+                    1       Image
+                    1       Video
+
+Audio               1       'data:audio/mpeg;base64,' \
+                            '/+M4wAAAAAAAAAAAAEluZm8AAAAPAAAAAwAAAbAAqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq' \
+                            'qqqqqqqq1dXV1dXV1dXV1dXV1dXV1dXV1dXV1dXV1dXV1dXV1dXV////////////////////////' \
+                            '////////////////////AAAAAExhdmM1Ny4zOAAAAAAAAAAAAAAAACQAAAAAAAAAAAGwU/hwzwAA' \
+                            'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA/+MYxAAMkI7huAhM' \
+                            'DGQAndv+H5jfIAPmPzGBGeTAZNN7yjsnqd6Fny79M+o4UifnMu/TlDiIP5Q5l9Z/Kdv6VY0gE3JI' \
+                            'AAwE/+MYxAgMYJr6WBhGIivjMy/CEK+zM39VVXjMArKgq6DQdrBV0THlqBp0ShrBp8qGsTPw7lXZ' \
+                            'FVZZY6GytZZYGChgYIGZaiJI/+MYxBEMUJnAABmMYUigMQLIE1yVpphA1UQMRVVVV000iVu000VV' \
+                            'VX///6aaVUxBTUUzLjk5LjVVVVVVVVVVVVVVVVVVVVVV' # 1 chan 8Kbit/s 8Khz 0.01s
+CSS                 1       "data:text/css,body{background-color:%23" /[0-9a-f]/{6} "}"
+HTML                1       'data:text/html,TEST'
+JSON                1       'data:application/json;base64,eyJhIjoiYiIsImMiOnsiZCI6dHJ1ZSwiZSI6Mn0sImYiOlt' \
+                            'dfQ==' # {"a":"b","c":{"d":true,"e":2},"f":[]}
+Image               1       'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciLz4='
+                    1       'data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=' # 1x1, no colour table
+                    1       'data:image/gif;base64,R0lGODlhAQABAIABAP///wAAACwAAAAAAQABAAACAkQBADs=' # 1x1, white
+                    1       'data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==' # 1x1 transparent
+                    1       'data:image/gif;base64,R0lGODlhAQABAAD/ACH/C05FVFNDQVBFMi4wAwEAAAAsAAAAAAEA' \
+                            'AQAAAgAsAAAAAAEAAQAAAgA7' # 1x1 animation, 2 frames of no colour
+                    1       'data:image/gif;base64,R0lGODlhAQABAIABAP///wAAACH/C05FVFNDQVBFMi4wAwEAAAAs' \
+                            'AAAAAAEAAQAAAgAsAAAAAAEAAQAAAgJEAQA7' # 1x1 animation between white/no colour
+Video               1       'data:video/webm;base64,' \
+                            'GkXfowEAAAAAAAAfQoaBAUL3gQFC8oEEQvOBCEKChHdlYm1Ch4ECQoWBAhhTgGcBAAAAAAAB6BFN' \
+                            'm3RALE27i1OrhBVJqWZTrIHfTbuMU6uEFlSua1OsggEwTbuMU6uEHFO7a1OsggHL7AEAAAAAAACk' \
+                            'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA' \
+                            'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA' \
+                            'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAVSalmAQAA' \
+                            'AAAAAEUq17GDD0JATYCNTGF2ZjU3LjI5LjEwMVdBjUxhdmY1Ny4yOS4xMDFzpJBAb17Yv2oNAF1Z' \
+                            'EESuco33RImIQFCAAAAAAAAWVK5rAQAAAAAAADyuAQAAAAAAADPXgQFzxYEBnIEAIrWcg3VuZIaF' \
+                            'Vl9WUDmDgQEj44OEAfygVeABAAAAAAAAB7CCAUC6gfAfQ7Z1AQAAAAAAAEfngQCjqYEAAICCSYNC' \
+                            'ABPwDvYAOCQcGFQAAFBh9jAAABML7AAATEnjdRwIJ+gAo5eBACEAhgBAkpwATEAABCasAABekcXg' \
+                            'ABxTu2sBAAAAAAAAEbuPs4EAt4r3gQHxggF48IED' # 1 frame vp9
+XML                 1       'data:application/xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgi' \
+                            'Pz4KPGEvPg==' # <?xml version="1.0" encoding="UTF-8"?>\n<a/>

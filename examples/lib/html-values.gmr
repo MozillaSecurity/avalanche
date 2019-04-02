@@ -1,0 +1,387 @@
+### HTML Values Library
+# Written by: Tyson Smith
+
+CS      import('iana-charsets.gmr')
+DU      import('data-urls.gmr')
+JN      import('js-numbers.gmr')
+STR     import('strings-chars.gmr')
+U       import('urls.gmr')
+
+# WARNING: This is a library and is not meant to be run standalone
+
+Align               1       "bottom"
+                    1       "left"
+                    1       "middle"
+                    1       "right"
+                    1       "top"
+                    1       "absbottom" # MS and netscape
+                    1       "absmiddle" # MS and netscape
+                    1       "baseline"  # MS and netscape
+                    1       "center"    # MS and netscape
+                    1       "texttop"   # MS and netscape
+#https://html.spec.whatwg.org/multipage/forms.html#autofill
+Autocomplete        1       "off"
+                    1       "on"
+                    1       "name"
+                    1       "honorific-prefix"
+                    1       "given-name"
+                    1       "additional-name"
+                    1       "family-name"
+                    1       "honorific-suffix"
+                    1       "nickname"
+                    1       "email"
+                    1       "username"
+                    1       "new-password"
+                    1       "current-password"
+                    1       "organization-title"
+                    1       "organization"
+                    1       "street-address"
+                    1       "address-line1"
+                    1       "address-line2"
+                    1       "address-line3"
+                    1       "address-level4"
+                    1       "address-level3"
+                    1       "address-level2"
+                    1       "address-level1"
+                    1       "country"
+                    1       "country-name"
+                    1       "postal-code"
+                    1       "cc-name"
+                    1       "cc-given-name"
+                    1       "cc-additional-name"
+                    1       "cc-family-name"
+                    1       "cc-number"
+                    1       "cc-exp"
+                    1       "cc-exp-month"
+                    1       "cc-exp-year"
+                    1       "cc-csc"
+                    1       "cc-type"
+                    1       "transaction-currency"
+                    1       "transaction-amount"
+                    1       "language"
+                    1       "bday"
+                    1       "bday-day"
+                    1       "bday-month"
+                    1       "bday-year"
+                    1       "sex"
+                    1       "tel"
+                    1       "url"
+                    1       "photo"
+Behavior            1       "scroll"
+                    1       "slide"
+                    1       "alternate"
+Bool                1       "false"
+                    1       "true"
+ButtonType          1       "button"
+                    1       "menu"
+                    1       "reset"
+                    1       "submit"
+Capitalize          1       "none"
+                    1       "sentences"
+                    1       "words"
+                    1       "characters"
+                    1       "on"    # Deprecated since iOS 5
+                    1       "off"   # Deprecated since iOS 5
+CharSet             1       "UTF-8"
+                    1       CS.Encoding
+ClassName                   "cls" id()
+Character           1       STR.alpha
+                    1       STR.numeric
+                    .1      STR.unicode_char
+                    .001    STR.punctuation
+CommandType         1       "checkbox"
+                    1       "command"
+                    1       "radio"
+Coords              1       number "," number "," number # Circle x,y,r
+                    1       number "," number "," number "," number # Rect x1,y1,x2,y2
+                    .1      number ("," number){2,5} "," number # Poly x1,y1,x2,y2,..,xn,yn
+Date                1       "2" /[0-9]{3}/
+                    .1      "2" /[0-9]{3}/ "-W" rndint(0,52)
+                    .1      /[0-9]{4}/
+                    .1      "2" /[0-9]{3}/ "-" /[0-1]{2}/
+                    .1      /[0-2]{2}/ "-" /[0-1]{2}/
+DateTime            1       Date
+                    1       Time
+                    1       Date " " Time
+                    1       Date "T" Time
+                    1       /[0-2]{4}/ "-" /[0-1]{2}/ "-" /[0-1]{2}/ " " /[0-1]{2}/ ":" /[0-1]{2}/ "Z"
+# more at https://www.w3.org/TR/html5/infrastructure.html#valid-global-date-and-time-string
+Dir                 1       "auto"
+                    1       "ltr"
+                    1       "rtl"
+Direction           1       "left"
+                    1       "right"
+                    1       "up"
+                    1       "down"
+DropzoneValue       1       "copy"
+                    1       "link"
+                    1       "move"
+Formenctype         1       "application/x-www-form-urlencoded"
+                    1       "multipart/form-data"
+                    1       "text/plain"
+Frame               1       "above"
+                    1       "below"
+                    1       "hsides"
+                    1       "vsides"
+                    1       "lhs"
+                    1       "rhs"
+                    1       "border"
+                    1       "box"
+                    1       "void"
+Httpequiv           1       "content-language"
+                    1       "Content-Security-Policy"
+                    1       "content-type"
+                    1       "default-sytle"
+                    1       "refeash"
+                    1       "set-cookie"
+id                          "id" id()
+id_body                     id
+Inputmode           1       "verbatim"
+                    1       "latin"
+                    1       "latin-name"
+                    1       "latin-prode"
+                    1       "full-width-latin"
+                    1       "kana"
+                    1       "katakana"
+                    1       "numeric"
+                    1       "tel"
+                    1       "email"
+                    1       "url"
+InputType           1       "button"
+                    1       "checkbox"
+                    1       "color"
+                    1       "date"
+                    1       "datetime"
+                    1       "datetime-local"
+                    1       "email"
+                    1       "file"
+                    1       "hidden"
+                    1       "image"
+                    1       "month"
+                    1       "number"
+                    1       "password"
+                    1       "radio"
+                    1       "range"
+                    1       "reset"
+                    1       "search"
+                    1       "submit"
+                    1       "tel"
+                    1       "text"
+                    1       "time"
+                    1       "url"
+                    1       "week"
+Kind                1       "subtitles"
+                    1       "captions"
+                    1       "descriptions"
+                    1       "chapters"
+                    1       "metadata"
+Keytype             1       "rsa"
+                    1       "dsa"
+                    1       "ec"
+Media               1       _MediaPartDevice " " _MediaPartOperators " (" _MediaPartOperators ")"
+                    1       _MediaPartDevice ("," _MediaPartDevice){0,3}
+_MediaPartDevice    1       "all"
+                    1       "aural"
+                    1       "braille"
+                    1       "handheld"
+                    1       "projection"
+                    1       "print"
+                    1       "screen"
+                    1       "tty"
+                    1       "tv"
+_MediaPartMinMax    1       "max-"
+                    1       "min-"
+_MediaPartOperators 1       "and"
+                    1       "not"
+                    .1      ","
+_MediaPartValue     1       _MediaPartMinMax{0,1} "height:" number "px"
+                    1       _MediaPartMinMax{0,1} "width:" number "px"
+                    1       _MediaPartMinMax{0,1} "device-height:" number "px"
+                    1       _MediaPartMinMax{0,1} "device-width:" number "px"
+                    .5      "orientation:landscape"
+                    .5      "orientation:portrait"
+                    1       _MediaPartMinMax{0,1} "aspect-ratio:" rndint(0,16) "/" rndint(0,10)
+                    1       _MediaPartMinMax{0,1} "device-aspect-ratio:" rndint(0,16) "/" rndint(0,10)
+                    1       _MediaPartMinMax{0,1} "color:" number
+                    1       _MediaPartMinMax{0,1} "color-index:" number
+                    1       _MediaPartMinMax{0,1} "monochrome:" number
+                    .5      _MediaPartMinMax{0,1} "resolution:" number "dpcm"
+                    .5      _MediaPartMinMax{0,1} "resolution:" number "dpi"
+                    .5      "scan:interlace"
+                    .5      "scan:progressive"
+                    1       "grid:" /[01]/
+MediaType           1       "audio/*"
+                    1       "image/*"
+                    1       "video/*"
+MenuType            1       "context"
+                    1       "toolbar"
+MenuitemType        1       "command"
+                    1       "checkbox"
+                    1       "radio"
+MetaName            1       "application-name"
+                    1       "author"
+                    1       "description"
+                    1       "generator"
+                    1       "keywords"
+                    1       "referrer"
+                    1       "creator"
+                    1       "googlebot"
+                    1       "publisher"
+                    1       "robots"
+                    1       "slurp"
+                    1       "viewport"
+number              1       JN.Float
+                    1       JN.Whole
+                    .1      JN.FloatNeg
+                    .1      JN.WholeNeg
+NumberingType       1       "a"
+                    1       "A"
+                    1       "i"
+                    1       "I"
+                    1       "1"
+RefPolicy           1       "no-referrer"
+                    1       "no-referrer-when-downgrade"
+                    1       "origin"
+                    1       "origin-when-cross-origin"
+                    1       "unsafe-url"
+# https://www.w3.org/wiki/HTML/Elements/link
+# https://developer.mozilla.org/en-US/docs/Web/HTML/Link_types
+# https://msdn.microsoft.com/en-us/library/ms534366(v=vs.85).aspx (Not added yet)
+Relationship        1       "alternate"
+                    1       "appendix"
+                    1       "archives" # obsolete
+                    1       "author"
+                    1       "bookmark"
+                    1       "chapter"
+                    1       "content"
+                    1       "dns-prefetch" # experimental
+                    1       "external"
+                    1       "first" # obsolete
+                    1       "help"
+                    1       "icon"
+                    1       "index" # obsolete
+                    1       "last" # obsolete
+                    1       "license"
+                    1       "manifest"
+                    1       "next"
+                    1       "nofollow"
+                    1       "noopener"
+                    1       "noreferrer"
+                    1       "pingback"
+                    1       "preconnect" # experimental
+                    1       "prefetch"
+                    1       "preload"
+                    1       "prerender" # experimental
+                    1       "prev"
+                    1       "search"
+                    1       "sidebar" # non-standard
+                    1       "stylesheet"
+                    1       "tag"
+                    1       "up" # obsolete
+Rules               1       "none"
+                    1       "groups"
+                    1       "rows"
+                    1       "columns"
+                    1       "all"
+SandboxToken        1       "allow-forms"
+                    1       "allow-modals"
+                    1       "allow-orientation-lock"
+                    1       "allow-pointer-lock"
+                    1       "allow-popups"
+                    1       "allow-popups-to-escape-sandbox"
+                    1       "allow-presentation"
+                    1       "allow-same-origin"
+                    1       "allow-scripts"
+                    1       "allow-top-navigation"
+Scope               1       "auto"
+                    1       "col"
+                    1       "colgroup"
+                    1       "row"
+                    1       "rowgroup"
+Shape               1       "circle"
+                    .1      "circ" # Non-conforming
+                    1       "default"
+                    1       "poly"
+                    .1      "polygon" # Non-conforming
+                    1       "rect"
+                    .1      "rectangle" # Non-conforming
+SpacerType          1       "horizontal"
+                    1       "vertical"
+                    1       "block"
+string              1       STR.alpha{1,10}
+                    1       STR.entity{1,10}
+                    .1      Character{1,10}
+                    .1      STR.unicode_string{1,50}
+                    .01     STR.alpha{10,100}
+                    .01     STR.entity{10,100}
+                    .01     STR.unicode_char{1,50}
+                    .01     STR.unicode
+                    .01     JN.All
+TagText             1       string
+Target              1       "_blank"
+                    1       "_parent"
+                    1       "_self"
+Time                1       /[0-1]/ /[0-9]/ ":" /[0-5]/ /[0-9]/
+                    .1      /[0-1]/ /[0-9]/ ":" /[0-5]/ /[0-9]/ ":" /[0-5]/ /[0-9]/
+                    .1      /[0-1]/ /[0-9]/ ":" /[0-5]/ /[0-9]/ ":" /[0-5]/ /[0-9]/ "." /[0-9]{3}/
+                    .1      /[0-1]/ /[0-9]/ ":" /[0-5]/ /[0-9]/ /[+-]/ /[0-1]/ /[0-9]/ ":00"
+Valuetype           1       "data"
+                    1       "ref"
+                    1       "object"
+UlType              1       "circle"
+                    1       "disc"
+                    1       "square"
+                    .1      "triangle" # not all browsers support it
+URI                 1       "" # invalid urls can slow things down
+                    .1      DU.root
+                    .1      U.Url
+Valign              1       "baseline"
+                    1       "bottom"
+                    1       "middle"
+                    1       "top"
+
+
+All                 1       Align
+                    1       Autocomplete
+                    1       Behavior
+                    1       Bool
+                    1       ButtonType
+                    1       Capitalize
+                    1       CharSet
+                    1       ClassName
+                    1       Character
+                    1       CommandType
+                    1       Coords
+                    1       Date
+                    1       DateTime
+                    1       Dir
+                    1       Direction
+                    1       DropzoneValue
+                    1       Formenctype
+                    1       Frame
+                    1       Httpequiv
+                    1       id
+                    1       Inputmode
+                    1       InputType
+                    1       Kind
+                    1       Keytype
+                    1       Media
+                    1       MediaType
+                    1       MenuType
+                    1       MenuitemType
+                    1       MetaName
+                    1       NumberingType
+                    1       RefPolicy
+                    1       Relationship
+                    1       Rules
+                    1       SandboxToken
+                    1       Scope
+                    1       Shape
+                    1       SpacerType
+                    1       TagText
+                    1       Target
+                    1       Time
+                    1       Valuetype
+                    1       UlType
+                    1       URI
+                    1       Valign

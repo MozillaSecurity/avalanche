@@ -1,0 +1,453 @@
+### 2D Canvas fuzzer
+# Written by: Tyson Smith
+
+CC                              import('lib/css-colors.gmr')
+CT                              import('lib/css-types.gmr')
+Num                             import('lib/js-numbers.gmr')
+STR                             import('lib/strings-chars.gmr')
+
+root                            "<html>\n" \
+                                "<head>\n" \
+                                "<meta charset='UTF-8'>\n" \
+                                "<script>\n" \
+                                "var gc = (\"FuzzingFunctions\" in window) ? () => { FuzzingFunctions.garbageCollect(); FuzzingFunctions.cycleCollect() } : window.gc\n" \
+                                "var dump = (\"dump\" in window) ? (s) => window.dump(`${s}\\n`) : console.log\n" \
+                                "var finCallback = (\"requestIdleCallback\" in window) ? (f, t) => window.requestIdleCallback(f, {timeout: t}) : setTimeout\n" \
+                                "function done(){\n" \
+                                GC \
+                                "  document.documentElement.style.display=\"none\";\n" \
+                                "  document.documentElement.getBoundingClientRect();\n" \
+                                "  document.documentElement.style.display=\"\";\n" \
+                                "  document.documentElement.getBoundingClientRect();\n" \
+                                "  document.documentElement.offsetHeight;\n" \
+                                GC{0,3} \
+                                "  dump('complete');\n" \
+                                "  finCallback(window.close, 1000)\n" \
+                                "}\n" \
+                                "</script>\n" \
+                                "</head>\n" \
+                                "<body id='test_body'>\n" \
+                                ImgTag "\n" CanvasTag "\n" TestScript "\n" \
+                                "</body>\n" \
+                                "</html>\n"
+
+GC                              "  try { gc() } catch(err) { dump(`${err.message}`) }\n"
+
+### Build Testcase Sections
+TestScript                      "<script>\nfunction fuzz(){\n" \
+                                CanvTestBootstrap CanvTestHead CanvTestBody CanvTestTail \
+                                "}\n" CanvStartTest "\n</script>"
+
+CanvTestBootstrap               OpCreateCanv ";\n" (OpCreateCtx ";\n"){1,2}
+CanvTestHead                    ("try{" CtxCreateObj ";}catch(e){}\n")<*> ("try{" @Path "." PathOp ";}catch(e){}\n"){5,20}
+CanvTestBody                    (CanvTestBodyPart "\n"){500}
+CanvTestTail            1       TailOpDone
+                        1       (TailOpToDataURL)? (TailOpRemoveChild)? TailOpDone
+CanvStartTest           1       "document.addEventListener(\"DOMContentLoaded\", fuzz);"
+                        1       "window.addEventListener(\"load\", fuzz);"
+
+### CanvTestTail Operations
+TailOpToDataURL                 "try{document.getElementById('" @ImgId "').src=" @Canv "." OpCnvToDataURL ";}catch(e){}\n"
+TailOpRemoveChild               @Canv ".parentElement.removeChild(" @Canv ");\n"
+TailOpDone              1       "setTimeout(done,32);\n" # 32 is 2 frames
+                        1       "finCallback(done, 9000);\n"
+
+### toDataURL
+OpCnvToDataURL          1       "toDataURL()"
+                        1       "toDataURL('" imgEncMime "'," imgEncQuality ")"
+                        .01     "toDataURL('" imgEncMime "','" imgEncMozParseOpt "')"
+
+imgEncQuality           1       /[0-1]/
+                        1       rndflt(0,1)
+                        .01     ("?")? Num.Float
+imgEncMime              1       "image/bmp"
+                        1       "image/jpeg"
+                        1       "image/vnd.microsoft.icon"
+                        1       "image/png"
+imgEncMozParseOpt       1       "-moz-parse-options:format=bmp;bpp=32"
+                        1       "-moz-parse-options:format=" imgEncFmt ";bpp=" Bitdepth
+                        1       "-moz-parse-options:bpp=" Bitdepth
+imgEncFmt               1       "bmp"
+                        1       "jpeg"
+                        1       "png"
+
+### CanvTestBody Operations
+CanvTestBodyPart        1       CanvTestBodyOp
+                        .025    CanvTestBodyOpBlock
+CanvTestBodyOp          1       "try{" @Canv "." CnvOp ";}catch(e){}"
+                        +       "try{" @Ctx "." CtxOp ";}catch(e){}"
+                        1       "try{" @CGrad "." OpAddColorStop ";}catch(e){}"
+                        1       "try{" @Path "." PathOp ";}catch(e){}"
+                        1       "try{" @ImgData "=" @Ctx "." OpGetImageData ";}catch(e){}"
+                        .1      "try{" @Ctx "=" @Canv ".getContext('2d');}catch(e){}"
+                        .1      "try{" @Path "=new Path2D();}catch(e){}"
+                        .1      "try{" @CGrad "=" @Ctx ".createLinearGradient(" Coord "," Coord "," Coord "," Coord ");}catch(e){}"
+                        .1      "try{" @CPatt "=" @Ctx ".createPattern(" CanvasImgSrc ",'" Repetition "');}catch(e){}"
+                        .1      "try{" @CGrad "=" @Ctx ".createRadialGradient(" Coord "," Coord "," Radius "," Coord "," Coord "," Radius ");}catch(e){}"
+                        .1      "try{" @HtmlImgElmt ".src=" @Canv ".toDataURL('image/jpeg', 0.1);}catch(e){}"
+
+CanvTestBodyOpBlock     1       "setTimeout(function(){\n" (" " CanvTestBodyOp "\n"){1,10} "},0);"
+                        .1      "for(var loop=0;loop<" /[2-9]/ ";loop++){\n" (" " CanvTestBodyOp "\n"){1,10} "}"
+                        .1      "setTimeout(function(){\n" (" " CanvTestBodyOp "\n"){1,10} "}," rndint(0,15) ");"
+                        .01     "setInterval(function(){\n" (" " CanvTestBodyOp "\n"){1,10} "}," rndint(0,15) ");"
+
+### Tags
+CanvasTag                       "<canvas id='" CnvId "' height='" CanvasDimention "' width='" CanvasDimention "'></canvas>"
+ImgTag                          "<img id='" ImgId "' src=" ImgDataUrl "/>"
+
+
+### Values
+Angle                           Rotation
+Bitdepth                1       rndpow2(5,0)
+                        .1      "24"
+                        .01     NumAll
+Bool                    1       "false"
+                        1       "true"
+CanvasImgSrc            1       @HtmlImgElmt
+                        1       HtmlCnvElmt
+CanvasDimention         1       "800"
+                        .1      rndint(2,500)
+                        .01     NumAll
+                        .01     "0"
+                        .01     "1"
+                        .01     "-1"
+CanvasHeight                    @Canv ".height"
+CanvasWidth                     @Canv ".width"
+# https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API/Tutorial/Compositing/Example
+CompositeOpType         1       "source-over"
+                        1       "source-in"
+                        1       "source-out"
+                        1       "source-atop"
+                        1       "destination-over"
+                        1       "destination-in"
+                        1       "destination-out"
+                        1       "destination-atop"
+                        1       "lighter"
+                        1       "copy"
+                        1       "xor"
+                        1       "multiply"
+                        1       "screen"
+                        1       "overlay"
+                        1       "darken"
+                        1       "lighten"
+                        1       "color-dodge"
+                        1       "color-burn"
+                        1       "hard-light"
+                        1       "soft-light"
+                        1       "difference"
+                        1       "exclusion"
+                        1       "hue"
+                        1       "saturation"
+                        1       "color"
+                        1       "luminosity"
+Coord                   1       Num.Whole
+                        .5      NumAll
+                        .01     CanvasHeight
+                        .01     CanvasWidth
+Dimention                       Coord
+Direction               1       "ltr"
+                        1       "inherit"
+                        1       "rtl"
+FillRule                1       "nonzero"
+                        1       "evenodd"
+Font                    1       "sans-serif"
+                        1       "serif"
+FontSize                1       rndint(8,72) "px"
+                        .1      NumAll "px"
+HtmlCnvElmt             1       @Canv
+                        .1      "document.createElement('canvas')"
+ImgDataUrl              1       "'data:image/gif;base64,R0lGODlhAQABAIABAP///wAAACwAAAAAAQABAAACAkQBADs='"
+Join                    1       "round"
+                        1       "bevel"
+                        1       "miter"
+LineCap                 1       "butt"
+                        1       "round"
+                        1       "square"
+NumAll                  1       Num.All
+                        .1      ("-")? rndpow2(32,1)
+                        .01     "undefined"
+NumArray                1       "[" NumArrayElemt ("," NumArrayElemt){0,15} "]"
+                        .01     "[" NumArrayElemt ("," NumArrayElemt){15,100} "]"
+                        .01     "[]"
+NumArrayElemt           1       Num.Whole
+                        .1      Num.Float
+                        .1      NumAll
+Opacity                 1       rndflt(0,1)
+                        .1      NumAll
+Percentage              1       rndint(0,100) "%"
+                        .1      ("-")? /[1-9]{1,3}/ "%"
+                        .1      ("-")? /[01]/ (".") /[1-9]{1,8}/ "%"
+Radius                  1       Num.Whole
+                        .1      NumAll
+Repetition              1       "repeat"
+                        1       "repeat-x"
+                        1       "repeat-y"
+                        1       "no-repeat"
+Rotation                1       Num.Whole
+                        .1      NumAll
+Text                    1       "'" STR.alpha{1,10} "'"
+                        1       "'" STR.entity{1,10} "'"
+                        .01     "undefined"
+                        .01     "'A'*" rndpow2(12,1)
+                        .01     "'" STR.alpha{10,100} "'"
+                        .01     "'" STR.entity{10,100} "'"
+                        .01     "'" STR.codepoint{1,10} "'"
+                        .01     "'" STR.unicode "'"
+                        .001    "'" STR.alpha{255,65535} "'"
+Transform               1       /[0-1]/ ("," /[0-1]/){5}
+                        1       TransformArg ("," TransformArg){5}
+TransformArg            1       /[0-1]/
+                        .1      NumAll
+                        .1      rndint(1,30)
+                        .1      rndflt(0,1)
+
+
+### Tracked Symbols
+Canv                            "cnv" id()
+CnvId                           "cid" id()
+CGrad                           "grd" id()
+CPatt                           "prn" id()
+Ctx                             "ctx" id()
+HitRegion                       "htr" id()
+HtmlImgElmt                     "img" id()
+ImgData                         "imd" id()
+ImgId                           "iid" id()
+Path                            "pth" id()
+
+### Create Operation
+OpCreateCanv                    "var " Canv "=document.getElementById('" @CnvId "')"
+OpCreateCtx             1       "var " Ctx "=" @Canv ".getContext('2d')"
+                        .1      "var " Ctx "=" @Canv ".getContext('2d'," ContextAttributes ")"
+ContextAttributes               "{alpha: " Bool "}"
+
+### Create Operations (No context required)
+OpCreatePath                    "var " Path "=new Path2D()"
+OpCreateHtmlImgElmt     1       "var " HtmlImgElmt "=document.getElementById('" @ImgId "')"
+                        .1      "var " (HtmlImgElmt) "=new Image(" Dimention "," Dimention ")" (";" @1 ".src=document.getElementById('" @ImgId "').src")?
+                        .1      "var " (HtmlImgElmt) "=new Image()" (";" @1 ".src=document.getElementById('" @ImgId "').src")?
+### Create Operation (Require context)
+OpCreateLinearGradient          "var " CGrad "=" @Ctx ".createLinearGradient(" Coord "," Coord "," Coord "," Coord ")"
+OpCreatePattern                 "var " CPatt "=" @Ctx ".createPattern(" CanvasImgSrc ",'" Repetition "')"
+OpCreateRadialGradient          "var " CGrad "=" @Ctx ".createRadialGradient(" Coord "," Coord "," Radius "," Coord "," Coord "," Radius ")"
+OpCreateImageData               "var " ImgData "=" @Ctx ".createImageData(" Dimention "," Dimention ")"
+
+CtxCreateObj            1       OpCreateLinearGradient
+                        1       OpCreatePattern
+                        1       OpCreateRadialGradient
+                        1       OpCreateImageData
+                        1       OpCreatePath
+                        1       OpCreateHtmlImgElmt
+
+### Canvas Operations
+CnvOp                   1       "setAttribute('height'," CanvasDimention ")"
+                        .1      "setAttribute('height'," Dimention ")"
+                        1       "setAttribute('width'," CanvasDimention ")"
+                        .1      "setAttribute('width'," Dimention ")"
+                        .1      "setAttribute('mozOpaque'," Bool ")"
+
+### Context Operations
+CtxOp                   1       OpAddHitRegion
+                        1       OpArc
+                        1       OpArcTo
+                        1       OpBeginPath
+                        1       OpBezierCurveTo
+                        1       OpClearHitRegions
+                        1       OpClearRect
+                        1       OpClip
+                        1       OpClosePath
+                        1       OpDirection
+                        1       OpDrawImage
+                        1       OpEllipse
+                        1       OpFill
+                        1       OpFillRect
+                        1       OpFillStyle
+                        1       OpFillText
+                        1       OpFilter
+                        1       OpFont
+                        1       OpGetLineDash
+                        1       OpGlobalAlpha
+                        1       OpGlobalCompositeOp
+                        1       OpImageSmoothingEnabled
+                        1       OpIsPointPath
+                        1       OpIsPointInStroke
+                        1       OpIsPointInStroke
+                        1       OpLineCap
+                        1       OpLineDashOffset
+                        1       OpLineJoin
+                        1       OpLineTo
+                        1       OpLineWidth
+                        1       OpMeasureText
+                        1       OpMiterLimit
+                        1       OpMoveTo
+                        1       OpPutImageData
+                        1       OpQuadraticCurveTo
+                        1       OpRect
+                        1       OpRemoveHitRegion
+                        1       OpResetTransform
+                        1       OpRestore
+                        1       OpRotate
+                        1       OpSave
+                        1       OpScale
+                        1       OpScrollPathIntoView
+                        1       OpSetLineDash
+                        1       OpSetTransform
+                        1       OpShadowBlur
+                        1       OpShadowColor
+                        1       OpShadowOffsetX
+                        1       OpShadowOffsetY
+                        1       OpStroke
+                        1       OpStrokeRect
+                        1       OpStrokeStyle
+                        1       OpStrokeText
+                        1       OpTextAlign
+                        1       OpTextBaseLine
+                        1       OpTransform
+                        1       OpTranslate
+
+PathOp                  1       OpAddPath
+                        1       OpBezierCurveTo
+                        .1      OpClosePath
+                        1       OpMoveTo
+                        1       OpLineTo
+                        1       OpQuadraticCurveTo
+                        1       OpArc
+                        1       OpArcTo
+                        1       OpEllipse
+                        1       OpRect
+
+### Operations
+# Experimental: requires "canvas.hitregions.enabled"
+OpAddHitRegion                  "addHitRegion({id: '" HitRegion "'})"
+OpArc                   1       "arc(" Coord "," Coord "," Radius "," Angle "," Angle ")"
+                        1       "arc(" Coord "," Coord "," Radius "," Angle "," Angle "," Bool ")"
+OpArcTo                         "arcTo(" Coord "," Coord "," Coord "," Coord "," Radius ")"
+OpBeginPath                     "beginPath()"
+OpBezierCurveTo                 "bezierCurveTo(" Coord "," Coord "," Coord "," Coord "," Coord "," Coord ")"
+# Experimental: requires "canvas.hitregions.enabled"
+OpClearHitRegions               "clearHitRegions()"
+OpClearRect                     "clearRect(" Coord "," Coord "," Dimention "," Dimention ")"
+OpClip                  1       "clip()"
+                        1       "clip('" FillRule "')"
+                        1       "clip(" @Path ",'" FillRule "')"
+OpClosePath                     "closePath()"
+OpDirection                     "direction='" Direction "'"
+OpDrawImage             1       "drawImage(" CanvasImgSrc "," Coord "," Coord ")"
+                        1       "drawImage(" CanvasImgSrc "," Coord "," Coord "," Dimention "," Dimention ")"
+                        1       "drawImage(" CanvasImgSrc "," Coord "," Coord "," Dimention "," Dimention "," Coord "," Coord "," Dimention "," Dimention ")"
+OpEllipse               1       "ellipse(" Coord "," Coord "," Radius "," Radius "," Rotation "," Angle "," Angle "," Bool ")"
+                        1       "ellipse(" Coord "," Coord "," Radius "," Radius "," Rotation "," Angle "," Angle ")"
+OpFill                  1       "fill()"
+                        1       "fill('" FillRule "')"
+                        1       "fill(" @Path ",'" FillRule "')"
+OpFillRect              1       "fillRect(" Coord "," Coord "," Dimention "," Dimention ")"
+OpFillStyle             1       "fillStyle='" CC.Color "'"
+                        1       "fillStyle=" @CGrad
+                        1       "fillStyle=" @CPatt
+OpFillText              1       "fillText(" Text "," Coord "," Coord ")"
+                        1       "fillText(" Text "," Coord "," Coord "," Dimention ")"
+OpFilter                        "filter='" Filter "'"
+OpFont                          "font='" FontSize " " Font "'"
+OpGetImageData                  "getImageData(" Coord "," Coord "," Dimention "," Dimention ")"
+OpGetLineDash                   "getLineDash()"
+OpGlobalAlpha                   "globalAlpha=" Opacity
+OpGlobalCompositeOp             "globalCompositeOperation='" CompositeOpType "'"
+OpImageSmoothingEnabled         "imageSmoothingEnabled=" Bool
+OpIsPointPath           1       "isPointInPath(" Coord "," Coord ")"
+                        1       "isPointInPath(" Coord "," Coord ",'" FillRule "')"
+                        1       "isPointInPath(" @Path "," Coord "," Coord ")"
+                        1       "isPointInPath(" @Path "," Coord "," Coord ",'" FillRule "')"
+OpIsPointInStroke       1       "isPointInStroke(" Coord "," Coord ")"
+                        1       "isPointInStroke(" @Path "," Coord "," Coord ")"
+                        1       "isPointInStroke(" Coord "," Coord ")"
+OpLineCap                       "lineCap='" LineCap "'"
+OpLineDashOffset                "lineDashOffset=" NumAll
+OpLineJoin                      "lineJoin='" Join "'"
+OpLineTo                        "lineTo(" Coord "," Coord ")"
+OpLineWidth                     "lineWidth=" NumAll
+OpMeasureText                   "measureText(" Text ")"
+OpMiterLimit                    "miterLimit=" NumAll
+OpMoveTo                        "moveTo(" Coord "," Coord ")"
+OpPutImageData          1       "putImageData(" @ImgData "," Coord "," Coord ")"
+                        1       "putImageData(" @ImgData "," Coord "," Coord "," Coord "," Coord "," Dimention "," Dimention ")"
+OpQuadraticCurveTo              "quadraticCurveTo(" Coord "," Coord "," Coord "," Coord ")"
+OpRect                          "rect(" Coord "," Coord "," Dimention "," Dimention ")"
+# Experimental: requires "canvas.hitregions.enabled"
+OpRemoveHitRegion               "removeHitRegion('" @HitRegion "')"
+OpResetTransform                "resetTransform()"
+OpRestore                       "restore()"
+OpRotate                        "rotate(" Angle ")"
+OpSave                          "save()"
+OpScale                         "scale(" Dimention "," Dimention ")"
+OpScrollPathIntoView    1       "scrollPathIntoView()"
+                        1       "scrollPathIntoView(" @Path ")"
+OpSetLineDash                   "setLineDash(" NumArray ")"
+OpSetTransform                  "setTransform(" Transform ")"
+OpShadowBlur                    "shadowBlur=" NumAll
+OpShadowColor                   "shadowColor='" CC.Color "'"
+OpShadowOffsetX                 "shadowOffsetX=" NumAll
+OpShadowOffsetY                 "shadowOffsetY=" NumAll
+OpStroke                1       "stroke()"
+                        1       "stroke(" @Path ")"
+OpStrokeRect                    "strokeRect(" Coord "," Coord "," Dimention "," Dimention ")"
+OpStrokeStyle           1       "strokeStyle='" CC.Color "'"
+                        1       "strokeStyle=" @CGrad
+                        1       "strokeStyle=" @CPatt
+OpStrokeText            1       "strokeText(" Text "," Coord "," Coord ")"
+                        1       "strokeText(" Text "," Coord "," Coord "," Dimention ")"
+OpTextAlign             1       "textAlign='left'"
+                        1       "textAlign='right'"
+                        1       "textAlign='center'"
+                        1       "textAlign='start'"
+                        1       "textAlign='end'"
+OpTextBaseLine          1       "textBaseline='top'"
+                        1       "textBaseline='hanging'"
+                        1       "textBaseline='middle'"
+                        1       "textBaseline='alphabetic'"
+                        1       "textBaseline='bottom'"
+                        1       "textBaseline='ideographic'"
+OpTransform                     "transform(" Transform ")"
+OpTranslate                     "translate(" Coord "," Coord ")"
+
+
+### Canvas Gradient Operations
+OpAddColorStop          1       "addColorStop(" rndflt(0,1) ",'" CC.Color "')"
+                        .1      "addColorStop(" NumAll ",'" CC.Color "')"
+
+### Path2D Operations
+OpAddPath               1       "addPath(" @Path ")"
+                        1       "addPath(" @Path "," Transform ")"
+
+
+### Filters
+Filter                  1       FilterDef
+                        1       FilterDef (" " FilterDef){1,5}
+                        1       FilterSingle
+FilterSingle            1       "inherit"
+                        1       "initial"
+                        1       "none"
+                        1       "unset"
+
+FilterDef               1       FltBlur
+                        1       FltBrightness
+                        1       FltContrast
+                        1       FltDropShadow
+                        1       FltGrayscale
+                        1       FltHueRotate
+                        1       FltInvert
+                        1       FltOpacity
+                        1       FltSaturate
+                        1       FltSepia
+                        1       FltUrl
+                        .1      FilterSingle
+
+FltBlur                         "blur(" Dimention ")"
+FltBrightness                   "brightness(" Percentage ")"
+FltContrast                     "contrast(" Percentage ")"
+FltDropShadow                   "drop-shadow(" Dimention "px " Dimention "px " Radius " " CC.Color ")"
+FltGrayscale                    "grayscale(" Percentage ")"
+FltHueRotate                    "hue-rotate(" Angle "deg)"
+FltInvert                       "invert(" Percentage ")"
+FltOpacity                      "opacity(" Percentage ")"
+FltSaturate                     "saturate(" Percentage ")"
+FltSepia                        "sepia(" Percentage ")"
+FltUrl                          CT.Url

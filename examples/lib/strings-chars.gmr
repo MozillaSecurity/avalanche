@@ -1,0 +1,144 @@
+### Strings & chars Library
+# Written by: Tyson Smith
+
+#root               (byte "\n"){10}
+
+alpha               /[a-zA-Z]/
+
+hex                 /[0-9A-F]/
+
+numeric             /[0-9]/
+
+punctuation         /[!\"#$%&\'\(\)*+,-./:;<=>?@\[\\\]^_`{|}~]/
+
+unicode_char    1   Arabic
+                1   Controls_Latin
+                1   Cyrillic
+                1   Cyrillic_Supp
+                1   Greek_and_Coptic
+                1   Hebrew
+                1   IPA_Extensions
+                1   Thai
+                1   CJK_Unified_Ideographs
+                1   Katakana
+                1   Misc_Syms_Pictographs
+                1   Emoticons
+                1   Superscripts_Subscripts
+
+unicode_string  1   Arabic{1,10}
+                1   Controls_Latin{1,10}
+                1   Cyrillic{1,10}
+                1   Cyrillic_Supp{1,10}
+                1   Greek_and_Coptic{1,10}
+                1   Hebrew{1,10}
+                1   IPA_Extensions{1,10}
+                1   Thai{1,10}
+                1   CJK_Unified_Ideographs{1,10}
+                1   Katakana{1,10}
+                1   Misc_Syms_Pictographs{1,10}
+                1   Emoticons{1,10}
+                1   Superscripts_Subscripts{1,10}
+
+whitespace      1   "\\n"
+                1   "\\t"
+                1   "\\r"
+                1   "\\x0b"
+                1   "\\x0c"
+#urlsafe
+
+# encoded chars
+byte                "\\x" hex{2}
+codepoint_high      "\\u" hex{4}
+codepoint_low       "\\u00" hex{2}
+codepoint       1   codepoint_high
+                1   codepoint_low
+entity          1   entity_small
+                .01 entity_large
+entity_small        "&#x" hex{2,4} ";"
+entity_large        "&#x" hex{5,6} ";"
+
+url_encoded     1   "%" hex{2}
+                .01 ("%" hex{2}){2,3}
+
+# suggestions from https://github.com/minimaxir/big-list-of-naughty-strings/blob/master/blns.txt
+
+#unicode symbols
+unicode                 1   Any
+                        1   emoji
+                        1   rtl
+                        1   symbols
+                        1   two_byte_char
+                        1   UTF8_tests
+                        1   variable_length
+symbols                 1   Controls_Latin{1,10}
+                        1   Cyrillic{1,10}
+                        1   Cyrillic_Supp{1,10}
+                        1   Greek_and_Coptic{1,10}
+                        1   Superscripts_Subscripts{1,10}
+                        1   "¡™£¢∞§¶•ªº–≠"
+                        1   "¸˛Ç◊ı˜Â¯˘¿"
+                        1   "Œ„´‰ˇÁ¨ˆØ∏”’"
+                        1   "`⁄€‹›ﬁﬂ‡°·‚—±"
+                        1   "⅛⅜⅝⅞"
+                        1   "(╯°□°）╯︵ ┻━┻)"
+two_byte_char           1   CJK_Unified_Ideographs{1,10}
+                        1   Katakana{1,10}
+                        1   Thai{1,10}
+                        1   "사회과학원 어학연구소"
+                        1   "찦차를 타고 온 펲시맨과 쑛다리 똠방각하"
+                        1   "울란바토르"
+                        1   "𠜎𠜱𠝹𠱓𠱸𠲖𠳏"
+variable_length         1   "Ⱥ"
+                        1   "Ⱦ"
+emoji                   1   Emoticons{1,10}
+                        1   Misc_Syms_Pictographs{1,10}
+rtl                     1   Arabic{1,10}
+                        1   Hebrew{1,10}
+                        1   "﷽"
+                        1   "ﷺ"
+
+Arabic                  1   /[؀-ۿ]/
+Controls_Latin          1   /[\0-ɏ]/ # 0x0 - 0x024F
+Cyrillic                1   /[Ѐ-ӿ]/ # 0x0400 - 0x04FF
+Cyrillic_Supp           1   /[Ԁ-ԯ]/ # 0x0500 - 0x042F
+Greek_and_Coptic        1   /[Ͱ-Ͽ]/ # 0x0370 - 0x03FF
+Hebrew                  1   /[֑-״]/ # 0x591 - 0x05F4
+IPA_Extensions          1   /[ɐ-ʯ]/ # 0x0250 - 0x025A
+Thai                    1   /[ก-๛]/ # 0x0E01 - 0x0E5B
+CJK_Unified_Ideographs  1   /[一-鿕]/ # 0x4E00 - 0x9FD5
+Katakana                1   /[゠-ヿ]/ # 0x30A0 - 0x30FF
+Misc_Syms_Pictographs   1   /[🌀-🗿]/ # 0x1F300 - 0x1F5FF
+Emoticons               1   /[😀-🙏]/ # 0x1F600 - 0x1F64F
+Superscripts_Subscripts 1   /[⁰-ₜ]/ # 0x2070 - 0x209C
+
+# UTF-8 tests from:
+# https://www.cl.cam.ac.uk/~mgk25/ucs/examples/UTF-8-test.txt
+UTF8_tests              1   "�"
+                        1   ""
+                        1   "ࠀ"
+                        1   "𐀀"
+                        1   "�����"
+                        1   "������"
+                        1   ""
+                        1   "߿"
+                        1   "￿"
+                        1   "����"
+                        1   "�����"
+                        1   "������"
+                        1   "퟿"
+                        1   ""
+                        1   "�"
+                        1   "􏿿"
+                        1   "����"
+                        1   "�"
+                        1   "�"
+                        1   "��"
+                        1   "���"
+                        1   "����"
+                        1   "�����"
+                        1   "������"
+                        1   "�������"
+                        1   "����������������������������������������������������������������"
+
+Any                     .045    /[\0-퟿]/ # 0x0 - 0xD7FF
+                        .955    /[-􏿽]/ #0xE000 - 0x10FFFD

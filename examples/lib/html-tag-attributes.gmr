@@ -1,0 +1,698 @@
+### HTML Tag Attributes Library
+# Written by: Tyson Smith
+
+AT      import('html-attributes.gmr')
+
+# WARNING: This is a library and is not meant to be run standalone
+# root is defined for testing
+root    All "\n"
+
+Global              1       AT.accesskey
+                    1       AT.class
+                    1       AT.contenteditable
+                    1       AT.contextmenu
+#                           Data-*...
+                    1       AT.dir
+                    1       AT.draggable # experimental
+                    1       AT.dropzone # experimental
+                    1       AT.hidden
+                    1       AT.itemid # experimental
+#                    1       AT.itemprop # experimental
+#                    1       AT.itemref # experimental
+                    1       AT.itemscope # experimental
+#                    1       AT.itemtype # experimental
+                    1       AT.lang
+                    1       AT.spellcheck # experimental
+                    1       AT.style
+                    1       AT.tabindex
+                    1       AT.title
+                    1       AT.translate
+
+### Tag Attributes
+a                   1       AT.charset # obsolete
+                    1       AT.coords # obsolete
+#                    1       AT.datafld # Non standard
+#                    1       AT.datasrc # Non standard
+                    1       AT.download
+                    1       AT.href
+#                    1       AT.hreflang
+                    1       AT.media
+#                    1       AT.methods # Non standard
+                    1       AT.name # obsolete
+                    1       AT.ping
+                    1       AT.referrerpolicy # experimental
+                    1       AT.rel
+#                    1       AT.rev # obsolete
+                    1       AT.shape # obsolete
+                    1       AT.typeMime
+                    1       AT.target
+#                    1       AT.urn # Non standard
+abbr                1       AT.title
+acronym             1       AT.title
+#address # no Attrs
+applet              1       AT.align
+                    1       AT.alt
+                    1       AT.archive
+                    1       AT.code
+                    1       AT.codebase
+#                    1       AT.datafld
+#                    1       AT.datasrc
+                    1       AT.height
+                    1       AT.hspace
+#                    1       AT.mayscript
+                    1       AT.name
+                    1       AT.object
+                    1       AT.src
+                    1       AT.vspace
+                    1       AT.width
+area                1       AT.alt
+                    1       AT.coords
+                    1       AT.download
+                    1       AT.href
+#                    1       AT.hreflang
+                    1       AT.media
+                    1       AT.ping
+                    1       AT.referrerpolicy
+                    1       AT.rel
+                    1       AT.shape
+                    1       AT.target
+                    1       AT.typeMime
+                    1       AT.name # obsolete
+                    1       AT.nohref # obsolete
+                    1       AT.tabindex # obsolete
+#article # no Attrs
+#aside
+audio               1       AT.autoplay
+                    1       AT.autobuffer
+                    1       AT.controls
+                    1       AT.loop
+#                    1       AT.mozCurrentSampleOffset # non standard... readonly?
+                    1       AT.muted
+#                    1       AT.played # readonly?
+                    1       AT.preload
+                    1       AT.srcAudio
+                    1       AT.volume
+#                    1       AT.autobuffer # obsolete
+#bold # no Attrs
+base                1       AT.href
+                    1       AT.target
+basefont            1       AT.color
+#                   1       AT.face
+                    1       AT.size
+#bdi # no Attrs
+bdo                 1       AT.dir
+bgsound             1       AT.balance
+                    1       AT.loop
+                    1       AT.src
+                    1       AT.volume
+#big # no Attrs
+#blink # no Attrs
+blockquote          1       AT.cite
+body                1       AT.bgcolor # obsolete
+#                    1       AT.alink # obsolete
+#                    1       AT.background # obsolete
+#                    1       AT.bottommargin # obsolete
+#                    1       AT.leftmargin # obsolete
+#                    1       AT.link # obsolete
+#                    1       AT.rightmargin # obsolete
+                    1       AT.text # obsolete
+#                    1       AT.topmargin # obsolete
+#                    1       AT.vlink # obsolete
+#br                  1       AT.clear # deprecated & obsolete
+button              1       AT.autofocus
+                    1       AT.autocomplete # non standard
+                    1       AT.disabled
+                    1       AT.form
+                    1       AT.formaction
+                    1       AT.formenctype
+                    1       AT.formmethod
+                    1       AT.formnovalidate
+                    1       AT.formtarget
+                    1       AT.name
+                    1       AT.typeButton
+                    1       AT.value
+canvas              1       AT.height
+                    1       AT.mozopaque
+                    1       AT.width
+caption             1       AT.align
+#center
+#cite
+#code
+col                 1       AT.align # deprecated & obsolete
+                    1       AT.bgcolor
+                    1       AT.char # deprecated & obsolete
+                    1       AT.charoff # deprecated & obsolete
+                    1       AT.span
+                    1       AT.valign # deprecated & obsolete
+                    1       AT.width # obsolete
+colgroup            1       AT.align # deprecated & obsolete
+                    1       AT.bgcolor
+                    1       AT.char # deprecated & obsolete
+                    1       AT.charoff # deprecated & obsolete
+                    1       AT.span
+                    1       AT.valign # deprecated & obsolete
+                    1       AT.width # obsolete
+command             1       AT.checked
+                    1       AT.disabled
+#                    1       AT.icon
+                    1       AT.label
+                    1       AT.radiogroup
+                    1       AT.typeCommand
+#content             1       AT.select
+data                1       AT.value
+#datalist
+dd                  1       AT.nowrap # non standard
+del                 1       AT.cite
+                    1       AT.datetime
+details             1       AT.open
+dfn                 1       AT.title
+dialog              1       AT.open
+#dir                 1       AT.compact
+div                 1       AT.align
+#dl                  1       AT.compact # non standard
+#DocType
+#dt
+#element
+#emphasis
+embed               1       AT.height
+                    1       AT.src
+                    1       AT.typeMime
+                    1       AT.width
+fieldset            1       AT.disabled
+                    1       AT.form
+                    1       AT.name
+#figcaption
+#figure
+font                1       AT.color
+#                    1       AT.face
+                    1       AT.size
+#footer
+form                1       AT.accept
+                    1       AT.acceptCharset
+                    1       AT.action
+                    1       AT.autocapitalize
+                    1       AT.autocomplete
+                    1       AT.enctype
+                    1       AT.method
+                    1       AT.name
+                    1       AT.novalidate
+                    1       AT.target
+frame               1       AT.src
+                    1       AT.name
+                    1       AT.noresize
+                    1       AT.scrolling
+                    1       AT.marginheight
+                    1       AT.marginwidth
+                    1       AT.frameborder
+frameset            1       AT.cols
+                    1       AT.rows
+#head                1       AT.profile # obsolete
+#header
+h1                  1       AT.align # obsolete
+h2                  1       AT.align # obsolete
+h3                  1       AT.align # obsolete
+h4                  1       AT.align # obsolete
+h5                  1       AT.align # obsolete
+h6                  1       AT.align # obsolete
+#hgroup
+hr                  1       AT.align # deprecated
+                    1       AT.color # non standard
+#                    1       AT.noshade # deprecated
+                    1       AT.size # deprecated
+                    1       AT.width # deprecated
+html                1       AT.manifest # obsolete
+#                    1       AT.version # obsolete
+#                    1       AT.xmlns
+#i
+iframe              1       AT.align # deprecated & obsolete
+                    1       AT.allowfullscreen
+                    1       AT.frameborder
+                    1       AT.height
+                    1       AT.longdesc
+                    1       AT.marginheight
+                    1       AT.marginwidth
+                    1       AT.name
+                    1       AT.referrerpolicy # experimental
+                    1       AT.scrolling
+                    1       AT.sandbox
+                    1       AT.src
+#                    1       AT.srcdoc # XXX: https://developer.mozilla.org/en-US/docs/Web/HTML/Element/iframe
+                    1       AT.width
+#image
+img                 1       AT.align # deprecated & obsolete
+                    1       AT.alt
+                    1       AT.border # deprecated & obsolete
+                    1       AT.crossorigin
+                    1       AT.height
+                    1       AT.hspace
+                    1       AT.ismap
+                    1       AT.longdesc
+                    1       AT.name # deprecated & obsolete
+                    1       AT.referrerpolicy # experimental
+                    1       AT.sizes
+                    1       AT.srcImage
+#                    1       AT.srcset
+                    1       AT.width
+#                    1       AT.usemap
+                    1       AT.vspace
+input               1       AT.typeInput
+                    1       AT.accept
+#                    1       AT.mozactionhint # non standard
+                    1       AT.autocapitalize
+                    1       AT.autocomplete
+                    1       AT.autocorrect
+                    1       AT.capture
+                    1       AT.checked
+                    1       AT.disabled
+                    1       AT.form
+                    1       AT.formaction
+                    1       AT.formenctype
+                    1       AT.formmethod
+                    1       AT.formnovalidate
+                    1       AT.formtarget
+                    1       AT.height
+#                    1       AT.incremental # experimental
+                    1       AT.inputmode
+                    1       AT.list
+                    1       AT.max
+                    1       AT.maxlength
+                    1       AT.min
+                    1       AT.minlength
+                    1       AT.multiple
+                    1       AT.name
+#                    1       AT.pattern # should be a regex
+                    1       AT.placeholder
+                    1       AT.readonly
+                    1       AT.required
+#                    1       AT.results # experimental
+#                    1       AT.selectDirection #readonly
+                    1       AT.size
+                    1       AT.spellcheck
+                    1       AT.src
+                    1       AT.step
+#                    1       AT.usemap # obsolete
+                    1       AT.value
+#                    1       AT.webkitdirectory # non standard
+                    1       AT.width
+#                    1       AT.xmozerrormessage # non standard
+ins                 1       AT.cite
+                    1       AT.datetime
+isindex             1       AT.action
+#                    1       AT.prompt
+#kbd
+keygen              1       AT.autofocus
+                    1       AT.challenge
+                    1       AT.disabled
+                    1       AT.form
+                    1       AT.keytype
+                    1       AT.name
+label               1       AT.form
+#                    1       AT.for
+#legend
+li                  1       AT.value
+link                1       AT.charset # obsolete
+                    1       AT.crossorigin
+                    1       AT.disabled
+                    1       AT.href
+#                    1       AT.hreflang
+#                    1       AT.integrity # experimental
+                    1       AT.media
+#                    1       AT.methods # non standard
+                    1       AT.referrerpolicy
+                    1       AT.rel
+#                    1       AT.rev # obsolete
+                    1       AT.sizes
+                    1       AT.target # non standard
+                    1       AT.title
+                    1       AT.typeMime
+#listing # equal to <li>
+#main # no Attrs
+map                 1       AT.name
+#mark
+marquee             1       AT.behavior
+                    1       AT.bgcolor
+                    1       AT.direction
+                    1       AT.height
+                    1       AT.hspace
+                    1       AT.loop
+                    1       AT.scrollamount
+                    1       AT.scrolldelay
+#                    1       AT.truespeed
+                    1       AT.vspace
+                    1       AT.width
+# XXX: onbounce, onfinish, onstart
+menu                1       AT.label
+                    1       AT.typeMenu
+menuitem            1       AT.checked
+#                    1       AT.command
+                    1       AT.default
+                    1       AT.disabled
+#                    1       AT.icon
+                    1       AT.label
+                    1       AT.radiogroup
+                    1       AT.typeMenuitem
+meta                1       AT.charset
+                    1       AT.httpequiv
+                    1       AT.nameMeta
+meter               1       AT.value
+                    1       AT.min
+                    1       AT.max
+                    1       AT.low
+                    1       AT.high
+                    1       AT.optimum
+                    1       AT.form
+#multicol
+#nav
+#nobr
+#nombed
+#noframes
+#noscript
+object              1       AT.border # deprecated & obsolete
+                    1       AT.archive # obsolete
+#                    1       AT.classid # obsolete
+                    1       AT.codebase # obsolete
+#                    1       AT.codetype # obsolete
+                    1       AT.data
+                    1       AT.declare # obsolete
+                    1       AT.form
+                    1       AT.height
+                    1       AT.name
+                    1       AT.standby # obsolete
+                    1       AT.tabindex # obsolete
+                    1       AT.typeMime
+                    1       AT.typemustmatch
+#                    1       AT.usemap
+                    1       AT.width
+ol                  1       AT.reversed
+                    1       AT.start
+                    1       AT.typeNumbering
+#                   1       AT.compact # deprecated
+optgroup            1       AT.disabled
+                    1       AT.label
+option              1       AT.disabled
+                    1       AT.label
+                    1       AT.selected
+                    1       AT.value
+output              1       AT.form
+#                   1       AT.for
+                    1       AT.name
+p                   1       AT.align # obsolete
+param               1       AT.name
+                    1       AT.typeMime # obsolete
+                    1       AT.value
+                    1       AT.valuetype # obsolete
+#picture
+#plaintext
+pre                 1       AT.cols # experimental & obsolete
+                    1       AT.width # obsolete
+                    1       AT.wrap
+progress            1       AT.max
+                    1       AT.value
+q                   1       AT.cite
+#rp
+#rt
+#rtc
+#ruby
+#s
+#samp
+script              1       AT.async
+#                    1       AT.integrity
+                    1       AT.src
+                    1       AT.typeScript
+                    1       AT.text
+#                    1       AT.language # deprecated
+                    1       AT.defer
+                    1       AT.crossorigin
+#section
+select              1       AT.autofocus
+                    1       AT.disabled
+                    1       AT.form
+                    1       AT.multiple
+                    1       AT.name
+                    1       AT.required
+                    1       AT.selected
+                    1       AT.size
+#shadow
+#small
+source              1       AT.sizes # experimental
+                    1       AT.src
+#                    1       AT.srcset # experimental
+                    1       AT.typeMime
+                    1       AT.media
+spacer              1       AT.typeSpacer
+                    1       AT.size
+                    1       AT.width
+                    1       AT.height
+                    1       AT.align
+#span
+#strike
+#strong
+style               1       AT.scoped # experimental & deprecated
+                    1       AT.media
+#                    1       type # XXX: text mimes
+                    1       AT.title
+#sub
+#summary
+#sup
+table               1       AT.align # deprecated
+                    1       AT.bgcolor # deprecated
+                    1       AT.border # deprecated
+                    1       AT.cellpadding # deprecated
+                    1       AT.cellspacing # deprecated
+                    1       AT.frame # deprecated
+                    1       AT.rules # deprecated
+                    1       AT.summary # deprecated
+                    1       AT.width
+tbody               1       AT.align # deprecated
+                    1       AT.bgcolor # non standard
+                    1       AT.char # deprecated
+                    1       AT.charoff # deprecated
+                    1       AT.valign # deprecated
+td                  1       AT.rowspan
+                    1       AT.abbr # obsolete
+                    1       AT.align # deprecated
+#                    1       AT.axis # obsolete
+                    1       AT.bgcolor # non standard
+                    1       AT.char # deprecated
+                    1       AT.charoff # deprecated
+#                    1       AT.headers
+                    1       AT.scope # obsolete
+                    1       AT.valign # obsolete
+                    1       AT.width # deprecated
+#template
+textarea            1       AT.autocapitalize
+                    1       AT.autocomplete
+                    1       AT.autofocus
+                    1       AT.cols
+                    1       AT.disabled
+                    1       AT.form
+                    1       AT.maxlength
+                    1       AT.minlength
+                    1       AT.name
+                    1       AT.placeholder
+                    1       AT.readonly
+                    1       AT.required
+                    1       AT.rows
+#                    1       AT.selectDirection #readonly?
+#                    1       AT.selectionEnd # readonly?
+#                    1       AT.selectionStart # readonly?
+                    1       AT.spellcheck
+                    1       AT.wrap
+tfoot               1       AT.align # deprecated
+                    1       AT.bgcolor # non standard
+                    1       AT.char # deprecated
+                    1       AT.charoff # deprecated
+                    1       AT.valign # deprecated
+th                  1       AT.bgcolor # non standard
+                    1       AT.abbr # obsolete
+                    1       AT.align # deprecated
+#                    1       AT.axis # obsolete
+                    1       AT.char # deprecated
+                    1       AT.charoff # deprecated
+#                    1       AT.headers
+                    1       AT.rowspan
+                    1       AT.scope # obsolete
+                    1       AT.valign # obsolete
+                    1       AT.width # deprecated
+thead               1       AT.align # deprecated
+                    1       AT.bgcolor # non standard
+                    1       AT.char # deprecated
+                    1       AT.charoff # deprecated
+                    1       AT.valign # deprecated
+time                1       AT.datetime
+#title # no Attrs
+tr                  1       AT.align # deprecated
+                    1       AT.bgcolor # non standard
+                    1       AT.char # deprecated
+                    1       AT.charoff # deprecated
+                    1       AT.valign # deprecated
+track               1       AT.default
+                    1       AT.kind
+                    1       AT.label
+                    1       AT.src
+                    1       AT.srclang
+#tt
+#u
+ul                  1       AT.typeUl
+#                    1       AT.compact # deprecated
+#var
+video               1       AT.autoplay
+#                    1       AT.buffered # readonly?
+                    1       AT.controls
+                    1       AT.crossorigin
+                    1       AT.height
+                    1       AT.loop
+                    1       AT.muted
+#                    1       AT.played # readonly
+                    1       AT.preload
+                    1       AT.poster
+                    1       AT.srcVideo
+                    1       AT.width
+#wbr
+#xmp
+
+###
+All                 1       Global
+                    1       a
+                    1       abbr
+                    1       acronym
+#                    1       address
+                    1       applet
+                    1       area
+#                    1       article
+#                    1       aside
+                    1       audio
+#                    1       bold
+                    1       base
+                    1       basefont
+#                    1       bdi
+#                    1       bdo
+                    1       bgsound
+#                    1       #big
+#                    1       #blink
+                    1       blockquote
+                    1       body
+#                    1       br
+                    1       button
+                    1       canvas
+                    1       caption
+#                    1       center
+#                    1       cite
+#                    1       code
+                    1       col
+                    1       colgroup
+                    1       command
+#                    1       content
+                    1       data
+#                   1       #datalist
+                    1       dd
+                    1       del
+                    1       details
+                    1       dfn
+                    1       dialog
+#                    1       dir
+                    1       div
+#                    1       dl
+#                    1       DocType
+#                    1       dt
+#                    1       element
+#                    1       emphasis
+                    1       embed
+                    1       fieldset
+#                    1       figcaption
+#                    1       figure
+                    1       font
+#                    1       footer
+                    1       form
+                    1       frame
+                    1       frameset
+#                    1       head
+#                    1       header
+                    .16     h1
+                    .16     h2
+                    .16     h3
+                    .16     h4
+                    .16     h5
+                    .16     h6
+#                    1       hgroup
+                    1       hr
+                    1       html
+#                    1       i
+                    1       iframe
+#                    1       image
+                    1       img
+                    1       input
+                    1       ins
+                    1       isindex
+#                    1       kbd
+                    1       keygen
+                    1       label
+#                    1       legend
+                    1       li
+                    1       link
+#                    1       listing
+#                    1       main
+                    1       map
+#                    1       mark
+                    1       marquee
+                    1       menu
+                    1       menuitem
+                    1       meta
+                    1       meter
+#                    1       multicol
+#                    1       nav
+#                    1       nobr
+#                    1       nombed
+#                    1       noframes
+#                    1       noscript
+                    1       object
+                    1       ol
+                    1       optgroup
+                    1       option
+                    1       output
+                    1       p
+                    1       param
+#                    1       picture
+#                    1       plaintext
+                    1       pre
+                    1       progress
+                    1       q
+#                    1       rp
+#                    1       rt
+#                    1       rtc
+#                    1       ruby
+#                    1       s
+#                    1       samp
+                    1       script
+#                    1       section
+                    1       select
+#                    1       shadow
+#                    1       small
+                    1       source
+                    1       spacer
+#                    1       span
+#                    1       strike
+#                    1       strong
+                    1       style
+#                    1       sub
+#                    1       summary
+#                    1       sup
+                    1       table
+                    1       tbody
+                    1       td
+#                    1       template
+                    1       textarea
+                    1       tfoot
+                    1       th
+                    1       thead
+                    1       time
+#                    1       title
+                    1       tr
+                    1       track
+#                    1       tt
+#                    1       u
+                    1       ul
+#                    1       var
+                    1       video
+#                    1       wbr
+#                    1       xmp

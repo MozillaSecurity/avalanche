@@ -1,0 +1,302 @@
+### CSS Types Library
+# Written by: Jesse Schwartzentruber
+
+C                           import('css-colors.gmr')
+HV                          import('html-values.gmr')
+Num                         import('js-numbers.gmr')
+Data                        import('data-urls.gmr')
+
+# WARNING: This is a library and is not meant to be run standalone
+
+AbsoluteSize                1       'xx-small'
+                            1       'x-small'
+                            1       'small'
+                            1       'medium'
+                            1       'large'
+                            1       'x-large'
+                            1       'xx-large'
+
+Angle                       1       rndflt(-360,360) 'deg'
+                            .05     AnyNumber 'deg'
+                            1       rndflt(-400,400) 'grad'
+                            .05     AnyNumber 'grad'
+                            1       rndflt('-6.2832','6.2832') 'rad'
+                            .05     AnyNumber 'rad'
+                            1       rndflt(-1,1) 'turn'
+                            .05     AnyNumber 'turn'
+                            .05     AnyNumber
+                            .05     '0'
+                            .05     'calc(' _AngleProd (' ' /[+-]/ ' ' _AngleProd){0,5} ')'
+_AngleProd                  1       Angle
+                            .01     _AngleProd ' * ' _AngleProd
+                            .01     _AngleProd ' / ' AnyNumber
+
+BasicShape                  1       'polygon(' (_BSFillRule ',')? _BSPoint (' ' _BSPoint){0,49} ')'
+                            1       'circle(' _BSRadius? (' at ' Position)? ')'
+                            1       'ellipse(' _BSRadius ' ' _BSRadius (' at ' Position)? ')'
+                            #1       'inset(' LengthOrPercent (' ' LengthOrPercent){0,3} \
+                            #        (' round ' BorderRadius)? ')' # not supported
+_BSPoint                            LengthOrPercent ' ' LengthOrPercent
+_BSFillRule                 1       'nonzero'
+                            1       'evenodd'
+_BSRadius                   +       LengthOrPercent
+                            1       'closest-side'
+                            1       'farthest-side'
+
+BlendMode                   1       'normal'
+                            1       'multiply'
+                            1       'screen'
+                            1       'overlay'
+                            1       'darken'
+                            1       'lighten'
+                            1       'color-dodge'
+                            1       'color-burn'
+                            1       'hard-light'
+                            1       'soft-light'
+                            1       'difference'
+                            1       'exclusion'
+                            1       'hue'
+                            1       'saturation'
+                            1       'color'
+                            1       'luminosity'
+
+Color                               C.Color
+
+Counter                             'ctr' /[0-9]{3}/
+
+FilterFunction              1       'blur(' Length ')'
+                            1       'brightness(' Percentage ')'
+                            1       'contrast(' Percentage ')'
+                            1       'drop-shadow(' Length (' ' Length){1,2} (' ' Color)? ')'
+                            1       'grayscale(' Percentage ')'
+                            1       'hue-rotate(' Angle ')'
+                            1       'invert(' Percentage ')'
+                            1       'opacity(' Percentage ')'
+                            1       'sepia(' Percentage ')'
+                            1       'saturate(' Percentage ')'
+                            1       Url # XXX: supposed to be a url to an SVG filter element
+
+Frequency                   1       AnyNumber 'k'? 'Hz'
+                            .01     'calc(' _FreqProd (' ' /[+-]/ ' ' _FreqProd){0,5} ')'
+_FreqProd                   1       Frequency
+                            .01     _FreqProd ' * ' _FreqProd
+                            .01     _FreqProd ' / ' AnyNumber
+
+Gradient                    1       LinearGradient
+                            1       RadialGradient
+                            1       'repeating-' LinearGradient
+                            1       'repeating-' RadialGradient
+
+LinearGradient                      'linear-gradient(' (_LGradStart ',')? _GradColorStops ')'
+_LGradStart                 1       Angle
+                            .25     'to ' Side
+                            .25     'to ' TopOrBottom
+                            .5      'to ' Side ' ' TopOrBottom      # corner
+_GradColorStops                     _GradColorStop (',' _GradColorStop){1,5}
+_GradColorStop                      Color (' ' LengthOrPercent)?
+
+RadialGradient                      'radial-gradient(' _RGradStart ',' _GradColorStops ')'
+_RGradStart                 .9      _RGradStartOpts (' at ' Position)?
+                            .1      'at ' Position
+_RGradStartOpts             1       'circle'
+                            1       'circle ' Length
+                            1       Length
+                            1       'circle ' _RGradExtentKwd
+                            1       'ellipse'
+                            1       'ellipse' (' ' LengthOrPercent){2}
+                            1       LengthOrPercent ' ' LengthOrPercent
+                            1       'ellipse ' _RGradExtentKwd
+                            1       _RGradExtentKwd
+
+_RGradExtentKwd             1       'closest-side'
+                            1       'closest-corner'
+                            1       'farthest-side'
+                            1       'farthest-corner'
+
+Ident                       1       '' # XXX
+
+Image                       1       Gradient
+                            1       Url
+                            1       '-moz-element(#' @HV.id ')' # also document.mozSetImageElement()
+                            1       '-moz-image-rect(' Url (',' Length){4} ')'
+                            #1       'image-set()' # XXX
+                            #1       'cross-fade()' # XXX
+
+PosInteger                  1       Num.Whole
+                            .01     'calc(' _PosIntProd (' ' /[+-]/ ' ' _PosIntProd){0,5}')'
+_PosIntProd                 1       PosInteger
+                            .01     _PosIntProd ' * ' _PosIntProd
+                            .01     _PosIntProd ' / ' PosInteger
+AnyInteger                          '-'? PosInteger
+
+Length                      .9      PosNumber _LengthUnit
+                            .05     PosNumber
+                            .05     '0'
+                            .01     'calc(' _LengthProd (' ' /[+-]/ ' ' _LengthProd){0,5} ')'
+_LengthProd                 1       Length
+                            .01     _LengthProd ' * ' _LengthProd
+                            .01     _LengthProd ' / ' AnyNumber
+_LengthUnit                 1       'em'
+                            1       'ex'
+                            1       'ch'
+                            1       'rem'
+                            1       'vh'
+                            1       'vw'
+                            1       'vmin'
+                            #1       'vm' # IE alias for vmin
+                            1       'vmax'
+                            1       'px'
+                            1       'mm'
+                            1       'q'
+                            1       'cm'
+                            1       'in'
+                            1       'pt'
+                            1       'pc'
+                            1       'mozmm'
+
+LengthOrPercent             1       Length
+                            1       Percentage
+
+ListStyle                   1       'disc'
+                            1       'circle'
+                            1       'square'
+                            1       'decimal'
+                            1       'cjk-decimal'
+                            1       'decimal-leading-zero'
+                            1       'lower-roman'
+                            1       'upper-roman'
+                            1       'lower-greek'
+                            1       'lower-alpha'
+                            1       'lower-latin'
+                            1       'upper-alpha'
+                            1       'upper-latin'
+                            1       'arabic-indic'
+                            1       'armenian'
+                            1       'bengali'
+                            1       'cambodian'
+                            1       'cjk-earthly-branch'
+                            1       'cjk-heavenly-stem'
+                            1       'cjk-ideographic'
+                            1       'devanagari'
+                            1       'ethiopic-numeric'
+                            1       'georgian'
+                            1       'gujarati'
+                            1       'gurmukhi'
+                            1       'hebrew'
+                            1       'hiragana'
+                            1       'hiragana-iroha'
+                            1       'japanese-formal'
+                            1       'japanese-informal'
+                            1       'kannada'
+                            1       'katakana'
+                            1       'katakana-iroha'
+                            1       'khmer'
+                            1       'korean-hangul-formal'
+                            1       'korean-hanja-formal'
+                            1       'korean-hanja-informal'
+                            1       'lao'
+                            1       'lower-armenian'
+                            1       'malayalam'
+                            1       'mongolian'
+                            1       'myanmar'
+                            1       'oriya'
+                            1       'persian'
+                            1       'simp-chinese-formal'
+                            1       'simp-chinese-informal'
+                            1       'tamil'
+                            1       'telugu'
+                            1       'thai'
+                            1       'tibetan'
+                            1       'trad-chinese-formal'
+                            1       'trad-chinese-informal'
+                            1       'upper-armenian'
+                            1       'disclosure-open'
+                            1       'disclosure-closed'
+
+PosNumber                           Num.Float
+AnyNumber                           '-'? PosNumber
+
+Percentage                  1       rndint(0,100) '%'
+                            .1      PosNumber '%'
+
+Position                    1       _EdgeOrCenter
+                            1       Percentage
+                            1       Length
+                            1       _SideCenterPL ' ' _TopBottomCenterPL
+                            1       _CenterOrLROffset ' ' _CenterOrTBOffset
+_SideCenterPL               +       Side
+                            1       'center'
+                            +       LengthOrPercent
+_TopBottomCenterPL          +       TopOrBottom
+                            1       'center'
+                            +       LengthOrPercent
+_CenterOrLROffset           .5      'center'
+                            1       Side (' ' LengthOrPercent)?
+_CenterOrTBOffset           .5      'center'
+                            1       TopOrBottom (' ' LengthOrPercent)?
+
+Side                        1       'left'
+                            1       'right'
+TopOrBottom                 1       'top'
+                            1       'bottom'
+
+_EdgeOrCenter               +       Side
+                            +       TopOrBottom
+                            1       'center'
+
+Ratio                               PosInteger '/' PosInteger
+
+RelativeSize                1       'larger'
+                            1       'smaller'
+
+Resolution                          PosNumber _ResoUnit
+_ResoUnit                   1       'dpi'
+                            1       'dpcm'
+                            1       'dppx'
+
+Shape                               'rect(' Length (',' Length){3} ')'
+
+String                              "'hello'" # XXX
+
+Symbol                      1       String
+                            1       Image
+                            1       Ident
+
+Time                        1       rndint(0,5) 's'
+                            1       rndint(0,5000) 'ms'
+                            .05     AnyNumber _TimeUnit
+                            .025    'calc(' _TimeProd (' ' /[+-]/ ' ' _TimeProd){0,5} ')'
+_TimeProd                   1       Time
+                            .01     _TimeProd ' * ' _TimeProd
+                            .01     _TimeProd ' / ' AnyNumber
+_TimeUnit                   1       's'
+                            1       'ms'
+
+TimingFunction              1       'ease' '-in'? '-out'?
+                            1       'linear'
+                            1       'cubic-bezier(' rndflt(0,1) ',' _Prob01 ',' rndflt(0,1) ',' _Prob01 ')'
+                            1       'step-' _TimingStep
+                            1       'steps(' PosInteger (',' _TimingStep)? ')'
+_TimingStep                 1       'start'
+                            1       'middle'
+                            1       'end'
+_Prob01                     1       rndflt(0,1)
+                            .05     AnyNumber
+
+TransformFunction           1       'matrix(' AnyNumber (',' AnyNumber){5} ')'
+                            1       'matrix3d(' AnyNumber (',' AnyNumber){15} ')'
+                            1       'perspective(' Length ')'
+                            1       'rotate(' Angle ')'
+                            1       'rotate' /[XYZ]/ '(' Angle ')'
+                            1       'rotate3d(' (PosNumber ','){3} Angle ')'
+                            1       'scale(' PosNumber (',' PosNumber)? ')'
+                            1       'scale' /[XYZ]/ '(' PosNumber ')'
+                            1       'scale3d(' PosNumber (',' PosNumber){2} ')'
+                            1       'skew(' Angle (',' Angle)? ')'
+                            1       'skew' /[XY]/ '(' Angle ')'
+                            1       'translate(' Length (',' Length)? ')'
+                            1       'translate' /[XYZ]/ '(' Length ')'
+                            1       'translate3d(' (Length ','){2} Length ')' # XXX: MDN says 3rd arg can't be percent ... ??
+
+Url                                 'url(' Data.Image ')'
+

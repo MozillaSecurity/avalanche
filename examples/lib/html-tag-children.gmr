@@ -1,0 +1,355 @@
+### HTML Tag Children Library
+# Written by: Tyson Smith
+
+CSS     import('css.gmr')
+HV      import('html-values.gmr')
+Tag     import('html-tags.gmr')
+TG      import('html-tag-groups.gmr')
+
+# WARNING: This is a library and is not meant to be run standalone
+# root is defined for testing
+root    All "\n"
+
+a                   1       TG.Transparent
+                    1       HV.TagText
+abbr                1       TG.Phrasing
+                    1       HV.TagText
+acronym             1       Tag.All
+address             1       TG.Flow
+applet              1       Tag.All # obsolete
+#area # empty
+article             1       TG.Flow
+aside               1       TG.Flow
+audio               1       Tag.source
+                    1       Tag.track
+                    +       TG.Transparent
+b                   1       TG.Phrasing
+                    1       HV.TagText
+# base # empty
+# basefont # obsolete and empty
+bdi                 1       TG.Phrasing
+                    1       HV.TagText
+bdo                 1       TG.Phrasing
+                    1       HV.TagText
+bgsound # Non-standard and empty
+big                 1       Tag.All # obsolete
+blink               1       Tag.All # Deprecated & Non-standard
+blockquote          1       TG.Flow
+body                1       TG.Flow
+# Br # empty
+button              1       TG.Phrasing
+canvas              +       TG.Transparent
+                    1       Tag.button
+                    1       Tag.input
+caption             1       TG.Flow
+center              1       Tag.All # Deprecated
+cite                1       TG.Phrasing
+                    1       HV.TagText
+code                1       TG.Phrasing
+                    1       HV.TagText
+# col # empty
+colgroup            1       Tag.col
+# command # empty & obsolete
+content             1       TG.Flow # Deprecated
+data                1       TG.Phrasing
+                    1       HV.TagText
+datalist            +       TG.Phrasing
+                    1       Tag.option
+dd                  1       TG.Flow
+del                 1       TG.Transparent
+details             1       Tag.summary
+                    +       TG.Flow
+dfn                 1       TG.Phrasing
+                    1       HV.TagText
+dialog              1       TG.Flow # experimental
+dir                 1       Tag.li # Obsolete
+div                 1       TG.Flow
+dl                  1       Tag.dd
+                    1       Tag.dt
+dt                  1       TG.Flow
+element             1       TG.All # Permitted content ???
+em                  1       TG.Phrasing
+                    1       HV.TagText
+#Embed # empty
+fieldset            1       Tag.legend
+                    +       TG.Flow
+figcaption          1       TG.Flow
+figure              1       Tag.figcaption
+                    +       TG.Flow
+font                1       HV.TagText # Obsolete
+footer              1       TG.Flow
+form                1       TG.Flow
+frame               1       Tag.All # Deprecated
+frameset            1       Tag.frame # Deprecated
+head                +       TG.Metadata
+                    1       Tag.iframe
+header              +       TG.Flow
+h1                  +       TG.Phrasing
+h2                          h1
+h3                          h1
+h4                          h1
+h5                          h1
+h6                          h1
+hgroup              1       Tag.h1 # experimental
+                    1       Tag.h2
+                    1       Tag.h3
+                    1       Tag.h4
+                    1       Tag.h5
+                    1       Tag.h6
+#hr #empty
+html                1       Tag.body
+                    1       Tag.head
+i                   1       TG.Phrasing
+                    1       HV.TagText
+#iframe             1       #XXX: Special
+#image # Non-standard
+#img # empty
+#input # empty
+ins                 +       TG.Transparent
+isindex # empty # Deprecated
+kbd                 1       TG.Phrasing
+                    1       HV.TagText
+keygen # empty # Deprecated
+label               +       TG.Phrasing
+legend              +       TG.Phrasing
+li                  +       TG.Flow
+#link # empty
+#listing # Obsolete
+main                +       TG.Flow
+map                 +       TG.Transparent
+mark                1       TG.Phrasing
+                    1       HV.TagText
+marquee             1       Tag.All # Obsolete
+menu                +       TG.Flow # experimental
+                    1       Tag.hr
+                    1       Tag.li
+                    1       Tag.menuitem
+                    1       Tag.script
+                    1       Tag.template
+#menuitem #empty # experimental
+#meta # empty
+meter               +       TG.Phrasing
+#multicol # experimental & Obsolete
+nav                 +       TG.Flow
+#nobr # empty # non-standard
+#noembed # non-standard & depracated
+noframes            1       Tag.All
+noscript            1       Tag.link
+                    1       Tag.meta
+                    1       Tag.style
+                    +       TG.Flow
+                    +       TG.Phrasing
+object              +       TG.Transparent
+#                   1       Tag.deviceid
+ol                  1       Tag.li
+optgroup            1       Tag.option
+option              1       HV.TagText # Text
+output              +       TG.Phrasing
+p                   +       TG.Phrasing
+                    1       HV.TagText
+# param # empty
+picture             1       Tag.source # experimental
+                    1       Tag.img
+#plaintext
+pre                 +       TG.Phrasing
+progress            +       TG.Phrasing
+q                   1       TG.Phrasing
+                    1       HV.TagText
+rp                  1       TG.Phrasing
+                    1       HV.TagText
+rt                  1       TG.Phrasing
+                    1       HV.TagText
+rtc                 1       TG.Phrasing
+                    1       Tag.rt
+                    1       HV.TagText
+ruby                +       TG.Phrasing
+s                   1       TG.Phrasing
+                    1       HV.TagText
+samp                1       TG.Phrasing
+                    1       HV.TagText
+script                      "//some js" #XXX: JS
+section             +       TG.Flow
+select              1       Tag.optgroup
+                    1       Tag.option
+shadow              +       TG.Flow
+small               1       TG.Phrasing
+                    1       HV.TagText
+#source # empty
+#spacer # Obsolete & empty
+span                1       TG.Phrasing
+                    1       HV.TagText
+strike              1       HV.TagText # Text & Obsolete
+strong              1       TG.Phrasing
+                    1       HV.TagText
+style               1       CSS.Statement
+sub                 1       TG.Phrasing
+                    1       HV.TagText
+summary             +       TG.Heading
+                    +       TG.Phrasing
+sup                 1       TG.Phrasing
+                    1       HV.TagText
+table               1       Tag.caption
+                    1       Tag.colgroup
+                    1       Tag.thead
+                    1       Tag.tfoot
+                    1       Tag.tbody
+                    1       Tag.tr
+tbody               1       Tag.tr
+td                  1       TG.Flow
+template            +       TG.Flow
+                    +       TG.Metadata
+                    1       Tag.ol
+                    1       Tag.dl
+                    1       Tag.figure
+                    1       Tag.ruby
+                    1       Tag.object
+                    1       Tag.video
+                    1       Tag.audio
+                    1       Tag.table
+                    1       Tag.colgroup
+                    1       Tag.thead
+                    1       Tag.tbody
+                    1       Tag.tfoot
+                    1       Tag.tr
+                    1       Tag.fieldset
+                    1       Tag.select
+                    1       Tag.details
+textarea            1       HV.TagText # Text
+tfoot               1       Tag.tr
+th                  +       TG.Phrasing
+thead               1       Tag.tr
+time                1       TG.Phrasing
+                    1       HV.TagText
+title               1       HV.TagText # Text
+tr                  1       Tag.td
+                    1       Tag.th
+#track # Empty
+tt                  1       HV.TagText # Text & obsolete
+u                   1       TG.Phrasing
+                    1       HV.TagText
+ul                  1       Tag.li
+                    1       Tag.ol
+                    1       Tag.ul
+var                 1       TG.Phrasing
+                    1       HV.TagText
+video               +       TG.Transparent
+                    1       Tag.track
+#wbr # empty
+xmp                 1       HV.TagText # Text & Obsolete
+
+# XXX: be sure to review this list
+All                 1       a
+                    1       abbr
+                    1       acronym
+                    1       address
+                    1       applet
+                    1       article
+                    1       aside
+                    1       audio
+                    1       b
+                    1       bdi
+                    1       bdo
+                    1       bgsound
+                    1       big
+                    1       blink
+                    1       blockquote
+                    1       body
+                    1       button
+                    1       canvas
+                    1       caption
+                    1       center
+                    1       cite
+                    1       code
+                    1       colgroup
+                    1       content
+                    1       data
+                    1       datalist
+                    1       dd
+                    1       del
+                    1       details
+                    1       dfn
+                    1       dialog
+                    1       dir
+                    1       div
+                    1       dl
+                    1       dt
+                    1       element
+                    1       em
+                    1       fieldset
+                    1       figcaption
+                    1       figure
+                    1       footer
+                    1       font
+                    1       form
+                    1       frame
+                    1       frameset
+                    1       head
+                    1       header
+                    .16     h1
+                    .16     h2
+                    .16     h3
+                    .16     h4
+                    .16     h5
+                    .16     h6
+                    1       hgroup
+                    1       html
+                    1       i
+                    1       ins
+                    1       isindex
+                    1       kbd
+                    1       keygen
+                    1       label
+                    1       legend
+                    1       li
+                    1       main
+                    1       map
+                    1       mark
+                    1       marquee
+                    1       menu
+                    1       meter
+                    1       nav
+                    1       noframes
+                    1       noscript
+                    1       object
+                    1       ol
+                    1       optgroup
+                    1       option
+                    1       output
+                    1       p
+                    1       picture
+                    1       pre
+                    1       progress
+                    1       q
+                    1       rp
+                    1       rt
+                    1       rtc
+                    1       ruby
+                    1       s
+                    1       strike
+                    1       samp
+                    1       section
+                    1       select
+                    1       shadow
+                    1       small
+                    1       span
+                    1       strong
+                    1       sub
+                    1       summary
+                    1       sup
+                    1       table
+                    1       tbody
+                    1       td
+                    1       template
+                    1       textarea
+                    1       tfoot
+                    1       th
+                    1       thead
+                    1       time
+                    1       title
+                    1       tr
+                    1       tt
+                    1       u
+                    1       ul
+                    1       var
+                    1       video
+                    1       xmp
