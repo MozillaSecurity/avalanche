@@ -101,7 +101,7 @@ SymName         ('abc') @1      # returns the value generated in a previous Conc
                                 #   same line (numbered in order of opening bracket, starting at 1)
 
 # FuncSymbol
-SymName         rndint(a,b)     # rndint, rndflt, rndpow2, eval, id are built-in,
+SymName         rndint(a,b)     # rndint, rndflt, rndpow2, eval, id, push, pop are built-in,
                                 #   others can be passed as keyword args to the Grammar constructor
                                 #   args can be numeric literals, or symbol definitions
 

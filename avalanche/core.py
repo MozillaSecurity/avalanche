@@ -83,6 +83,7 @@ class _GenState(object):
         self.backrefs = []
         self.choice_stack = {}
         self.recursive_syms = {}
+        self.push_stack = []
         self.id = 0
 
     def append(self, value):
@@ -202,6 +203,10 @@ class Grammar(object):
             self.funcs["rndflt"] = lambda a, b: str(random.uniform(float(a), float(b)))
         if "eval" not in self.funcs:
             self.funcs["eval"] = None # eval is a special case in FuncSymbol.generate
+        if "push" not in self.funcs:
+            self.funcs["push"] = None # push is a special case in FuncSymbol.generate
+        if "pop" not in self.funcs:
+            self.funcs["pop"] = None # pop is a special case in FuncSymbol.generate
         if "id" not in self.funcs:
             self.funcs["id"] = None # id is a special case in FuncSymbol.generate
         if "import" in self.funcs:
@@ -363,7 +368,7 @@ class Grammar(object):
     def sanity_check(self):
         log.debug("sanity checking symtab: %s", self.symtab)
         log.debug("tracked symbols: %s", self.tracked)
-        funcs_used = {"rndflt", "rndint", "rndpow2", "eval", "id"}
+        funcs_used = {"rndflt", "rndint", "rndpow2", "eval", "id", "push", "pop"}
         for sym in self.symtab.values():
             sym.sanity_check(self)
             if isinstance(sym, FuncSymbol):
@@ -978,6 +983,9 @@ class FuncSymbol(_Symbol):
 
        The following functions are built-in::
 
+           push(expr)       Evaluate an expression, but don't output it. Can be pop()'ed later when required.
+                            Use for out-of-order generation.
+           pop()            Output an expression previously generated in push().
            eval(sym)        Evaluating a grammar string to a grammar symbol, and generates that symbol.
            rndflt(a,b)      A random floating-point decimal number between ``a`` and ``b`` inclusive.
            rndint(a,b)      A random integer between ``a`` and ``b`` inclusive.
@@ -1026,6 +1034,14 @@ class FuncSymbol(_Symbol):
             if len(args) != 0:
                 raise TypeError("id() takes 0 arguments (%d given)" % len(args))
             gstate.generate_id()
+        elif self.fname == "push" and gstate.grmr.funcs["push"] is None:
+            if len(args) != 1:
+                raise TypeError("push() takes exactly 1 arguments (%d given)" % len(args))
+            gstate.push_stack.append(args[0])
+        elif self.fname == "pop" and gstate.grmr.funcs["pop"] is None:
+            if len(args) != 0:
+                raise TypeError("pop() takes exactly 0 arguments (%d given)" % len(args))
+            gstate.append(gstate.push_stack.pop())
         else:
             gstate.append(gstate.grmr.funcs[self.fname](*args))
 

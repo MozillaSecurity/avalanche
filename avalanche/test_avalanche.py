@@ -435,6 +435,11 @@ class Functions(TestCase):
         with self.assertRaisesRegex(GenerationError, r'^TypeError: id\(\) takes 0 arguments \(1 given\)'):
             Grammar("root id('')").generate()
 
+    def test_builtin_push(self):
+        "test teh built-in push/pop functions"
+        gmr = Grammar("root push('B') push('123') 'A' pop() pop()")
+        self.assertEqual(gmr.generate(), "A123B")
+
 
 class Imports(TestCase):
 
