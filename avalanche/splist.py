@@ -27,8 +27,8 @@ class SparseList(object):
         if copy is None:
             self.clear()
         else:
-            self._data = copy._data
-            self._len = copy._len
+            self._data = copy._data  # pylint: disable=protected-access
+            self._len = copy._len  # pylint: disable=protected-access
 
     def add(self, a, b=None):
         """
@@ -73,7 +73,7 @@ class SparseList(object):
         ib = bisect.bisect_left(self._data, [b])
         # move a if needed
         if ia and a <= self._data[ia - 1][1]:
-            #a is actually in the range before ia
+            # a is actually in the range before ia
             ia -= 1
         elif ia != len(self._data) and a < self._data[ia][0]:
             a = self._data[ia][0]
@@ -82,7 +82,7 @@ class SparseList(object):
         ahead = bool(self._data[ia][0] == a)
         # move b if needed
         if ib and b <= self._data[ib - 1][1]:
-            #b is actually in the range before ib
+            # b is actually in the range before ib
             ib -= 1
         elif ib and b > self._data[ib - 1][1] and ib != len(self._data) and b < self._data[ib][0]:
             b = self._data[ib - 1][1]
@@ -131,7 +131,7 @@ class SparseList(object):
 
     def __getitem__(self, key):
         if key >= len(self) or key < 0:
-            [][0] # raise IndexError
+            [][0]  # raise IndexError
         for a, b in self._data:
             len_ = b - a + 1
             if key < len_:

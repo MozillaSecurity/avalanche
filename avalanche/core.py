@@ -32,9 +32,8 @@ import os
 import os.path
 import random
 import re
-import string
 import sys
-from .error import *
+from .error import GrammarException, GenerationError, IntegrityError, ParseError
 from .splist import SparseList
 
 
@@ -68,7 +67,8 @@ def _file_to_unicode(fd):
 DEFAULT_LIMIT = 100 * 1024
 
 
-log = logging.getLogger("avalanche") # pylint: disable=invalid-name
+LOG = logging.getLogger("avalanche")
+LOG.setLevel(logging.INFO)
 
 
 class _GenState(object):
@@ -106,8 +106,8 @@ class _ParseState(object):
 
     def __init__(self, prefix, grmr, filename):
         self.prefix = prefix
-        self.imports = {} # friendly name -> (grammar hash, import line_no)
-        self.imports_used = set() # friendly names used by get_prefixed()
+        self.imports = {}  # friendly name -> (grammar hash, import line_no)
+        self.imports_used = set()  # friendly names used by get_prefixed()
         self.line_no = 0
         self.n_implicit = -1
         self.grmr = grmr
@@ -120,7 +120,7 @@ class _ParseState(object):
 
     def get_prefixed(self, symprefix, sym):
         if symprefix:
-            symprefix = symprefix[:-1] # strip trailing .
+            symprefix = symprefix[:-1]  # strip trailing .
             try:
                 newprefix = self.imports[symprefix][0]
                 self.imports_used.add(symprefix)
@@ -138,7 +138,7 @@ class _ParseState(object):
         return "%s.%s" % (symprefix, sym)
 
     def add_import(self, name, grammar_hash):
-        log.debug("%s: adding import %s -> %s to %r", self.prefix, name, grammar_hash, self.imports)
+        LOG.debug("%s: adding import %s -> %s to %r", self.prefix, name, grammar_hash, self.imports)
         if name in self.imports:
             raise ParseError("redefined import %s" % name)
         self.imports[name] = (grammar_hash, self.line_no)
@@ -202,13 +202,13 @@ class Grammar(object):
         if "rndflt" not in self.funcs:
             self.funcs["rndflt"] = lambda a, b: str(random.uniform(float(a), float(b)))
         if "eval" not in self.funcs:
-            self.funcs["eval"] = None # eval is a special case in FuncSymbol.generate
+            self.funcs["eval"] = None  # eval is a special case in FuncSymbol.generate
         if "push" not in self.funcs:
-            self.funcs["push"] = None # push is a special case in FuncSymbol.generate
+            self.funcs["push"] = None  # push is a special case in FuncSymbol.generate
         if "pop" not in self.funcs:
-            self.funcs["pop"] = None # pop is a special case in FuncSymbol.generate
+            self.funcs["pop"] = None  # pop is a special case in FuncSymbol.generate
         if "id" not in self.funcs:
-            self.funcs["id"] = None # id is a special case in FuncSymbol.generate
+            self.funcs["id"] = None  # id is a special case in FuncSymbol.generate
         if "import" in self.funcs:
             raise IntegrityError("'import' is a reserved function name")
 
@@ -223,7 +223,7 @@ class Grammar(object):
         # ("" for top level). When grammar and imports are fully parsed, do a final pass to rename hash prefixes to
         # friendly prefixes.
 
-        imports = {} # hash -> friendly prefix
+        imports = {}  # hash -> friendly prefix
         self.parse(grammar, imports)
         self.reprefix(imports)
         self.sanity_check()
@@ -241,7 +241,7 @@ class Grammar(object):
         grammar_fn = getattr(grammar, "name", None)
         if grammar_hash in imports:
             return grammar_hash
-        log.debug("parsing new grammar %r:%s (%s)", grammar_fn, grammar_hash, prefix)
+        LOG.debug("parsing new grammar %r:%s (%s)", grammar_fn, grammar_hash, prefix)
         imports[grammar_hash] = prefix
         grammar.seek(0)
         pstate = _ParseState(grammar_hash, self, grammar_fn)
@@ -252,7 +252,7 @@ class Grammar(object):
             for line in grammar:
                 pstate.line_no += 1
                 pstate.n_implicit = -1
-                log.debug("parsing line # %d: %s", pstate.line_no, line.rstrip())
+                LOG.debug("parsing line # %d: %s", pstate.line_no, line.rstrip())
                 # allow commented out lines anywhere, even between broken lines
                 if line.lstrip().startswith("#"):
                     continue
@@ -334,7 +334,7 @@ class Grammar(object):
                 raise ParseError("Failed to reassign %s to proper namespace after parsing" % symname)
             newname = "".join((newprefix, "." if newprefix else "", name))
             if symname != newname:
-                log.debug('reprefixed %s -> %s', symname, newname)
+                LOG.debug('reprefixed %s -> %s', symname, newname)
             return "".join(("@" if ref else "", newname))
 
         # rename prefixes to friendly names
@@ -353,7 +353,7 @@ class Grammar(object):
                 prefix = sym.imports.prefix
                 sym.imports = {prefix: imports[hash_] for (prefix, (hash_, _)) in sym.imports.imports.items()}
                 sym.imports[""] = imports[prefix]
-                log.debug("preserving imports for eval in %s: %r", sym.name, sym.imports)
+                LOG.debug("preserving imports for eval in %s: %r", sym.name, sym.imports)
         self.tracked = {get_prefixed(t) for t in self.tracked}
 
     def normalize(self):
@@ -362,12 +362,12 @@ class Grammar(object):
             try:
                 sym = self.symtab[name]
             except KeyError:
-                continue # can happen if symbol is optimized out
+                continue  # can happen if symbol is optimized out
             sym.normalize(self)
 
     def sanity_check(self):
-        log.debug("sanity checking symtab: %s", self.symtab)
-        log.debug("tracked symbols: %s", self.tracked)
+        LOG.debug("sanity checking symtab: %s", self.symtab)
+        LOG.debug("tracked symbols: %s", self.tracked)
         funcs_used = {"rndflt", "rndint", "rndpow2", "eval", "id", "push", "pop"}
         for sym in self.symtab.values():
             sym.sanity_check(self)
@@ -385,7 +385,7 @@ class Grammar(object):
             sym = self.symtab[to_check.pop()]
             checked.add(sym.name)
             children = sym.children()
-            log.debug("%s is %s with %d children %s", sym.name, type(sym).__name__, len(children), list(children))
+            LOG.debug("%s is %s with %d children %s", sym.name, type(sym).__name__, len(children), list(children))
             syms_used |= children
             to_check |= children - checked
         # ignore unused symbols that came from an import, Text, Regex, or Bin
@@ -425,7 +425,7 @@ class Grammar(object):
                 togo = sym.children()
                 while togo:
                     child = togo.pop()
-                    if "[" in child: # implicit symbol, keep going
+                    if "[" in child:  # implicit symbol, keep going
                         togo |= self.symtab[child].children()
                         togo -= children[sym.name]
                     else:
@@ -435,7 +435,7 @@ class Grammar(object):
         for sym_name, sym_children in children.items():
             if sym_name in sym_children:
                 self.recursive_syms.add(sym_name)
-                log.debug("%s is directly recursive", sym_name)
+                LOG.debug("%s is directly recursive", sym_name)
                 continue
             # `issue` is a map of descendents (of any degree) to shortest ancestry from this sym_name
             issue = {child_name: [] for child_name in sym_children}
@@ -449,7 +449,7 @@ class Grammar(object):
                         continue
                     if grandchild_name == sym_name:
                         self.recursive_syms.add(sym_name)
-                        log.debug("%s is recursive through %r (%d degree)",
+                        LOG.debug("%s is recursive through %r (%d degree)",
                                   sym_name, child_backtrace, len(child_backtrace))
                         issue = None
                         break
@@ -500,9 +500,10 @@ class Grammar(object):
                 elif cmd == "choice":
                     sym, choice = this[1:]
                     gstate.choice_stack.setdefault(sym, []).append(choice)
-                    assert len(gstate.choice_stack[sym]) == 1 # not sure if this is true ... only one way to find out
-                                                              # if it is true, choice_stack can be a simple lut
-                                                              # ie. not a stack at all
+                    # not sure if this is true ... only one way to find out
+                    # if it is true, choice_stack can be a simple lut
+                    # ie. not a stack at all
+                    assert len(gstate.choice_stack[sym]) == 1
                     continue
                 else:
                     raise GenerationError("Unknown tuple command: %s" % cmd)
@@ -516,7 +517,7 @@ class Grammar(object):
                     gstate.recursive_syms[this] = {"depth": 1,
                                                    "depth_limit": random.randint(2, random.randint(2, 25)),
                                                    "limited": False}
-            if this in self.tracked: # need to capture everything generated by this symbol and add to "instances"
+            if this in self.tracked:  # need to capture everything generated by this symbol and add to "instances"
                 if not backlog and gstate.instance_backlog[this]:
                     # there is an instance previously generated in the backlog, use it instead
                     idx = random.randrange(len(gstate.instance_backlog[this]))
@@ -566,7 +567,7 @@ class _Symbol(object):
                              % (unprefixed, pstate.imports[unprefixed][1]))
         self.name = name
         self.line_no = pstate.line_no
-        log.debug('\t%s %s', type(self).__name__.lower()[:-6], name)
+        LOG.debug('\t%s %s', type(self).__name__.lower()[:-6], name)
         if not no_add:
             if name in pstate.grmr.symtab and not isinstance(pstate.grmr.symtab[name], (_AbstractSymbol, RefSymbol)):
                 unprefixed = name.split(".", 1)[1]
@@ -592,7 +593,7 @@ class _Symbol(object):
 
     def update_can_terminate(self, grmr):
         if all(grmr.symtab[c].can_terminate for c in self.children()):
-            log.debug("%s can terminate", self.name)
+            LOG.debug("%s can terminate", self.name)
             self.can_terminate = True
             return True
         return False
@@ -604,7 +605,7 @@ class _Symbol(object):
             match = _Symbol._RE_DEFN.match(defn)
             if match is None:
                 raise ParseError("Failed to parse definition at: %s" % defn)
-            log.debug("parsed %s from %s", {k: v for k, v in match.groupdict().items() if v is not None}, defn)
+            LOG.debug("parsed %s from %s", {k: v for k, v in match.groupdict().items() if v is not None}, defn)
             if match.group("ws") is not None:
                 defn = defn[match.end(0):]
                 continue
@@ -798,8 +799,8 @@ class ChoiceSymbol(_Symbol):
 
     def _internal_choice(self, total, used, plus_state, result, gstate):
         target = random.uniform(0, total[0])
-        log.debug("%s: looking for target %.2f from total %.2f", self.name, target, total[0])
-        log.debug("-> blacklist: %r", used)
+        LOG.debug("%s: looking for target %.2f from total %.2f", self.name, target, total[0])
+        LOG.debug("-> blacklist: %r", used)
         for i, (weight, value, was_plus) in enumerate(zip(self.weights, self.values, self.was_plus)):
             if was_plus and plus_state is not None:
                 choice = gstate.grmr.symtab[gstate.grmr.symtab[value].choice]
@@ -808,22 +809,22 @@ class ChoiceSymbol(_Symbol):
                     used[i] = [False] * len(choice.values)
                 target -= plus_state[i]["total"][0]
                 if target < 0.0:
-                    log.debug("choice is in + at %d", i)
+                    LOG.debug("choice is in + at %d", i)
                     total[0] -= plus_state[i]["total"][0]
                     choice._internal_choice(plus_state[i]["total"], used[i], plus_state[i]["substate"], result, gstate)
                     total[0] += plus_state[i]["total"][0]
                     result.append((self.name, value))
                     return
-                log.debug('-> %d had weight of %.2f, not the target', i, plus_state[i]["total"][0])
+                LOG.debug('-> %d had weight of %.2f, not the target', i, plus_state[i]["total"][0])
             elif not used[i]:
                 target -= weight
                 if target < 0.0:
-                    log.debug("choice is at %d", i)
+                    LOG.debug("choice is at %d", i)
                     used[i] = True
                     total[0] -= weight
                     result.append((self.name, value))
                     return
-                log.debug('-> %d had weight of %.2f, not the target', i, weight)
+                LOG.debug('-> %d had weight of %.2f, not the target', i, weight)
         raise GenerationError("Too much total weight in %s? remainder is %.2f from %.2f total"
                               % (self.name, target, total[0]))
 
@@ -870,11 +871,11 @@ class ChoiceSymbol(_Symbol):
                         # recursive definition
                         raise IntegrityError("Can't resolve weight for '+' in %s, expansion of '%s' causes unbounded "
                                              "recursion" % (self.name, choice.name), self.line_no + i)
-                choice.normalize(grmr) # resolve the child '+' first
+                choice.normalize(grmr)  # resolve the child '+' first
                 self.weights[i] = choice.total
                 self.total += self.weights[i]
                 self.was_plus[i] = True
-                self.length += choice.length - 1 # -1 for the entry in self.values
+                self.length += choice.length - 1  # -1 for the entry in self.values
         if self.total <= 0.0:
             raise IntegrityError("Invalid total weight for symbol %s: %r" % (self.name, self.total))
 
@@ -895,7 +896,7 @@ class ChoiceSymbol(_Symbol):
             if grmr.symtab[choice].can_terminate:
                 self._choices_terminate[i] = True
         if any(self._choices_terminate):
-            log.debug("%s can terminate", self.name)
+            LOG.debug("%s can terminate", self.name)
             self.can_terminate = True
             return True
         return False
@@ -927,7 +928,7 @@ class ConcatSymbol(_Symbol, list):
         name = "%s.%s" % (pstate.prefix, name) if not no_prefix else name
         _Symbol.__init__(self, name, pstate)
         list.__init__(self)
-        self.choice = None # if this concat is choosable, this will be the sym.name of the subchoice
+        self.choice = None  # if this concat is choosable, this will be the sym.name of the subchoice
         self.normalized = None
 
     def children(self):
@@ -957,7 +958,7 @@ class ConcatSymbol(_Symbol, list):
             if this_choice is not None:
                 if choice is not None:
                     choice = None
-                    break # two choices, not choosable
+                    break  # two choices, not choosable
                 choice = this_choice
         if choice is not None:
             self.choice = choice
@@ -1001,7 +1002,7 @@ class FuncSymbol(_Symbol):
         self.args = []
         self.imports = None
         if name == "eval":
-            self.imports = pstate # retain pstate for resolving imports later
+            self.imports = pstate  # retain pstate for resolving imports later
 
     def sanity_check(self, grmr):
         if self.fname not in grmr.funcs:
@@ -1112,10 +1113,10 @@ class RefSymbol(_Symbol):
         elif gstate.instances[self.ref]:
             gstate.append(random.choice(gstate.instances[self.ref]))
         elif len(gstate.instance_backlog[self.ref]) > 1 and random.random() < 0.3:
-            log.debug("No instances of %s yet, using one from the backlog instead", self.ref)
+            LOG.debug("No instances of %s yet, using one from the backlog instead", self.ref)
             gstate.append(random.choice(gstate.instance_backlog[self.ref]))
         else:
-            log.debug("No instances of %s yet, generating one instead of a reference", self.ref)
+            LOG.debug("No instances of %s yet, generating one instead of a reference", self.ref)
             gstate.symstack.append(("backlog", self.ref))
 
     def children(self):
@@ -1245,7 +1246,7 @@ class RegexSymbol(ConcatSymbol):
             elif match.group("esc"):
                 result.new_text(TextSymbol.ESCAPES.get(match.group(0)[1], match.group(0)[1]), n_implicit, pstate)
                 defn = defn[match.end(0):]
-            else: # repeat
+            else:  # repeat
                 if not len(result) or isinstance(pstate.grmr.symtab[result[-1]], RepeatSymbol):
                     raise ParseError("Error parsing regex, unexpected repeat at: %s" % defn)
                 if match.group("a"):
@@ -1285,7 +1286,7 @@ class RepeatSymbol(ConcatSymbol):
                 raise IntegrityError("Expecting exactly one ChoiceSymbol in %s" % self.name)
             choice = grmr.symtab[self.choice]
             choice.normalize(grmr)
-            log.debug("repeat %s value for '*' is %d", self.name, len(choice))
+            LOG.debug("repeat %s value for '*' is %d", self.name, len(choice))
             if self.min_ == "*":
                 self.min_ = len(choice)
             if self.max_ == "*":
@@ -1296,10 +1297,10 @@ class RepeatSymbol(ConcatSymbol):
     def generate(self, gstate):
         if gstate.grmr.is_limit_exceeded(gstate):
             if not self.can_terminate:
-                return # chop the output. this isn't great, but not much choice
+                return  # chop the output. this isn't great, but not much choice
             reps = self.min_
         else:
-            reps = random.randint(self.min_, random.randint(self.min_, self.max_)) # roughly betavariate(0.75, 2.25)
+            reps = random.randint(self.min_, random.randint(self.min_, self.max_))  # roughly betavariate(0.75, 2.25)
         gstate.symstack.extend(reps * tuple(reversed(self)))
 
     def update_can_terminate(self, grmr):
@@ -1307,7 +1308,7 @@ class RepeatSymbol(ConcatSymbol):
             return True
         if self.min_ == 0:
             self.can_terminate = True
-            log.debug("%s can terminate", self.name)
+            LOG.debug("%s can terminate", self.name)
             return True
         return False
 
@@ -1335,10 +1336,10 @@ class RepeatSampleSymbol(RepeatSymbol):
     def generate(self, gstate):
         if gstate.grmr.is_limit_exceeded(gstate):
             if not self.can_terminate:
-                return # chop the output. this isn't great, but not much choice
+                return   # chop the output. this isn't great, but not much choice
             reps = self.min_
         else:
-            reps = random.randint(self.min_, random.randint(self.min_, self.max_)) # roughly betavariate(0.75, 2.25)
+            reps = random.randint(self.min_, random.randint(self.min_, self.max_))  # roughly betavariate(0.75, 2.25)
         # sample the choice (which gives cache values for the symstack), then generate self that many times
         assert self.choice is not None
         for choices in reversed(gstate.grmr.symtab[self.choice].sample(reps, gstate)):

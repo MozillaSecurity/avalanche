@@ -26,7 +26,7 @@ import sys
 from avalanche import Grammar
 
 
-log = logging.getLogger("linter") # pylint: disable=invalid-name
+LOG = logging.getLogger("linter")
 
 
 if sys.version_info.major == 2:
@@ -56,7 +56,7 @@ def main():
             togo = sym.children()
             while togo:
                 child = togo.pop()
-                if "[" in child: # implicit symbol, keep going
+                if "[" in child:  # implicit symbol, keep going
                     togo |= gmr.symtab[child].children()
                     togo -= children[sym.name]
                 else:
@@ -65,7 +65,7 @@ def main():
     # check for recursion
     for sym_name, sym_children in children.items():
         if sym_name in sym_children:
-            log.info("%s is directly recursive", sym_name)
+            LOG.info("%s is directly recursive", sym_name)
             continue
         # `issue` is a map of descendents (of any degree) to shortest ancestry from this sym_name
         issue = {child_name: [] for child_name in sym_children}
@@ -78,7 +78,7 @@ def main():
                 if grandchild_name in done | set(issue):
                     continue
                 if grandchild_name == sym_name:
-                    log.info("%s is recursive through %r (%d degree)", sym_name, child_backtrace, len(child_backtrace))
+                    LOG.info("%s is recursive through %r (%d degree)", sym_name, child_backtrace, len(child_backtrace))
                     issue = None
                     break
                 issue[grandchild_name] = child_backtrace
@@ -86,4 +86,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
