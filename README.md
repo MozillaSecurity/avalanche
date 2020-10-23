@@ -1,6 +1,6 @@
 # Avalanche
 
-[![Build Status](https://api.travis-ci.org/MozillaSecurity/avalanche.svg)](https://travis-ci.org/MozillaSecurity/avalanche)
+[![Build Status](https://api.travis-ci.com/MozillaSecurity/avalanche.svg)](https://travis-ci.com/MozillaSecurity/avalanche)
 [![codecov](https://codecov.io/gh/MozillaSecurity/avalanche/branch/master/graph/badge.svg)](https://codecov.io/gh/MozillaSecurity/avalanche)
 
 
