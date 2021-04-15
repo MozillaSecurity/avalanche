@@ -15,9 +15,9 @@
 ################################################################################
 
 from __future__ import unicode_literals
+
 import inspect
 import numbers
-
 
 __all__ = ("GrammarException", "GenerationError", "IntegrityError", "ParseError")
 

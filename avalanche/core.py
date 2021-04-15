@@ -21,6 +21,7 @@
 ################################################################################
 
 from __future__ import unicode_literals
+
 import argparse
 import binascii
 import codecs
@@ -33,9 +34,10 @@ import os.path
 import random
 import re
 import sys
-from .error import GrammarException, GenerationError, IntegrityError, ParseError
-from .splist import SparseList
 
+from .error import (GenerationError, GrammarException, IntegrityError,
+                    ParseError)
+from .splist import SparseList
 
 __all__ = ("Grammar", "GrammarException", "ParseError", "IntegrityError", "GenerationError",
            "BinSymbol", "ChoiceSymbol", "ConcatSymbol", "FuncSymbol", "RefSymbol", "RepeatSymbol",

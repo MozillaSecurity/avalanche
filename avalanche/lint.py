@@ -18,13 +18,13 @@
 ################################################################################
 
 from __future__ import unicode_literals
+
 import argparse
 import logging
 import os
 import sys
 
 from avalanche import Grammar
-
 
 LOG = logging.getLogger("linter")
 

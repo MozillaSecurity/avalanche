@@ -20,6 +20,7 @@
 ################################################################################
 
 from __future__ import unicode_literals
+
 import io
 import logging
 import os
@@ -30,8 +31,8 @@ import sys
 import tempfile
 import unittest
 
-from avalanche.core import Grammar, GenerationError, IntegrityError, main, ParseError, SparseList, unichr_
-
+from avalanche.core import (GenerationError, Grammar, IntegrityError,
+                            ParseError, SparseList, main, unichr_)
 
 logging.basicConfig(level=logging.DEBUG if bool(os.getenv("DEBUG")) else logging.INFO)
 log = logging.getLogger("avalanche_test")
