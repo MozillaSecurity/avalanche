@@ -41,9 +41,17 @@ def main():
         logging.getLogger().setLevel(logging.DEBUG)
 
     argp = argparse.ArgumentParser(description="Generate a testcase from a grammar")
-    argp.add_argument("input", type=argparse.FileType('r'), help="Input grammar definition")
-    argp.add_argument("-f", "--function", action="append", nargs=2, default=[],
-                      help="Function used in the grammar (eg. -f filter lambda x:x.replace('x','y')")
+    argp.add_argument(
+        "input", type=argparse.FileType("r"), help="Input grammar definition"
+    )
+    argp.add_argument(
+        "-f",
+        "--function",
+        action="append",
+        nargs=2,
+        default=[],
+        help="Function used in the grammar (eg. -f filter lambda x:x.replace('x','y')",
+    )
     args = argp.parse_args()
     args.function = {func: eval(defn) for (func, defn) in args.function}
     gmr = Grammar(args.input, **args.function)
@@ -78,7 +86,12 @@ def main():
                 if grandchild_name in done | set(issue):
                     continue
                 if grandchild_name == sym_name:
-                    LOG.info("%s is recursive through %r (%d degree)", sym_name, child_backtrace, len(child_backtrace))
+                    LOG.info(
+                        "%s is recursive through %r (%d degree)",
+                        sym_name,
+                        child_backtrace,
+                        len(child_backtrace),
+                    )
                     issue = None
                     break
                 issue[grandchild_name] = child_backtrace

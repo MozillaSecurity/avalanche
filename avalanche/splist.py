@@ -21,9 +21,10 @@ import bisect
 
 class SparseList(object):
     """List-like numeric array type which supports sparse ranges.
-       Maintains sorted order, and supports indexing within sparse ranges.
-       Ranges cannot overlap (raises ValueError).
+    Maintains sorted order, and supports indexing within sparse ranges.
+    Ranges cannot overlap (raises ValueError).
     """
+
     def __init__(self, copy=None):
         if copy is None:
             self.clear()
@@ -85,7 +86,12 @@ class SparseList(object):
         if ib and b <= self._data[ib - 1][1]:
             # b is actually in the range before ib
             ib -= 1
-        elif ib and b > self._data[ib - 1][1] and ib != len(self._data) and b < self._data[ib][0]:
+        elif (
+            ib
+            and b > self._data[ib - 1][1]
+            and ib != len(self._data)
+            and b < self._data[ib][0]
+        ):
             b = self._data[ib - 1][1]
             ib -= 1
         if b < a:
@@ -94,16 +100,26 @@ class SparseList(object):
         # do the deletions
         if ahead and btail:
             # delete whole range
-            self._len -= sum((j - i + 1) for (i, j) in self._data[ia:ib + 1])
-            del self._data[ia:ib + 1]
+            self._len -= sum((j - i + 1) for (i, j) in self._data[ia : ib + 1])
+            del self._data[ia : ib + 1]
         elif btail:
             # modify ia
-            self._len -= self._data[ia][1] - a + 1 + sum((j - i + 1) for (i, j) in self._data[ia + 1:ib + 1])
+            self._len -= (
+                self._data[ia][1]
+                - a
+                + 1
+                + sum((j - i + 1) for (i, j) in self._data[ia + 1 : ib + 1])
+            )
             self._data[ia][1] = a - 1
-            del self._data[ia + 1:ib + 1]
+            del self._data[ia + 1 : ib + 1]
         elif ahead:
             # modify ib
-            self._len -= b - self._data[ib][0] + 1 + sum((j - i + 1) for (i, j) in self._data[ia:ib])
+            self._len -= (
+                b
+                - self._data[ib][0]
+                + 1
+                + sum((j - i + 1) for (i, j) in self._data[ia:ib])
+            )
             self._data[ib][0] = b + 1
             del self._data[ia:ib]
         elif ia == ib:
@@ -113,10 +129,10 @@ class SparseList(object):
             self.add(*new)
         else:
             self._len -= b - self._data[ib][0] + self._data[ia][1] - a + 2
-            self._len -= sum((j - i + 1) for (i, j) in self._data[ia + 1:ib])
+            self._len -= sum((j - i + 1) for (i, j) in self._data[ia + 1 : ib])
             self._data[ia][1] = a - 1
             self._data[ib][0] = b + 1
-            del self._data[ia + 1:ib]
+            del self._data[ia + 1 : ib]
 
     def clear(self):
         self._len = 0

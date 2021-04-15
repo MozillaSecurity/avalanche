@@ -23,7 +23,6 @@ __all__ = ("GrammarException", "GenerationError", "IntegrityError", "ParseError"
 
 
 class GrammarException(Exception):
-
     def __init__(self, *args, **kwds):
         super(GrammarException, self).__init__(*args, **kwds)
         self.raise_locals = inspect.currentframe().f_back.f_locals
@@ -37,7 +36,9 @@ class GrammarException(Exception):
         if len(self.args) == 2:
             self.args, arg = (self.args[0],), self.args[1]
             if not isinstance(arg, numbers.Number):
-                raise RuntimeError("Bad argument type to GrammarException: %s" % type(arg).__name__)
+                raise RuntimeError(
+                    "Bad argument type to GrammarException: %s" % type(arg).__name__
+                )
             line_no = arg
 
         if not (pstate or gstate) and raiser:
