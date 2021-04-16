@@ -92,7 +92,7 @@ CanvTestBodyOpBlock     1       "setTimeout(function(){\n" (" " CanvTestBodyOp "
                         .01     "setInterval(function(){\n" (" " CanvTestBodyOp "\n"){1,10} "}," rndint(0,15) ");"
 
 ### Tags
-CanvasTag                       "<canvas id='" CnvId "' height='" CanvasDimention "' width='" CanvasDimention "'></canvas>"
+CanvasTag                       "<canvas id='" CnvId "' height='" CanvasDimension "' width='" CanvasDimension "'></canvas>"
 ImgTag                          "<img id='" ImgId "' src=" ImgDataUrl "/>"
 
 
@@ -105,7 +105,7 @@ Bool                    1       "false"
                         1       "true"
 CanvasImgSrc            1       @HtmlImgElmt
                         1       HtmlCnvElmt
-CanvasDimention         1       "800"
+CanvasDimension         1       "800"
                         .1      rndint(2,500)
                         .01     NumAll
                         .01     "0"
@@ -144,7 +144,7 @@ Coord                   1       Num.Whole
                         .5      NumAll
                         .01     CanvasHeight
                         .01     CanvasWidth
-Dimention                       Coord
+Dimension                       Coord
 Direction               1       "ltr"
                         1       "inherit"
                         1       "rtl"
@@ -223,13 +223,13 @@ ContextAttributes               "{alpha: " Bool "}"
 ### Create Operations (No context required)
 OpCreatePath                    "var " Path "=new Path2D()"
 OpCreateHtmlImgElmt     1       "var " HtmlImgElmt "=document.getElementById('" @ImgId "')"
-                        .1      "var " (HtmlImgElmt) "=new Image(" Dimention "," Dimention ")" (";" @1 ".src=document.getElementById('" @ImgId "').src")?
+                        .1      "var " (HtmlImgElmt) "=new Image(" Dimension "," Dimension ")" (";" @1 ".src=document.getElementById('" @ImgId "').src")?
                         .1      "var " (HtmlImgElmt) "=new Image()" (";" @1 ".src=document.getElementById('" @ImgId "').src")?
 ### Create Operation (Require context)
 OpCreateLinearGradient          "var " CGrad "=" @Ctx ".createLinearGradient(" Coord "," Coord "," Coord "," Coord ")"
 OpCreatePattern                 "var " CPatt "=" @Ctx ".createPattern(" CanvasImgSrc ",'" Repetition "')"
 OpCreateRadialGradient          "var " CGrad "=" @Ctx ".createRadialGradient(" Coord "," Coord "," Radius "," Coord "," Coord "," Radius ")"
-OpCreateImageData               "var " ImgData "=" @Ctx ".createImageData(" Dimention "," Dimention ")"
+OpCreateImageData               "var " ImgData "=" @Ctx ".createImageData(" Dimension "," Dimension ")"
 
 CtxCreateObj            1       OpCreateLinearGradient
                         1       OpCreatePattern
@@ -239,10 +239,10 @@ CtxCreateObj            1       OpCreateLinearGradient
                         1       OpCreateHtmlImgElmt
 
 ### Canvas Operations
-CnvOp                   1       "setAttribute('height'," CanvasDimention ")"
-                        .1      "setAttribute('height'," Dimention ")"
-                        1       "setAttribute('width'," CanvasDimention ")"
-                        .1      "setAttribute('width'," Dimention ")"
+CnvOp                   1       "setAttribute('height'," CanvasDimension ")"
+                        .1      "setAttribute('height'," Dimension ")"
+                        1       "setAttribute('width'," CanvasDimension ")"
+                        .1      "setAttribute('width'," Dimension ")"
                         .1      "setAttribute('mozOpaque'," Bool ")"
 
 ### Context Operations
@@ -325,29 +325,29 @@ OpBeginPath                     "beginPath()"
 OpBezierCurveTo                 "bezierCurveTo(" Coord "," Coord "," Coord "," Coord "," Coord "," Coord ")"
 # Experimental: requires "canvas.hitregions.enabled"
 OpClearHitRegions               "clearHitRegions()"
-OpClearRect                     "clearRect(" Coord "," Coord "," Dimention "," Dimention ")"
+OpClearRect                     "clearRect(" Coord "," Coord "," Dimension "," Dimension ")"
 OpClip                  1       "clip()"
                         1       "clip('" FillRule "')"
                         1       "clip(" @Path ",'" FillRule "')"
 OpClosePath                     "closePath()"
 OpDirection                     "direction='" Direction "'"
 OpDrawImage             1       "drawImage(" CanvasImgSrc "," Coord "," Coord ")"
-                        1       "drawImage(" CanvasImgSrc "," Coord "," Coord "," Dimention "," Dimention ")"
-                        1       "drawImage(" CanvasImgSrc "," Coord "," Coord "," Dimention "," Dimention "," Coord "," Coord "," Dimention "," Dimention ")"
+                        1       "drawImage(" CanvasImgSrc "," Coord "," Coord "," Dimension "," Dimension ")"
+                        1       "drawImage(" CanvasImgSrc "," Coord "," Coord "," Dimension "," Dimension "," Coord "," Coord "," Dimension "," Dimension ")"
 OpEllipse               1       "ellipse(" Coord "," Coord "," Radius "," Radius "," Rotation "," Angle "," Angle "," Bool ")"
                         1       "ellipse(" Coord "," Coord "," Radius "," Radius "," Rotation "," Angle "," Angle ")"
 OpFill                  1       "fill()"
                         1       "fill('" FillRule "')"
                         1       "fill(" @Path ",'" FillRule "')"
-OpFillRect              1       "fillRect(" Coord "," Coord "," Dimention "," Dimention ")"
+OpFillRect              1       "fillRect(" Coord "," Coord "," Dimension "," Dimension ")"
 OpFillStyle             1       "fillStyle='" CC.Color "'"
                         1       "fillStyle=" @CGrad
                         1       "fillStyle=" @CPatt
 OpFillText              1       "fillText(" Text "," Coord "," Coord ")"
-                        1       "fillText(" Text "," Coord "," Coord "," Dimention ")"
+                        1       "fillText(" Text "," Coord "," Coord "," Dimension ")"
 OpFilter                        "filter='" Filter "'"
 OpFont                          "font='" FontSize " " Font "'"
-OpGetImageData                  "getImageData(" Coord "," Coord "," Dimention "," Dimention ")"
+OpGetImageData                  "getImageData(" Coord "," Coord "," Dimension "," Dimension ")"
 OpGetLineDash                   "getLineDash()"
 OpGlobalAlpha                   "globalAlpha=" Opacity
 OpGlobalCompositeOp             "globalCompositeOperation='" CompositeOpType "'"
@@ -368,16 +368,16 @@ OpMeasureText                   "measureText(" Text ")"
 OpMiterLimit                    "miterLimit=" NumAll
 OpMoveTo                        "moveTo(" Coord "," Coord ")"
 OpPutImageData          1       "putImageData(" @ImgData "," Coord "," Coord ")"
-                        1       "putImageData(" @ImgData "," Coord "," Coord "," Coord "," Coord "," Dimention "," Dimention ")"
+                        1       "putImageData(" @ImgData "," Coord "," Coord "," Coord "," Coord "," Dimension "," Dimension ")"
 OpQuadraticCurveTo              "quadraticCurveTo(" Coord "," Coord "," Coord "," Coord ")"
-OpRect                          "rect(" Coord "," Coord "," Dimention "," Dimention ")"
+OpRect                          "rect(" Coord "," Coord "," Dimension "," Dimension ")"
 # Experimental: requires "canvas.hitregions.enabled"
 OpRemoveHitRegion               "removeHitRegion('" @HitRegion "')"
 OpResetTransform                "resetTransform()"
 OpRestore                       "restore()"
 OpRotate                        "rotate(" Angle ")"
 OpSave                          "save()"
-OpScale                         "scale(" Dimention "," Dimention ")"
+OpScale                         "scale(" Dimension "," Dimension ")"
 OpScrollPathIntoView    1       "scrollPathIntoView()"
                         1       "scrollPathIntoView(" @Path ")"
 OpSetLineDash                   "setLineDash(" NumArray ")"
@@ -388,12 +388,12 @@ OpShadowOffsetX                 "shadowOffsetX=" NumAll
 OpShadowOffsetY                 "shadowOffsetY=" NumAll
 OpStroke                1       "stroke()"
                         1       "stroke(" @Path ")"
-OpStrokeRect                    "strokeRect(" Coord "," Coord "," Dimention "," Dimention ")"
+OpStrokeRect                    "strokeRect(" Coord "," Coord "," Dimension "," Dimension ")"
 OpStrokeStyle           1       "strokeStyle='" CC.Color "'"
                         1       "strokeStyle=" @CGrad
                         1       "strokeStyle=" @CPatt
 OpStrokeText            1       "strokeText(" Text "," Coord "," Coord ")"
-                        1       "strokeText(" Text "," Coord "," Coord "," Dimention ")"
+                        1       "strokeText(" Text "," Coord "," Coord "," Dimension ")"
 OpTextAlign             1       "textAlign='left'"
                         1       "textAlign='right'"
                         1       "textAlign='center'"
@@ -440,10 +440,10 @@ FilterDef               1       FltBlur
                         1       FltUrl
                         .1      FilterSingle
 
-FltBlur                         "blur(" Dimention ")"
+FltBlur                         "blur(" Dimension ")"
 FltBrightness                   "brightness(" Percentage ")"
 FltContrast                     "contrast(" Percentage ")"
-FltDropShadow                   "drop-shadow(" Dimention "px " Dimention "px " Radius " " CC.Color ")"
+FltDropShadow                   "drop-shadow(" Dimension "px " Dimension "px " Radius " " CC.Color ")"
 FltGrayscale                    "grayscale(" Percentage ")"
 FltHueRotate                    "hue-rotate(" Angle "deg)"
 FltInvert                       "invert(" Percentage ")"

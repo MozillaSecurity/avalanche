@@ -116,7 +116,7 @@ method                  1   "method='get'"
 min                         "min='" V.number "'"
 minlength                   "minlength='" V.number "'"
 mozopaque                   "moz-opaque"
-#mozallowfullscreen # depricated, non standard
+#mozallowfullscreen # deprecated, non standard
 multiple                    "multiple='" V.Bool "'"
 muted                       "muted='" V.Bool "'"
 name                        "name='" V.string "'"

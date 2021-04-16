@@ -132,7 +132,7 @@ meter               +       TG.Phrasing
 #multicol # experimental & Obsolete
 nav                 +       TG.Flow
 #nobr # empty # non-standard
-#noembed # non-standard & depracated
+#noembed # non-standard & deprecated
 noframes            1       Tag.All
 noscript            1       Tag.link
                     1       Tag.meta

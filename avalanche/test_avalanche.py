@@ -451,7 +451,7 @@ class Functions(TestCase):
             Grammar("root id('')").generate()
 
     def test_builtin_push(self):
-        "test teh built-in push/pop functions"
+        "test the built-in push/pop functions"
         gmr = Grammar("root push('B') push('123') 'A' pop() pop()")
         self.assertEqual(gmr.generate(), "A123B")
 
