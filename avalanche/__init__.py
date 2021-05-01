@@ -17,7 +17,23 @@
 
 from __future__ import unicode_literals
 
-from .core import *
+from .core import (
+    BinSymbol,
+    ChoiceSymbol,
+    ConcatSymbol,
+    FuncSymbol,
+    GenerationError,
+    Grammar,
+    GrammarException,
+    IntegrityError,
+    ParseError,
+    RefSymbol,
+    RegexSymbol,
+    RepeatSampleSymbol,
+    RepeatSymbol,
+    SparseList,
+    TextSymbol,
+)
 
 __author__ = "Jesse Schwartzentruber"
 __credits__ = ["Jesse Schwartzentruber", "Tyson Smith"]

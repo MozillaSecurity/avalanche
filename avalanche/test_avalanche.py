@@ -38,7 +38,6 @@ from avalanche.core import (
     ParseError,
     SparseList,
     main,
-    unichr_,
 )
 
 logging.basicConfig(level=logging.DEBUG if bool(os.getenv("DEBUG")) else logging.INFO)
@@ -732,7 +731,7 @@ class Regexes(TestCase):
             out = {out[i : i + 2] for i in range(0, len(out), 2)}
         else:
             out = set(out)
-        self.assertEqual(set(out), set(unichr_(c) for c in range(0x1F300, 0x1F600)))
+        self.assertEqual(set(out), set(chr(c) for c in range(0x1F300, 0x1F600)))
 
 
 class Repeats(TestCase):

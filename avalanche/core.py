@@ -54,11 +54,9 @@ __all__ = (
     "RegexSymbol",
     "SparseList",
     "TextSymbol",
-    "unichr_",
 )
 
 
-unichr_ = chr
 utf8_reader = codecs.getreader("utf-8")
 
 
@@ -1248,8 +1246,9 @@ class FuncSymbol(_Symbol):
         return set(a for a in self.args if not isinstance(a, numbers.Number))
 
     def map(self, fcn):
-        _fcn = lambda x: x if isinstance(x, numbers.Number) else fcn(x)
-        self.args = [_fcn(i) for i in self.args]
+        self.args = list(
+            map(lambda x: x if isinstance(x, numbers.Number) else fcn(x), self.args)
+        )
 
     @staticmethod
     def parse(name, defn, pstate):  # pylint: disable=arguments-differ
@@ -1697,7 +1696,7 @@ class _TextChoiceSymbol(_Symbol, SparseList):
         self.can_terminate = True
 
     def generate(self, gstate):
-        gstate.append(unichr_(self[random.randint(0, len(self) - 1)]))
+        gstate.append(chr(self[random.randint(0, len(self) - 1)]))
 
 
 def main(argv=None):
