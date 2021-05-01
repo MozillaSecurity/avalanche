@@ -14,8 +14,6 @@
 #    limitations under the License.
 ################################################################################
 
-from __future__ import unicode_literals
-
 import inspect
 import numbers
 
@@ -60,13 +58,10 @@ class GrammarException(Exception):
             if pstate.name:
                 extra += pstate.name + " "
             extra += "line %d)" % line_no
-
         elif gstate:
             extra = "(generation backtrace: %s)" % gstate.backtrace()
-
         elif line_no is not None:
             extra = "(line %d)"
-
         else:
             extra = None
 
