@@ -22,16 +22,10 @@ from __future__ import unicode_literals
 import argparse
 import logging
 import os
-import sys
 
 from avalanche import Grammar
 
 LOG = logging.getLogger("linter")
-
-
-if sys.version_info.major == 2:
-    # pylint: disable=redefined-builtin,invalid-name
-    str = unicode
 
 
 def main():
@@ -53,12 +47,14 @@ def main():
         help="Function used in the grammar (eg. -f filter lambda x:x.replace('x','y')",
     )
     args = argp.parse_args()
+    # pylint: disable=eval-used
     args.function = {func: eval(defn) for (func, defn) in args.function}
     gmr = Grammar(args.input, **args.function)
 
     children = {}
     for sym in gmr.symtab.values():
-        # capture children of non-implicit symbols (which includes recursing into implicit symbols)
+        # capture children of non-implicit symbols (which includes recursing into
+        # implicit symbols)
         if "[" not in sym.name:
             children[sym.name] = set()
             togo = sym.children()
@@ -75,7 +71,8 @@ def main():
         if sym_name in sym_children:
             LOG.info("%s is directly recursive", sym_name)
             continue
-        # `issue` is a map of descendents (of any degree) to shortest ancestry from this sym_name
+        # `issue` is a map of descendants (of any degree) to shortest ancestry
+        # from this sym_name
         issue = {child_name: [] for child_name in sym_children}
         done = set()
         while issue:

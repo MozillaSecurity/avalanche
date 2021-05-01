@@ -24,7 +24,7 @@ __all__ = ("GrammarException", "GenerationError", "IntegrityError", "ParseError"
 
 class GrammarException(Exception):
     def __init__(self, *args, **kwds):
-        super(GrammarException, self).__init__(*args, **kwds)
+        super().__init__(*args, **kwds)
         self.raise_locals = inspect.currentframe().f_back.f_locals
 
     def __str__(self):
@@ -53,7 +53,7 @@ class GrammarException(Exception):
         if pstate and line_no is None:
             line_no = pstate.line_no
 
-        msg = super(GrammarException, self).__str__()
+        msg = super().__str__()
 
         if pstate:
             extra = "("
@@ -72,10 +72,9 @@ class GrammarException(Exception):
 
         if msg and extra:
             return msg + " " + extra
-        elif extra:
+        if extra:
             return extra
-        else:
-            return msg
+        return msg
 
 
 class GenerationError(GrammarException):

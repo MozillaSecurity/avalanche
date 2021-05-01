@@ -1,5 +1,5 @@
 # coding=utf-8
-# pylint: disable=missing-docstring
+# pylint: disable=invalid-name,missing-docstring
 ################################################################################
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -19,7 +19,7 @@ from __future__ import unicode_literals
 import bisect
 
 
-class SparseList(object):
+class SparseList:
     """List-like numeric array type which supports sparse ranges.
     Maintains sorted order, and supports indexing within sparse ranges.
     Ranges cannot overlap (raises ValueError).
@@ -65,7 +65,7 @@ class SparseList(object):
     def remove(self, a, b=None):
         """
         Remove range (a,b) inclusive. If b is not specified, default to (a,a).
-        No error is raised if (a,b) and self hav no overlap.
+        No error is raised if (a,b) and self have no overlap.
         """
         if b is None:
             b = a
@@ -88,9 +88,8 @@ class SparseList(object):
             ib -= 1
         elif (
             ib
-            and b > self._data[ib - 1][1]
             and ib != len(self._data)
-            and b < self._data[ib][0]
+            and self._data[ib][0] > b > self._data[ib - 1][1]
         ):
             b = self._data[ib - 1][1]
             ib -= 1
@@ -148,9 +147,10 @@ class SparseList(object):
 
     def __getitem__(self, key):
         if key >= len(self) or key < 0:
-            [][0]  # raise IndexError
+            raise IndexError("list index out of range")
         for a, b in self._data:
             len_ = b - a + 1
             if key < len_:
                 return a + key
             key -= len_
+        return None

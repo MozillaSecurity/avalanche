@@ -1,6 +1,6 @@
 ################################################################################
 # coding=utf-8
-# pylint: disable=invalid-name,missing-docstring
+# pylint: disable=invalid-name,missing-docstring,protected-access
 #
 # Description: Avalanche tests
 #
@@ -59,18 +59,12 @@ class TestCase(unittest.TestCase):
         os.chdir(self.cwd)
         shutil.rmtree(self.tmpd)
 
-    if sys.version_info.major == 2:
-
-        def assertRegex(self, *args, **kwds):
-            return self.assertRegexpMatches(*args, **kwds)
-
-        def assertRaisesRegex(self, *args, **kwds):
-            return self.assertRaisesRegexp(*args, **kwds)
-
 
 class Backrefs(TestCase):
     def test_0(self):
-        "test that basic backreferences work, generate a single digit and reference to it, make sure they match"
+        """test that basic backreferences work, generate a single digit and reference
+        to it, make sure they match
+        """
         gmr = Grammar("root  (/[0-9]/) @1")
         for _ in range(100):
             x1, x2 = gmr.generate()
@@ -81,14 +75,15 @@ class Backrefs(TestCase):
             self.assertEqual(x1, x2)
 
     def test_1(self):
-        "negative tests for backreferences, check use without declaration and use before declaration"
+        """negative tests for backreferences, check use without declaration and use
+        before declaration"""
         with self.assertRaisesRegex(IntegrityError, r"^Invalid backreference"):
             Grammar("root  'a' @1")
         with self.assertRaisesRegex(IntegrityError, r"^Invalid backreference"):
             Grammar("root  'a' @1 ('b')")
 
     def test_2(self):
-        "test that backreferences work in function args"
+        """test that backreferences work in function args"""
         gmr = Grammar("root  (/[0-9]/) rndint((/[0-9]/), @2) @2 @1")
         n_same = 0
         for _ in range(100):
@@ -100,7 +95,7 @@ class Backrefs(TestCase):
         self.assertLess(n_same, 100)
 
     def test_3(self):
-        "test that backreferences on different lines don't get messed up"
+        """test that backreferences on different lines don't get messed up"""
         gmr = Grammar("root  (/[0-9]/) y @1\n" "y     (/[0-9]/) @1")
         n_same = 0
         for _ in range(100):
@@ -112,7 +107,7 @@ class Backrefs(TestCase):
         self.assertLess(n_same, 100)
 
     def test_4(self):
-        "test that backreferences in repeats don't get confused"
+        """test that backreferences in repeats don't get confused"""
         gmr = Grammar(
             "choice   1   'a'\n"
             "         1   'b'\n"
@@ -142,12 +137,12 @@ class Backrefs(TestCase):
 
 class Binary(TestCase):
     def test_bin(self):
-        "test binary strings"
+        """test binary strings"""
         gmr = Grammar("root x'68656c6c6f2c20776f726c6400'")
         self.assertEqual(gmr.generate(), b"hello, world\0")
 
     def test_unicode(self):
-        "test for unicode in a binary string"
+        """test for unicode in a binary string"""
         with self.assertRaisesRegex(ParseError, r"^Invalid hex string"):
             Grammar("root x'000ü'")
 
@@ -163,11 +158,11 @@ class Choices(TestCase):
             self.assertAlmostEqual(float(value) / iters, 1.0 / len(values), delta=DELTA)
 
     def test_0(self):
-        "test for choice balance in a repeat sample"
+        """test for choice balance in a repeat sample"""
         self.balanced_choice("root a<*>\n" "a 1 'a'\n" "  1 'b'", ["ab", "ba"])
 
     def test_1(self):
-        "tests for choices with different weights"
+        """tests for choices with different weights"""
         iters = 10000
         self.balanced_choice(
             "root 1 '1'\n" "     1 '2'\n" "     1 '3'", ["1", "2", "3"]
@@ -195,7 +190,7 @@ class Choices(TestCase):
         self.assertAlmostEqual(float(result[3]) / iters, 2.0 / 3, delta=DELTA)
 
     def test_2(self):
-        "tests invalid weights"
+        """tests invalid weights"""
         with self.assertRaisesRegex(
             IntegrityError, r"^Invalid weight value for choice.*"
         ):
@@ -206,7 +201,7 @@ class Choices(TestCase):
             Grammar("root -1 '1'\n")
 
     def test_3(self):
-        "test choice includes with '+'"
+        """test choice includes with '+'"""
         self.balanced_choice(
             "var     1 'a'\n"
             "        1 'b'\n"
@@ -227,7 +222,8 @@ class Choices(TestCase):
             Grammar("root + a\n" "a + root\n" "  1 'a'")
 
     def test_4(self):
-        "test that '+' raises with no choice symbols or with multiple choice symbols"
+        """test that '+' raises with no choice symbols or with multiple choice
+        symbols"""
         with self.assertRaisesRegex(
             IntegrityError, r"^Expecting exactly one ChoiceSymbol"
         ):
@@ -245,7 +241,7 @@ class Choices(TestCase):
             Grammar("root + 'a'")
 
     def test_5(self):
-        "test that '+' works with text appended to the choice symbol"
+        """test that '+' works with text appended to the choice symbol"""
         iters = 10000
         gmr = Grammar("root a\n" "a + (b 'X')\n" "  1 'c'\n" "b 1 'a'\n" "  1 'b'")
         result = {"c": 0, "aX": 0, "bX": 0}
@@ -255,7 +251,7 @@ class Choices(TestCase):
             self.assertAlmostEqual(float(value) / iters, 1.0 / 3, delta=DELTA)
 
     def test_6(self):
-        "test that '+' works with tracked references"
+        """test that '+' works with tracked references"""
         g = Grammar(
             "root     Ref '\\n' test\n"
             "test   + @Ref ':' ChSym\n"
@@ -277,7 +273,7 @@ class Choices(TestCase):
         self.assertAlmostEqual(float(r["4"]) / count, 0.25, delta=DELTA)
 
     def test_7(self):
-        "test that weights in a nested choice are ignored. has gone wrong before."
+        """test that weights in a nested choice are ignored. has gone wrong before."""
         gmr = Grammar("root a {10000}\n" "b .9 'b'\n" "a .1 'a'\n" "  .1 b")
         output = gmr.generate()
         a_count = len([c for c in output if c == "a"]) / 10000.0
@@ -288,9 +284,10 @@ class Choices(TestCase):
         with self.assertRaisesRegex(IntegrityError, r"^Invalid.*weight.*0\.0"):
             Grammar("root 0 '1'")
 
-    def test_9(self):
-        "test for limit case of Choice."
-        # this will fail intermittently if self.total is used instead of total in ChoiceSymbol.choice()
+    def test_9(self):  # pylint: disable=no-self-use
+        """test for limit case of Choice."""
+        # this will fail intermittently if self.total is used instead of total
+        # in ChoiceSymbol.choice()
         # XXX: why intermittently??
         gmr = Grammar(
             "root     ('x' t 'x'){10}\n"
@@ -304,13 +301,13 @@ class Choices(TestCase):
             gmr.generate()
 
     def test_10(self):
-        "test for implicit Choice"
+        """test for implicit Choice"""
         self.balanced_choice("root ('a' | 'b')", ["a", "b"])
 
 
 class Concats(TestCase):
     def test_impl_concat(self):
-        "test that implicit concats work"
+        """test that implicit concats work"""
         gmr = Grammar("root ('a' 'b') 'c'")
         self.assertEqual(gmr.generate(), "abc")
         gmr = Grammar("root 'a' ('b') 'c'")
@@ -323,7 +320,7 @@ class Concats(TestCase):
 
 class Functions(TestCase):
     def test_funcs(self):
-        "test that python filter functions work"
+        """test that python filter functions work"""
         gram = (
             "root            func{100}\n"
             "func    1       'z' zero(nuvar) '\\n'\n"
@@ -354,7 +351,7 @@ class Functions(TestCase):
                 self.assertRegex(line[1:], r"^[a-z]{6}$")
 
     def test_builtin_rndint(self):
-        "test the built-in rndint function"
+        """test the built-in rndint function"""
         gmr = Grammar("root  rndint(1,10)")
         result = {i: 0 for i in range(1, 11)}
         iters = 10000
@@ -367,7 +364,7 @@ class Functions(TestCase):
             Grammar("root  rndint(2,1)").generate()
 
     def test_builtin_rndflt(self):
-        "test the built-in rndflt function"
+        """test the built-in rndflt function"""
         iters = 10000
         gmr = Grammar("root  rndflt(0,10)")
         result = {(i / 2.0): 0 for i in range(0, 20)}
@@ -387,7 +384,7 @@ class Functions(TestCase):
             self.assertAlmostEqual(float(value) / iters, 1.0 / 9, delta=DELTA)
 
     def test_builtin_rndpow2(self):
-        "test the built-in rndpow2 function"
+        """test the built-in rndpow2 function"""
         iters = 10000
         gmr = Grammar("root  rndpow2(2,0)")
         result = {1: 0, 2: 0, 4: 0}
@@ -407,10 +404,11 @@ class Functions(TestCase):
             Grammar("root  rndpow2(-1,0)").generate()
 
     def test_buildin_eval(self):
-        "test the built-in eval function"
+        """test the built-in eval function"""
         # XXX: test eval of non-existent symbol
         # XXX: test eval with <>
-        # XXX: test that references work within eval (ie, a-value could use an @ reference from outside the eval)
+        # XXX: test that references work within eval (ie, a-value could
+        # use an @ reference from outside the eval)
         iters = 1000
         gmr = Grammar(
             "root decl unused{0}\n"
@@ -441,7 +439,7 @@ class Functions(TestCase):
             )
 
     def test_builtin_id(self):
-        "test the built-in id function"
+        """test the built-in id function"""
         gmr = Grammar("root id() ' ' id() ' ' id()")
         self.assertEqual(gmr.generate(), "0 1 2")
         self.assertEqual(gmr.generate(), "0 1 2")
@@ -451,32 +449,32 @@ class Functions(TestCase):
             Grammar("root id('')").generate()
 
     def test_builtin_push(self):
-        "test the built-in push/pop functions"
+        """test the built-in push/pop functions"""
         gmr = Grammar("root push('B') push('123') 'A' pop() pop()")
         self.assertEqual(gmr.generate(), "A123B")
 
 
 class Imports(TestCase):
     def test_import_reserved(self):
-        "test that 'import' is not allowed to be redefined"
+        """test that 'import' is not allowed to be redefined"""
         with self.assertRaisesRegex(ParseError, r"^'import' is a reserved name"):
             Grammar('import blah "blah.gmr"')
 
     def test_unused_import(self):
-        "test for unused imports"
+        """test for unused imports"""
         open("blah.gmr", "w").close()
         with self.assertRaisesRegex(IntegrityError, r"^Unused import"):
             Grammar("root 'a'\n" "unused import('blah.gmr')")
 
     def test_use_before_import(self):
-        "tests for use before import"
+        """tests for use before import"""
         with self.assertRaisesRegex(
             ParseError, r"^Attempt to use symbol from unknown prefix"
         ):
             Grammar("root a.b")
 
     def test_notfound_import(self):
-        "tests for bad imports"
+        """tests for bad imports"""
         with self.assertRaisesRegex(ParseError, r"^Error parsing string"):
             Grammar("a import()")
         with self.assertRaisesRegex(
@@ -485,14 +483,14 @@ class Imports(TestCase):
             Grammar("a import('')")
 
     def test_simple(self):
-        "test that imports work"
+        """test that imports work"""
         with open("a.gmr", "w") as fd:
             fd.write('a "A"')
         gmr = Grammar("b import('a.gmr')\n" "root b.a")
         self.assertEqual(gmr.generate(), "A")
 
     def test_nested(self):
-        "test that circular imports are allowed"
+        """test that circular imports are allowed"""
         with open("a.gmr", "w") as fd:
             fd.write('b import("b.gmr")\n' "root a b.a\n" 'a "A"')
         with open("b.gmr", "w") as fd:
@@ -502,7 +500,7 @@ class Imports(TestCase):
         self.assertEqual(gmr.generate(), "AA")
 
     def test_recursive_defn(self):
-        "test that infinite recursion is detected across an import"
+        """test that infinite recursion is detected across an import"""
         with open("b.gmr", "w") as fd:
             fd.write('b import("b.gmr")\n' "root b.a\n" "a b.a")
         with self.assertRaisesRegex(
@@ -512,21 +510,21 @@ class Imports(TestCase):
                 Grammar(fd)
 
     def test_unused_import_sym(self):
-        "test that unused symbols in an import are allowed"
+        """test that unused symbols in an import are allowed"""
         with open("a.gmr", "w") as fd:
             fd.write('a "A"\n' 'b "B"')
         gmr = Grammar('a import("a.gmr")\n' "root a.a")
         self.assertEqual(gmr.generate(), "A")
 
     def test_imported_choice(self):
-        "test that repeat sample works across an import"
+        """test that repeat sample works across an import"""
         with open("a.gmr", "w") as fd:
             fd.write('a 1 "A"')
         gmr = Grammar("b import('a.gmr')\n" "root a<*>\n" "a b.a")
         self.assertEqual(gmr.generate(), "A")
 
     def test_import_in_error(self):
-        "test that imported filename shows up in the exception message"
+        """test that imported filename shows up in the exception message"""
         with open("a.gmr", "w") as fd:
             fd.write("a 20 b")
         with self.assertRaisesRegex(
@@ -535,7 +533,7 @@ class Imports(TestCase):
             Grammar('a import("a.gmr")\n' "root a.a")
 
     def test_import_name_integrity(self):
-        "test that import names don't get overwritten"
+        """test that import names don't get overwritten"""
         with open("a.gmr", "w") as fd:
             fd.write('X import("b.gmr")\n')
             fd.write("B X.B\n")
@@ -547,7 +545,7 @@ class Imports(TestCase):
         self.assertEqual(gmr.generate(), "BC")
 
     def test_import_file_containing_eval(self):
-        "test that importing files containing evals works as expected"
+        """test that importing files containing evals works as expected"""
         with open("a.gmr", "w") as fd:
             fd.write('IB import("b.gmr")\n')
             fd.write("B  IB.X\n")
@@ -558,7 +556,7 @@ class Imports(TestCase):
         self.assertEqual(gmr.generate(), "z")
 
     def test_import_with_unicode(self):
-        "test that imports with unicode characters work"
+        """test that imports with unicode characters work"""
         with open("a.gmr", "wb") as fd:
             fd.write('a "ü"'.encode("utf-8"))
         gmr = Grammar("b import('a.gmr')\n" "root b.a")
@@ -567,24 +565,24 @@ class Imports(TestCase):
 
 class Inputs(TestCase):
     def test_str(self):
-        "test grammar with byte string as input"
+        """test grammar with byte string as input"""
         gmr = Grammar(b"root 'a'")
         self.assertEqual(gmr.generate(), "a")
 
     def test_binfilelike(self):
-        "test grammar with binary file-like object as input"
+        """test grammar with binary file-like object as input"""
         infile = io.BytesIO(b'root "a"')
         gmr = Grammar(infile)
         self.assertEqual(gmr.generate(), "a")
 
     def test_filelike(self):
-        "test grammar with utf-8 file-like object as input"
+        """test grammar with utf-8 file-like object as input"""
         infile = io.StringIO('root "a"')
         gmr = Grammar(infile)
         self.assertEqual(gmr.generate(), "a")
 
     def test_binfile(self):
-        "test grammar with binary file as input"
+        """test grammar with binary file as input"""
         with open("a.gmr", "w+b") as fd:
             fd.write(b'root "a"')
             fd.seek(0)
@@ -592,7 +590,7 @@ class Inputs(TestCase):
         self.assertEqual(gmr.generate(), "a")
 
     def test_file(self):
-        "test grammar with utf-8 file as input"
+        """test grammar with utf-8 file as input"""
         with io.open("a.gmr", "w+", encoding="utf-8") as fd:
             fd.write('root "aü"')
             fd.seek(0)
@@ -602,17 +600,17 @@ class Inputs(TestCase):
 
 class Parser(TestCase):
     def test_broken(self):
-        "test broken lines"
+        """test broken lines"""
         gmr = Grammar("root 'a' 'b'\\\n" "     'c'")
         self.assertEqual(gmr.generate(), "abc")
 
     def test_comment_in_broken(self):
-        "test that you can comment out a broken line"
+        """test that you can comment out a broken line"""
         gmr = Grammar("root 'some broken ' \\\n" "# blah\n" " 'string'")
         self.assertEqual(gmr.generate(), "some broken string")
 
     def test_basic(self):
-        "test basic grammar features"
+        """test basic grammar features"""
         gmr = Grammar("root    ok\n" "ok      '1'")
         self.assertEqual(gmr.generate(), "1")
         gmr = Grammar(
@@ -633,12 +631,12 @@ class Parser(TestCase):
         self.assertAlmostEqual(float(result["D"]) / count, 0.5, delta=DELTA)
 
     def test_dashname(self):
-        "test that dash is allowed in symbol names"
+        """test that dash is allowed in symbol names"""
         gmr = Grammar("root a-a\n" "a-a 'a'\n")
         self.assertEqual(gmr.generate(), "a")
 
     def test_limit(self):
-        "test that limit is respected"
+        """test that limit is respected"""
         gmr = Grammar(
             "root       foo bar\n" "bar        (@foo bar) {1}\n" "foo        'i0'",
             limit=10,
@@ -646,12 +644,12 @@ class Parser(TestCase):
         self.assertLessEqual(len(gmr.generate()), 10)
 
     def test_altstart(self):
-        "test that starting symbols other than 'root' work"
+        """test that starting symbols other than 'root' work"""
         gmr = Grammar("root a 'B'\n" "a 'A'")
         self.assertEqual(gmr.generate(start="a"), "A")
 
     def test_incomplete_sym_defn(self):
-        "test incomplete symbol definitions raise ParseError"
+        """test incomplete symbol definitions raise ParseError"""
         with self.assertRaisesRegex(
             ParseError, r"^Failed to parse definition.*\(line 2\)"
         ):
@@ -667,21 +665,21 @@ class Parser(TestCase):
             Grammar("root a\n" "a\r\t")
 
     def test_recursive_defn(self):
-        "test recursive definition"
+        """test recursive definition"""
         with self.assertRaisesRegex(
             IntegrityError, r"^Symbol has no paths to termination"
         ):
             Grammar("root root")
 
     def test_unused_sym(self):
-        "tests for unused symbols"
+        """tests for unused symbols"""
         with self.assertRaisesRegex(IntegrityError, r"^Unused symbol:"):
             Grammar("root a\n" 'a "A"\n' 'b "B"')
         with self.assertRaisesRegex(IntegrityError, r"^Unused symbols:"):
             Grammar('root "A"\n' "a b\n" "b a")
 
     def test_undefined_sym(self):
-        "tests use unused symbols"
+        """tests use unused symbols"""
         with self.assertRaisesRegex(IntegrityError, r"^Symbol.*used but not defined"):
             Grammar("root   undef")
         with self.assertRaisesRegex(IntegrityError, r"^Symbol.*used but not defined"):
@@ -696,17 +694,17 @@ class Parser(TestCase):
 
 class Regexes(TestCase):
     def test_0(self):
-        "test for some bad thing tyson did once"
+        """test for some bad thing tyson did once"""
         gmr = Grammar('root   /[0-1]{1}/ "]"')
         self.assertIn(gmr.generate(), ["0]", "1]"])
 
     def test_1(self):
-        "test for invalid range in a regex"
+        """test for invalid range in a regex"""
         with self.assertRaisesRegex(ParseError, r"^Empty range in regex"):
             Grammar("root /[+-*]/")
 
     def test_2(self):
-        "test that '.' works in a regex"
+        """test that '.' works in a regex"""
         iters = 10000
         out = set(Grammar("root /./{%d}" % iters).generate())
         self.assertEqual(
@@ -714,7 +712,7 @@ class Regexes(TestCase):
         )
 
     def test_3(self):
-        "test for excluded char in range"
+        """test for excluded char in range"""
         iters = 10000
         out = set(Grammar('root /[^"]{%d}/' % iters).generate())
         self.assertEqual(
@@ -727,7 +725,7 @@ class Regexes(TestCase):
         )
 
     def test_4(self):
-        "test unicode ranges"
+        """test unicode ranges"""
         iters = 100000
         out = Grammar("root /[\U0001f300-\U0001f5ff]/{%d}" % iters).generate()
         if sys.maxunicode == 65535:
@@ -739,7 +737,7 @@ class Regexes(TestCase):
 
 class Repeats(TestCase):
     def test_0(self):
-        "tests for simple repeats"
+        """tests for simple repeats"""
         gmr = Grammar('root "A"{1,10}')
         lengths = set()
         for _ in range(2000):
@@ -751,7 +749,7 @@ class Repeats(TestCase):
         self.assertEqual(len(lengths), 10)
 
     def test_1(self):
-        "test for repeat of implicit concatenation"
+        """test for repeat of implicit concatenation"""
         gmr = Grammar('root ("A" "B" ","){ 0 , 10 } "AB"')
         lengths = set()
         for _ in range(2000):
@@ -763,7 +761,7 @@ class Repeats(TestCase):
         self.assertEqual(len(lengths), 11)
 
     def test_2(self):
-        "tests for repeat sample"
+        """tests for repeat sample"""
         with self.assertRaisesRegex(
             IntegrityError, r"^Expecting exactly one ChoiceSymbol"
         ):
@@ -793,7 +791,7 @@ class Repeats(TestCase):
             self.assertIn(gmr.generate(), {"A", "AA"})
 
     def test_3(self):
-        "tests for '?' shortcut for {0,1}"
+        """tests for '?' shortcut for {0,1}"""
         gmr = Grammar('root "A"?')
         lengths = set()
         for _ in range(100):
@@ -810,7 +808,7 @@ class Repeats(TestCase):
         self.assertEqual(len(lengths), 2)
 
     def test_4(self):
-        "tests for '*' as a repeat arg"
+        """tests for '*' as a repeat arg"""
         gmr = Grammar("root a<0,*>\n" "a 1 'a'\n" "  1 'b'")
         result = {"ab": 0, "ba": 0, "a": 0, "b": 0, "": 0}
         for _ in range(1000):
@@ -839,7 +837,7 @@ class Repeats(TestCase):
         self.assertGreater(result[""], result["a"] + result["b"])
 
     def test_5(self):
-        "test that '*' uses all choices from a choice included with '+'"
+        """test that '*' uses all choices from a choice included with '+'"""
         gmr = Grammar(
             "root a<*>\n"
             "a 1 'a'\n"
@@ -854,7 +852,7 @@ class Repeats(TestCase):
         self.assertEqual("".join(sorted(result)), "abcde")
 
     def test_6(self):
-        "test for tracked repeatsample symbols"
+        """test for tracked repeatsample symbols"""
         gmr = Grammar("root b<*> @b\n" "a 1 /[0-9]/\n" "b a 'A'")
         for _ in range(100):
             result = gmr.generate()
@@ -872,7 +870,7 @@ class Repeats(TestCase):
             self.assertEqual(len(set(result)), 1)
 
     def test_7(self):
-        "test for repeat of implicit choice"
+        """test for repeat of implicit choice"""
         gmr = Grammar('root ("A," | "B,"){ 0 , 10 } ("A" | "B")')
         lengths = set()
         for _ in range(2000):
@@ -890,7 +888,7 @@ class Repeats(TestCase):
 
 class References(TestCase):
     def test_0(self):
-        "test for tracked symbol use as a function arg"
+        """test for tracked symbol use as a function arg"""
         gmr = Grammar(
             "root   id a(b(@id))\n" "id     /[a-z]/\n",
             a=lambda x: "a" + x,
@@ -902,7 +900,7 @@ class References(TestCase):
             self.assertEqual(result[1:-1], "ab")
 
     def test_1(self):
-        "test for tracked symbols"
+        """test for tracked symbols"""
         gmr = Grammar(
             "root    id '\\n' esc(\"'\" @id \"'\")\n" "id      'id' /[0-9]/",
             esc=lambda x: re.sub(r"'", "\\'", x),
@@ -913,7 +911,7 @@ class References(TestCase):
             self.assertEqual(use, "\\'%s\\'" % defn)
 
     def test_2(self):
-        "test for tracked symbols"
+        """test for tracked symbols"""
         gmr = Grammar(
             "root    id '\\n' esc('not', @id)\n" "id      'id' /[0-9]/",
             esc=lambda x, y: x,
@@ -923,7 +921,7 @@ class References(TestCase):
         self.assertEqual(use, "not")
 
     def test_3(self):
-        "test for tracked symbols"
+        """test for tracked symbols"""
         gmr = Grammar(
             "root    esc(id) '\\n' @id\n" "id      'id' /[0-9]/",
             esc=lambda x: "%s\n%s" % (x, "".join("%02x" % ord(c) for c in x)),
@@ -934,12 +932,12 @@ class References(TestCase):
         self.assertEqual(defn, use)
 
     def test_4(self):
-        "test for generating symbol references before use"
+        """test for generating symbol references before use"""
         gmr = Grammar("root    @id\n" "id      'id' /[0-9]/")
         self.assertRegex(gmr.generate(), r"^id[0-9]$")
 
     def test_5(self):
-        "test that symbols are tracked even when not output"
+        """test that symbols are tracked even when not output"""
         out = [0]
 
         def esc(x):
@@ -953,7 +951,7 @@ class References(TestCase):
             self.assertEqual(out[0], result)
 
     def test_6(self):
-        "test that reference before definition are handled properly"
+        """test that reference before definition are handled properly"""
         count = 100
         gmr = Grammar(
             "root     (Ref '\\n'){%d} '-' (Def '\\n'){%d}\n"
@@ -980,7 +978,7 @@ class References(TestCase):
 
 class SparseList_(TestCase):
     def test_0(self):
-        "test for basic function of sparse lists"
+        """test for basic function of sparse lists"""
         lst = SparseList()
         lst.add(1, 2)  # 2
         lst.add(5)  # 1
@@ -994,7 +992,7 @@ class SparseList_(TestCase):
         self.assertEqual(len(lst._data), 3)
 
     def test_1(self):
-        "test sorted order of sparse lists"
+        """test sorted order of sparse lists"""
         lst = SparseList()
         lst.add(5)
         lst.add(3)
@@ -1006,7 +1004,7 @@ class SparseList_(TestCase):
         self.assertEqual(len(lst._data), 3)
 
     def test_2(self):
-        "test optimization of sparse lists"
+        """test optimization of sparse lists"""
         lst = SparseList()
         lst.add(6)
         lst.add(4)
@@ -1025,7 +1023,7 @@ class SparseList_(TestCase):
         self.assertEqual(lst[4], 7)
 
     def test_3(self):
-        "test removal from sparse lists"
+        """test removal from sparse lists"""
         lst = SparseList()
         lst.add(1)
         lst.add(3)
@@ -1109,7 +1107,7 @@ class SparseList_(TestCase):
         self.assertEqual(lst[1], 26)
 
     def test_4(self):
-        "test error cases of sparse lists"
+        """test error cases of sparse lists"""
         with self.assertRaisesRegex(ValueError, r"^1 is already present in the list$"):
             lst = SparseList()
             lst.add(1)
@@ -1132,15 +1130,15 @@ class SparseList_(TestCase):
             lst.add(3, 7)
         with self.assertRaisesRegex(IndexError, r"^list index out of range$"):
             lst = SparseList()
-            lst[0]
+            lst[0]  # pylint: disable=pointless-statement
         with self.assertRaisesRegex(IndexError, r"^list index out of range$"):
             lst = SparseList()
             lst.add(1)
-            lst[1]
+            lst[1]  # pylint: disable=pointless-statement
         with self.assertRaisesRegex(IndexError, r"^list index out of range$"):
             lst = SparseList()
             lst.add(1)
-            lst[-1]
+            lst[-1]  # pylint: disable=pointless-statement
         with self.assertRaisesRegex(
             ValueError, r"^Only forward intervals are supported \(a <= b\)$"
         ):
@@ -1155,7 +1153,7 @@ class SparseList_(TestCase):
 
 class Strings(TestCase):
     def test_0(self):
-        "test for string quoting and escaping"
+        """test for string quoting and escaping"""
         quotes = {
             "root    '\\\\'": "\\",
             'root    "\\\\"': "\\",
@@ -1181,10 +1179,10 @@ class Strings(TestCase):
             self.assertEqual(gmr.generate(), expected)
 
     def test_1(self):
-        "test something else tyson did"
-        # right: "<h5 id='id824837' onload='chat(\'id705147\',1,\' width=\\\'2pt\\\'\')'>"
+        """test something else tyson did"""
+        # right: "<h5 id='id837' onload='chat(\'id705147\',1,\' width=\\\'2pt\\\'\')'>"
         #                                                        ^  -- esc() --   ^
-        # wrong: "<h5 id='id824837' onload='chat(\'id705147\',1,\\\' width=\\\'2pt\'\')'>"
+        # wrong: "<h5 id='id837' onload='chat(\'id705147\',1,\\\' width=\\\'2pt\'\')'>"
         #                                                      ^  -- esc() --   ^
         gmr = Grammar(
             'root   "<h5 id=\'" id "\' onload=\'" esc(func) "\'>"\n'
@@ -1211,14 +1209,14 @@ class Strings(TestCase):
         )
 
     def test_2(self):
-        "tests for unbalanced escapes"
+        """tests for unbalanced escapes"""
         with self.assertRaisesRegex(ParseError, r"^Unterminated string literal"):
             Grammar(r"root    '\\\\\\\'")
         with self.assertRaisesRegex(ParseError, r"^Unterminated string literal"):
             Grammar(r'root    "\\\\\\\"')
 
     def test_3(self):
-        "test for unicode strings"
+        """test for unicode strings"""
         test_strings = [
             "ü",
             "Ⱥ",
@@ -1249,12 +1247,12 @@ class Strings(TestCase):
 
 class Script(TestCase):
     def test_01(self):
-        "test calling main with '-h'"
+        """test calling main with '-h'"""
         with self.assertRaisesRegex(SystemExit, "0"):
             main(["-h"])
 
     def test_02(self):
-        "test simple test generation"
+        """test simple test generation"""
         with open("a.gmr", "w") as fd:
             fd.write('root "A"')
         main(["a.gmr", "a.txt"])
@@ -1263,7 +1261,7 @@ class Script(TestCase):
             self.assertEqual(fd.read(), "A")
 
     def test_03(self):
-        "test unicode I/O with main"
+        """test unicode I/O with main"""
         test_strings = [
             "ü",
             "Ⱥ",

@@ -58,19 +58,11 @@ __all__ = (
 )
 
 
-if sys.version_info.major == 2:
-    # pylint: disable=redefined-builtin,invalid-name
-    str = unicode
-    if sys.maxunicode == 65535:
-        unichr_ = lambda c: (br"\U%08x" % c).decode("unicode-escape")
-    else:
-        unichr_ = unichr
-else:
-    unichr_ = chr
+unichr_ = chr
 utf8_reader = codecs.getreader("utf-8")
 
 
-def _file_to_unicode(fd):
+def _file_to_unicode(fd):  # pylint: disable=invalid-name
     if isinstance(fd.read(1), bytes):
         # need to reopen as unicode
         fd.seek(0)
@@ -87,7 +79,7 @@ LOG = logging.getLogger("avalanche")
 LOG.setLevel(logging.INFO)
 
 
-class _GenState(object):
+class _GenState:
     def __init__(self, grmr):
         self.symstack = []
         self.instances = {}
@@ -99,7 +91,7 @@ class _GenState(object):
         self.choice_stack = {}
         self.recursive_syms = {}
         self.push_stack = []
-        self.id = 0
+        self.id = 0  # pylint: disable=invalid-name
 
     def append(self, value):
         if self.output and not isinstance(value, type(self.output[0])):
@@ -119,7 +111,7 @@ class _GenState(object):
         self.append(result)
 
 
-class _ParseState(object):
+class _ParseState:
     def __init__(self, prefix, grmr, filename):
         self.prefix = prefix
         self.imports = {}  # friendly name -> (grammar hash, import line_no)
@@ -147,7 +139,7 @@ class _ParseState(object):
                 except ValueError:
                     raise ParseError(
                         "Attempt to use symbol from unknown prefix: %s" % symprefix
-                    )
+                    ) from None
                 # it's a float .. let it through for now
                 sym = "%s.%s" % (symprefix, sym)
                 symprefix = self.prefix
@@ -175,7 +167,7 @@ class _ParseState(object):
             )
 
 
-class Grammar(object):
+class Grammar:
     """Generate a language conforming to a given grammar specification.
 
     A Grammar consists of a set of symbol definitions which are used to define the
@@ -318,7 +310,8 @@ class Grammar(object):
                         # import
                         if "%s.%s" % (grammar_hash, sym_name) in self.symtab:
                             raise ParseError(
-                                "Redefinition of symbol %s previously declared on line %d"
+                                "Redefinition of symbol %s "
+                                "previously declared on line %d"
                                 % (
                                     sym_name,
                                     self.symtab[
@@ -384,7 +377,7 @@ class Grammar(object):
         except (IntegrityError, ParseError):
             raise
         except Exception as err:
-            raise ParseError("%s: %s" % (type(err).__name__, str(err)))
+            raise ParseError("%s: %s" % (type(err).__name__, str(err))) from None
         return grammar_hash
 
     def reprefix(self, imports):
@@ -401,7 +394,7 @@ class Grammar(object):
             except KeyError:
                 raise ParseError(
                     "Failed to reassign %s to proper namespace after parsing" % symname
-                )
+                ) from None
             newname = "".join((newprefix, "." if newprefix else "", name))
             if symname != newname:
                 LOG.debug("reprefixed %s -> %s", symname, newname)
@@ -555,9 +548,9 @@ class Grammar(object):
                     issue[grandchild_name] = child_backtrace
 
     def is_limit_exceeded(self, gstate):
-        return (self._limit is not None and gstate.length >= self._limit) or any(
-            sym["limited"] for sym in gstate.recursive_syms.values()
-        )
+        if self._limit is not None and gstate.length >= self._limit:
+            return True
+        return any(sym["limited"] for sym in gstate.recursive_syms.values())
 
     def generate(self, start="root"):
         if not isinstance(start, _GenState):
@@ -580,13 +573,10 @@ class Grammar(object):
                         if recursion_state["depth"] <= 0:
                             del gstate.recursive_syms[this[1]]
                     continue
-                elif cmd == "resetbackref":
+                if cmd == "resetbackref":
                     gstate.backrefs.pop()
                     continue
-                elif cmd == "backlog":
-                    this = this[1]
-                    backlog = True
-                elif cmd == "untrack":
+                if cmd == "untrack":
                     tracked = tracking.pop()
                     assert (
                         this[1] == tracked[0]
@@ -602,7 +592,7 @@ class Grammar(object):
                     else:
                         gstate.instances[this[1]].append(instance)
                     continue
-                elif cmd == "choice":
+                if cmd == "choice":
                     sym, choice = this[1:]
                     gstate.choice_stack.setdefault(sym, []).append(choice)
                     # not sure if this is true ... only one way to find out
@@ -610,6 +600,9 @@ class Grammar(object):
                     # ie. not a stack at all
                     assert len(gstate.choice_stack[sym]) == 1
                     continue
+                if cmd == "backlog":
+                    this = this[1]
+                    backlog = True
                 else:
                     raise GenerationError("Unknown tuple command: %s" % cmd)
             if this in self.recursive_syms:
@@ -644,14 +637,16 @@ class Grammar(object):
             except GenerationError:
                 raise
             except Exception as err:
-                raise GenerationError("%s: %s" % (type(err).__name__, str(err)))
+                raise GenerationError(
+                    "%s: %s" % (type(err).__name__, str(err))
+                ) from None
         try:
             return "".join(gstate.output)
         except TypeError:
             return b"".join(gstate.output)
 
 
-class _Symbol(object):
+class _Symbol:
     _RE_DEFN = re.compile(
         r"""^((?P<quote>["'])
              |(?P<hexstr>x["'])
@@ -707,7 +702,7 @@ class _Symbol(object):
             "Can't generate symbol %s of type %s" % (self.name, type(self))
         )
 
-    def children(self):
+    def children(self):  # pylint: disable=no-self-use
         return set()
 
     def update_can_terminate(self, grmr):
@@ -875,7 +870,7 @@ class BinSymbol(_Symbol):
         try:
             self.value = binascii.unhexlify(value.encode("ascii"))
         except (UnicodeEncodeError, TypeError) as err:
-            raise ParseError("Invalid hex string: %s" % err)
+            raise ParseError("Invalid hex string: %s" % err) from None
         self.can_terminate = True
 
     def generate(self, gstate):
@@ -964,6 +959,7 @@ class ChoiceSymbol(_Symbol):
                 if target < 0.0:
                     LOG.debug("choice is in + at %d", i)
                     total[0] -= plus_state[i]["total"][0]
+                    # pylint: disable=protected-access
                     choice._internal_choice(
                         plus_state[i]["total"],
                         used[i],
@@ -1150,7 +1146,7 @@ class ConcatSymbol(_Symbol, list):
         self.normalized = True
 
     @staticmethod
-    def parse(name, defn, pstate):
+    def parse(name, defn, pstate):  # pylint: disable=arguments-differ
         result = ConcatSymbol(name, pstate)
         result.extend(_Symbol.parse(defn, pstate))
         return result
@@ -1230,7 +1226,7 @@ class FuncSymbol(_Symbol):
             else:
                 gstate.symstack.append(name)
         elif self.fname == "id" and gstate.grmr.funcs["id"] is None:
-            if len(args) != 0:
+            if args:
                 raise TypeError("id() takes 0 arguments (%d given)" % len(args))
             gstate.generate_id()
         elif self.fname == "push" and gstate.grmr.funcs["push"] is None:
@@ -1240,7 +1236,7 @@ class FuncSymbol(_Symbol):
                 )
             gstate.push_stack.append(args[0])
         elif self.fname == "pop" and gstate.grmr.funcs["pop"] is None:
-            if len(args) != 0:
+            if args:
                 raise TypeError(
                     "pop() takes exactly 0 arguments (%d given)" % len(args)
                 )
@@ -1256,7 +1252,7 @@ class FuncSymbol(_Symbol):
         self.args = [_fcn(i) for i in self.args]
 
     @staticmethod
-    def parse(name, defn, pstate):
+    def parse(name, defn, pstate):  # pylint: disable=arguments-differ
         if name == "import":
             raise ParseError("'import' is a reserved function name")
         result = FuncSymbol(name, pstate)
@@ -1318,7 +1314,9 @@ class RefSymbol(_Symbol):
             try:
                 gstate.append(backrefs[self.ref])
             except KeyError:
-                raise GenerationError("No symbols generated yet for backreference")
+                raise GenerationError(
+                    "No symbols generated yet for backreference"
+                ) from None
         elif gstate.instances[self.ref]:
             gstate.append(random.choice(gstate.instances[self.ref]))
         elif len(gstate.instance_backlog[self.ref]) > 1 and random.random() < 0.3:
@@ -1408,7 +1406,7 @@ class RegexSymbol(ConcatSymbol):
         self.append(rep.name)
 
     @staticmethod
-    def parse(defn, pstate):
+    def parse(defn, pstate):  # pylint: disable=arguments-differ
         result = RegexSymbol(pstate)
         n_implicit = [0]
         if defn[0] != "/":
@@ -1421,7 +1419,10 @@ class RegexSymbol(ConcatSymbol):
                 defn = defn[1:]
             elif match.group("set"):
                 lst = _TextChoiceSymbol(
-                    result._impl_name(n_implicit), pstate, no_prefix=True
+                    # pylint: disable=protected-access
+                    result._impl_name(n_implicit),
+                    pstate,
+                    no_prefix=True,
                 )
                 inverse = len(match.group("set")) == 2
                 defn = defn[match.end(0) :]
@@ -1434,7 +1435,7 @@ class RegexSymbol(ConcatSymbol):
                             alpha.append(ord("-"))
                         defn = defn[match.end(0) :]
                         break
-                    elif match.group(0) == "-":
+                    if match.group(0) == "-":
                         if in_range or not alpha:
                             raise ParseError("Parse error in regex at: %s" % defn)
                         in_range = True
@@ -1489,7 +1490,7 @@ class RegexSymbol(ConcatSymbol):
                 )
                 defn = defn[match.end(0) :]
             else:  # repeat
-                if not len(result) or isinstance(
+                if not result or isinstance(
                     pstate.grmr.symtab[result[-1]], RepeatSymbol
                 ):
                     raise ParseError(
@@ -1658,7 +1659,7 @@ class TextSymbol(_Symbol):
         gstate.append(self.value)
 
     @staticmethod
-    def parse(defn, pstate, no_add=False):
+    def parse(defn, pstate, no_add=False):  # pylint: disable=arguments-differ
         qchar, defn = defn[0], defn[1:]
         if qchar not in "'\"":
             raise ParseError(
@@ -1670,7 +1671,7 @@ class TextSymbol(_Symbol):
             last = match.end(0)
             if match.group("end") == qchar:
                 break
-            elif match.group("end"):
+            if match.group("end"):
                 out.append(match.group("end"))
             else:
                 out.append(
@@ -1714,6 +1715,7 @@ def main(argv=None):
                     "output file exists, not overwriting: %s" % string
                 )
             try:
+                # pylint: disable=consider-using-with
                 return io.open(string, mode=self._mode, encoding="utf-8")
             except IOError as exc:
                 raise argparse.ArgumentTypeError("can't open '%s': %s" % (string, exc))
@@ -1743,6 +1745,7 @@ def main(argv=None):
         help="Set a generation limit (roughly)",
     )
     args = argp.parse_args(argv)
+    # pylint: disable=eval-used
     args.function = {func: eval(defn) for (func, defn) in args.function}
     args.output.write(Grammar(args.input, limit=args.limit, **args.function).generate())
 
