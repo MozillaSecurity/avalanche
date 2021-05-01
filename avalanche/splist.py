@@ -81,7 +81,7 @@ class SparseList:
             a = self._data[ia][0]
         if ia == len(self._data):
             return
-        ahead = bool(self._data[ia][0] == a)
+        ahead = self._data[ia][0] == a
         # move b if needed
         if ib and b <= self._data[ib - 1][1]:
             # b is actually in the range before ib
@@ -95,7 +95,7 @@ class SparseList:
             ib -= 1
         if b < a:
             return
-        btail = bool(self._data[ib][1] == b)
+        btail = self._data[ib][1] == b
         # do the deletions
         if ahead and btail:
             # delete whole range

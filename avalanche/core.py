@@ -39,19 +39,19 @@ from .error import GenerationError, GrammarException, IntegrityError, ParseError
 from .splist import SparseList
 
 __all__ = (
-    "Grammar",
-    "GrammarException",
-    "ParseError",
-    "IntegrityError",
-    "GenerationError",
     "BinSymbol",
     "ChoiceSymbol",
     "ConcatSymbol",
     "FuncSymbol",
+    "GenerationError",
+    "Grammar",
+    "GrammarException",
+    "IntegrityError",
+    "ParseError",
     "RefSymbol",
+    "RegexSymbol",
     "RepeatSymbol",
     "RepeatSampleSymbol",
-    "RegexSymbol",
     "SparseList",
     "TextSymbol",
 )
